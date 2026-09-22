@@ -25,3 +25,11 @@ def test_frontend_is_served():
     assert response.status_code == 200
     assert "玑衡 AI" in response.text
 
+
+def test_world_route_and_scenario_api_are_served():
+    page = client.get("/world?code=300750")
+    response = client.get("/api/world/300750")
+    assert page.status_code == 200
+    assert "产业链世界" in page.text
+    assert response.status_code == 200
+    assert response.json()["world_name"] == "电池环城"

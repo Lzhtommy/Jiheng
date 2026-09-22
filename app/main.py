@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from .data import DEMO_UNIVERSE
 from .engine import DATA_NOTICE, diagnosis, debate, screen
 from .models import ScreenRequest, ScreenResponse
+from .world import world_scenario
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -32,6 +33,11 @@ app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
 @app.get("/", include_in_schema=False)
 def index() -> FileResponse:
     return FileResponse(BASE_DIR / "static" / "index.html")
+
+
+@app.get("/world", include_in_schema=False)
+def world() -> FileResponse:
+    return FileResponse(BASE_DIR / "static" / "world.html")
 
 
 @app.get("/api/health")
@@ -69,3 +75,10 @@ def stock_debate(code: str) -> dict[str, object]:
         raise HTTPException(status_code=404, detail="演示股票池中没有这个代码")
     return report
 
+
+@app.get("/api/world/{code}")
+def company_world(code: str) -> dict[str, object]:
+    scenario = world_scenario(code)
+    if scenario is None:
+        raise HTTPException(status_code=404, detail="演示股票池中没有这个代码")
+    return scenario
