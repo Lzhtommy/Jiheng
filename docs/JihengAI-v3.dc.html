@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  body { margin:0; background:#F0EEEA; font-family:"IBM Plex Sans","Noto Sans SC","PingFang SC",system-ui,sans-serif; -webkit-font-smoothing:antialiased; }
+  a { color:#8A5E22; text-decoration:none; }
+  a:hover { color:#5E3F14; }
+</style>
+</helmet>
+<div style="padding:56px 48px 96px; background:#F0EEEA; min-height:100vh; box-sizing:border-box">
+
+  <div style="display:flex; flex-direction:column; gap:10px; margin-bottom:44px; max-width:820px">
+    <div style="display:flex; align-items:center; gap:12px">
+      <div style="width:26px; height:26px; border-radius:7px; background:#0F1B2D; display:flex; align-items:center; justify-content:center; color:#C9973F; font-size:13px; font-weight:700; font-family:'Noto Sans SC',sans-serif">玑</div>
+      <div style="font-family:'Noto Sans SC',sans-serif; font-size:26px; font-weight:700; color:#0F1B2D; letter-spacing:-0.2px">玑衡AI 移动端原型 v2</div>
+    </div>
+    <div style="font-family:'Noto Sans SC',sans-serif; font-size:15px; line-height:1.7; color:#5E5A53; text-wrap:pretty">对标万得AI（Wind Alice）的产品结构：一句话下任务 → Agent 拆解执行 → 输出可直接交付的分析成果，全程数据可溯源。视觉为原创设计，未沿用任何第三方品牌元素。v2 降低机器感：纸感暖灰底、细线图标、更口语的状态文案。</div>
+  </div>
+
+  <div style="display:flex; flex-wrap:wrap; gap:56px 40px">
+
+    <!-- 1 首页 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">01</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">首页 · 一句话出成果</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D; font-family:'IBM Plex Sans',sans-serif">
+          <span>9:41</span>
+          <span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block; position:relative"><span style="position:absolute; inset:1px; right:6px; background:#0F1B2D; border-radius:1px; display:block"></span></span></span>
+        </div>
+        <div style="flex:1; overflow:hidden; display:flex; flex-direction:column; gap:18px; padding:14px 20px 0">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start">
+            <div style="display:flex; flex-direction:column; gap:4px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#7A766F">下午好，陈研究员</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:23px; font-weight:700; color:#0F1B2D; line-height:1.3">今天想让我做点什么？</div>
+            </div>
+            <div style="width:34px; height:34px; border-radius:50%; background:#0F1B2D; color:#C9973F; display:flex; align-items:center; justify-content:center; font-family:'Noto Sans SC',sans-serif; font-size:13px; font-weight:700">陈</div>
+          </div>
+
+          <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:18px; padding:16px; display:flex; flex-direction:column; gap:14px; box-shadow:0 2px 6px rgba(15,27,45,0.04)">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:15px; color:#A8A49C">帮我分析一家公司、一个行业，或筛一批标的…</div>
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div style="display:flex; gap:8px">
+                <div style="display:flex; align-items:center; gap:5px; padding:6px 11px; border:1px solid #E7E3DC; border-radius:999px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#4C4840">附件</div>
+                <div style="display:flex; align-items:center; gap:5px; padding:6px 11px; border:1px solid #E7E3DC; border-radius:999px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#4C4840">深度模式</div>
+                <div style="display:flex; align-items:center; gap:5px; padding:6px 11px; border:1px solid #E7E3DC; border-radius:999px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#4C4840">语音</div>
+              </div>
+              <div style="width:34px; height:34px; border-radius:11px; background:#0F1B2D; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:15px">↑</div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="display:flex; justify-content:space-between; align-items:baseline">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D; letter-spacing:-0.1px">金融技能</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#8A5E22">全部 28 个</div>
+            </div>
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+              <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:6px">
+                <div style="width:24px; height:24px; color:#2A3547; display:flex; align-items:center; justify-content:center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V6.5a1 1 0 0 1 .7-.95l8-2.4A1 1 0 0 1 14 4.1V20"/><path d="M14 9h5a1 1 0 0 1 1 1v10"/><path d="M2.5 20h19"/><path d="M7.5 8.5h3M7.5 12h3M7.5 15.5h3M16.5 12.5h1.5M16.5 16h1.5"/></svg></div>
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">公司深度分析</div>
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F; line-height:1.5">财务·业务·行业位置</div>
+              </div>
+              <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:6px">
+                <div style="width:24px; height:24px; color:#2A3547; display:flex; align-items:center; justify-content:center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 19.5h17"/><path d="M4 16.5V12M9.5 16.5V7M15 16.5V10M20.5 16.5V4.5"/></svg></div>
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">行业逻辑拆解</div>
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F; line-height:1.5">链条·格局·对比</div>
+              </div>
+              <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:6px">
+                <div style="width:24px; height:24px; color:#2A3547; display:flex; align-items:center; justify-content:center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M3.5 5h17l-6.6 7.6v6.1l-3.8-2.2v-3.9z"/></svg></div>
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">标的筛选</div>
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F; line-height:1.5">自然语言转条件</div>
+              </div>
+              <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:6px">
+                <div style="width:24px; height:24px; color:#2A3547; display:flex; align-items:center; justify-content:center"><svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3.5h8l4.5 4.5V20.5H6z"/><path d="M13.8 3.7V8.3h4.5"/><path d="M8.8 12h6.4M8.8 15.3h6.4M8.8 18.2h3.6"/></svg></div>
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">文档速读</div>
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F; line-height:1.5">财报·招股书·公告</div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D; letter-spacing:-0.1px">进行中的任务</div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px">
+              <div style="display:flex; justify-content:space-between; align-items:center">
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">消费级无人机行业深度</div>
+                <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22">62%</div>
+              </div>
+              <div style="height:4px; border-radius:2px; background:#EDE9E3; overflow:hidden"><div style="width:62%; height:4px; background:#C9973F"></div></div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">正在读 34 篇研报，约 1 分 20 秒</div>
+            </div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="display:flex; justify-content:space-between; align-items:baseline">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D; letter-spacing:-0.1px">自选异动</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#8A5E22">全部 12 只</div>
+            </div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; overflow:hidden">
+              <div style="display:flex; align-items:center; justify-content:space-between; padding:12px 14px">
+                <div style="display:flex; flex-direction:column; gap:3px"><span style="font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">影石创新</span><span style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">新机型发布会定档，成交放量</span></div>
+                <span style="font-family:'IBM Plex Mono',monospace; font-size:14px; color:#C0392B">+2.31%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display:flex; justify-content:space-around; align-items:flex-start; padding:10px 8px 22px; background:#FFFFFF; border-top:1px solid #E9E5DE">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#0F1B2D; font-weight:500"><div style="width:22px; height:22px; border-radius:7px; background:#0F1B2D"></div>首页</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>任务</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>成果库</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>我的</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">输入框是唯一主入口；技能卡只是把高频指令预填进输入框，不另开一套表单流程。</div></sc-if>
+    </div>
+
+    <!-- 2 对话问答 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">02</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">对话问答 · 流式输出与溯源</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 12px; border-bottom:1px solid #E9E5DE; background:#FFFFFF">
+          <div style="font-size:17px; color:#0F1B2D">‹</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">影石创新 · 基本面问答</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#8A5E22">收藏</div>
+        </div>
+        <div style="flex:1; overflow:hidden; display:flex; flex-direction:column; justify-content:flex-end; gap:14px; padding:16px 18px 14px; background:#F8F7F4">
+          <div style="align-self:flex-end; max-width:76%; background:#0F1B2D; color:#FFFFFF; border-radius:16px 16px 6px 16px; padding:12px 14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.6">影石创新最近三年毛利率怎么走的？和同行比呢</div>
+
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="display:flex; align-items:center; gap:7px">
+              <div style="width:22px; height:22px; border-radius:7px; background:#0F1B2D; color:#C9973F; display:flex; align-items:center; justify-content:center; font-family:'Noto Sans SC',sans-serif; font-size:11px; font-weight:700">玑</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">引用 3 个数据源 · 可逐条核对</div>
+            </div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:12px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.75; color:#23272E">近三年毛利率稳定在 50% 上方，2025 年为 51.3%<span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; margin:0 2px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">1</span>，较 2023 年提升 2.4 个百分点，主要来自高端机型占比上升与自研影像芯片降本<span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; margin:0 2px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">2</span>。</div>
+              <div style="border:1px solid #EDE9E3; border-radius:12px; overflow:hidden">
+                <div style="display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; background:#F5F2EE; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#5E5A53; padding:8px 10px; gap:6px"><span>公司</span><span style="text-align:right">2023</span><span style="text-align:right">2024</span><span style="text-align:right">2025</span></div>
+                <div style="display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; padding:9px 10px; gap:6px; font-size:12px; font-family:'IBM Plex Mono',monospace; color:#23272E; border-top:1px solid #EDE9E3; background:#FFFCF5"><span style="font-family:'Noto Sans SC',sans-serif">影石创新</span><span style="text-align:right">48.9</span><span style="text-align:right">50.1</span><span style="text-align:right; color:#C0392B; font-weight:500">51.3</span></div>
+                <div style="display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; padding:9px 10px; gap:6px; font-size:12px; font-family:'IBM Plex Mono',monospace; color:#23272E; border-top:1px solid #EDE9E3"><span style="font-family:'Noto Sans SC',sans-serif">同行 A</span><span style="text-align:right">45.2</span><span style="text-align:right">44.0</span><span style="text-align:right">43.6</span></div>
+                <div style="display:grid; grid-template-columns:1.3fr 1fr 1fr 1fr; padding:9px 10px; gap:6px; font-size:12px; font-family:'IBM Plex Mono',monospace; color:#23272E; border-top:1px solid #EDE9E3"><span style="font-family:'Noto Sans SC',sans-serif">行业中位</span><span style="text-align:right">38.7</span><span style="text-align:right">39.1</span><span style="text-align:right">38.4</span></div>
+              </div>
+              <div style="display:flex; flex-direction:column; gap:7px; padding-top:2px; border-top:1px solid #EDE9E3">
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">数据来源</div>
+                <div style="display:flex; align-items:center; gap:7px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#23272E"><span style="min-width:15px; height:15px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; display:flex; align-items:center; justify-content:center">1</span>2025 年年度报告 · 第 48 页</div>
+                <div style="display:flex; align-items:center; gap:7px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#23272E"><span style="min-width:15px; height:15px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; display:flex; align-items:center; justify-content:center">2</span>中信建投《影像硬件出海》2026-08</div>
+              </div>
+              <div style="display:flex; gap:14px; padding-top:8px; border-top:1px solid #EDE9E3; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#5E5A53"><span>复制</span><span>导出</span><span>生成图表</span><span>转成报告</span></div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:7px">
+              <div style="align-self:flex-start; border:1px solid #DCD7CF; background:#FFFFFF; color:#3D4656; border-radius:999px; padding:9px 14px; font-family:'Noto Sans SC',sans-serif; font-size:13px">毛利率提升能持续吗？</div>
+              <div style="align-self:flex-start; border:1px solid #DCD7CF; background:#FFFFFF; color:#3D4656; border-radius:999px; padding:9px 14px; font-family:'Noto Sans SC',sans-serif; font-size:13px">拆一下费用率和净利率</div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:12px 18px 26px; background:#FFFFFF; border-top:1px solid #E9E5DE; display:flex; align-items:center; gap:10px">
+          <div style="flex:1; background:#F5F2EE; border-radius:999px; padding:11px 14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#A8A49C">继续追问…</div>
+          <div style="width:36px; height:36px; border-radius:50%; background:#0F1B2D; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:15px">↑</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">每个结论后跟角标，卡片底部固定列出来源与页码；结构化数据直接以表格返回，可一键转成报告。</div></sc-if>
+    </div>
+
+    <!-- 3 Agent 执行 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">03</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">Agent 任务执行过程</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 12px; border-bottom:1px solid #E9E5DE; background:#FFFFFF">
+          <div style="font-size:17px; color:#0F1B2D">‹</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">任务执行中</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#6E6A63">后台运行</div>
+        </div>
+        <div style="flex:1; overflow:hidden; display:flex; flex-direction:column; gap:16px; padding:16px 18px 0">
+          <div style="background:#0F1B2D; border-radius:18px; padding:16px; display:flex; flex-direction:column; gap:12px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:16px; font-weight:500; color:#FFFFFF; line-height:1.5">写一份消费级无人机行业分析，含格局、玩家对比和风险</div>
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#C9973F">第 3 步，共 5 步 · 已读 34 份材料</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#FFFFFF">01:42</div>
+            </div>
+            <div style="height:4px; border-radius:2px; background:rgba(255,255,255,0.18); overflow:hidden"><div style="width:62%; height:4px; background:#C9973F"></div></div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:0">
+            <div style="display:flex; gap:12px">
+              <div style="display:flex; flex-direction:column; align-items:center; gap:0"><div style="width:20px; height:20px; border-radius:50%; background:#1B6B4C; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:11px">✓</div><div style="width:1.5px; flex:1; background:#DDE2E9"></div></div>
+              <div style="padding-bottom:18px; display:flex; flex-direction:column; gap:5px">
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">拆解需求</div>
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F; line-height:1.6">口径：全球消费级市场，2021—2026，出货量与收入两条线</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px">
+              <div style="display:flex; flex-direction:column; align-items:center"><div style="width:20px; height:20px; border-radius:50%; background:#1B6B4C; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:11px">✓</div><div style="width:1.5px; flex:1; background:#DDE2E9"></div></div>
+              <div style="padding-bottom:18px; display:flex; flex-direction:column; gap:7px">
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">检索与取数</div>
+                <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F; line-height:1.6">取自 34 份卖方研报、11 家公司年报与海关出口数据</div>
+                <div style="display:flex; gap:6px; flex-wrap:wrap"><span style="border:1px solid #E7E3DC; background:#FFFFFF; border-radius:6px; padding:4px 8px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#4C4840">研报 34</span><span style="border:1px solid #E7E3DC; background:#FFFFFF; border-radius:6px; padding:4px 8px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#4C4840">年报 11</span><span style="border:1px solid #E7E3DC; background:#FFFFFF; border-radius:6px; padding:4px 8px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#4C4840">宏观 4</span></div>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px">
+              <div style="display:flex; flex-direction:column; align-items:center"><div style="width:20px; height:20px; border-radius:50%; background:#F5EEE1; border:1.5px solid #C9973F; box-sizing:border-box"></div><div style="width:1.5px; flex:1; background:#DDE2E9"></div></div>
+              <div style="padding-bottom:18px; display:flex; flex-direction:column; gap:7px; flex:1">
+                <div style="display:flex; justify-content:space-between; align-items:center"><div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">交叉校验数据</div><div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#8A5E22">进行中</div></div>
+                <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:12px; padding:11px; font-family:'IBM Plex Mono',monospace; font-size:11px; line-height:1.9; color:#4C4840">3 家机构对 2026 出货量的预测差异超过 15%<br>已标为待你确认的口径</div>
+              </div>
+            </div>
+            <div style="display:flex; gap:12px">
+              <div style="display:flex; flex-direction:column; align-items:center"><div style="width:20px; height:20px; border-radius:50%; border:1.5px solid #DBD6CD; box-sizing:border-box"></div><div style="width:1.5px; flex:1; background:#DDE2E9"></div></div>
+              <div style="padding-bottom:18px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#6E6A63">生成对比表与图表</div>
+            </div>
+            <div style="display:flex; gap:12px">
+              <div style="display:flex; flex-direction:column; align-items:center"><div style="width:20px; height:20px; border-radius:50%; border:1.5px solid #DBD6CD; box-sizing:border-box"></div></div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#6E6A63">撰写结论与风险提示</div>
+            </div>
+          </div>
+
+          <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:9px">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; font-weight:700; color:#0F1B2D">已成稿片段</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#8A5E22">边写边看</div>
+            </div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; line-height:1.8; color:#23272E">全球消费级出货量在 2024 年触底后恢复，增量集中在运动影像与自动跟拍两类产品；国内厂商占全球出货约七成，竞争已从价格转向影像算法与售后网络。</div>
+          </div>
+        </div>
+        <div style="padding:12px 18px 26px; background:#FFFFFF; border-top:1px solid #E9E5DE; display:flex; gap:10px">
+          <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#4C4840">转后台并通知我</div>
+          <div style="flex:1; text-align:center; background:#0F1B2D; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#FFFFFF">调整需求</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">执行过程公开可见是信任的关键：每步说明取了什么数、有什么冲突，用户可中途改需求或转后台。</div></sc-if>
+    </div>
+
+    <!-- 4 报告 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">04</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">生成物 · 公司分析报告</span>
+      </div>
+      <div style="width:390px; height:844px; background:#FFFFFF; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 12px; border-bottom:1px solid #E9E5DE">
+          <div style="font-size:17px; color:#0F1B2D">‹</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">目录</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#8A5E22">导出</div>
+        </div>
+        <div style="flex:1; overflow:hidden; display:flex; flex-direction:column; gap:16px; padding:18px 20px 0">
+          <div style="display:flex; flex-direction:column; gap:8px">
+            <div style="display:flex; gap:6px"><span style="background:#F5EEE1; color:#8A5E22; border-radius:5px; padding:3px 7px; font-family:'Noto Sans SC',sans-serif; font-size:11px">玑衡生成</span><span style="background:#F5F2EE; color:#5E5A53; border-radius:5px; padding:3px 7px; font-family:'Noto Sans SC',sans-serif; font-size:11px">12 页 · 4 图 2 表</span></div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:22px; font-weight:700; color:#0F1B2D; line-height:1.4">影石创新：影像硬件出海的确定性与边界</div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">9 月 22 日生成 · 41 处引用可回看原文</div>
+          </div>
+
+          <div style="border-top:1px solid #EDE9E3; border-bottom:1px solid #EDE9E3; padding:12px 0; display:flex; flex-direction:column; gap:9px">
+            <div style="display:flex; justify-content:space-between; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#0F1B2D; font-weight:500"><span>一、核心结论</span><span style="font-family:'IBM Plex Mono',monospace; color:#6E6A63">01</span></div>
+            <div style="display:flex; justify-content:space-between; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#5E5A53"><span>二、业务结构与增长拆解</span><span style="font-family:'IBM Plex Mono',monospace; color:#6E6A63">03</span></div>
+            <div style="display:flex; justify-content:space-between; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#5E5A53"><span>三、行业位置与同业对比</span><span style="font-family:'IBM Plex Mono',monospace; color:#6E6A63">06</span></div>
+            <div style="display:flex; justify-content:space-between; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#5E5A53"><span>四、风险与观察指标</span><span style="font-family:'IBM Plex Mono',monospace; color:#6E6A63">10</span></div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:16px; font-weight:700; color:#0F1B2D">一、核心结论</div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.85; color:#23272E; text-wrap:pretty">公司已从单品类影像设备商转为多品类出海平台，2025 年海外收入占比 73.8%<span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; margin:0 2px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">7</span>。增长的确定性来自渠道复用与研发摊薄，边界在于单一影像芯片供应与关税敞口。</div>
+            <div style="background:#FAF8F5; border:1px solid #EDE9E3; border-radius:12px; padding:14px; display:flex; flex-direction:column; gap:10px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#5E5A53">图 1 · 分地区收入结构（2023—2025）</div>
+              <div style="display:flex; align-items:flex-end; gap:12px; height:92px">
+                <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:3px"><div style="height:34px; background:#C9973F; border-radius:3px 3px 0 0"></div><div style="height:22px; background:#0F1B2D"></div><div style="height:10px; background:#6E6A63; border-radius:0 0 3px 3px"></div></div>
+                <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:3px"><div style="height:44px; background:#C9973F; border-radius:3px 3px 0 0"></div><div style="height:24px; background:#0F1B2D"></div><div style="height:11px; background:#6E6A63; border-radius:0 0 3px 3px"></div></div>
+                <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:3px"><div style="height:58px; background:#C9973F; border-radius:3px 3px 0 0"></div><div style="height:26px; background:#0F1B2D"></div><div style="height:9px; background:#6E6A63; border-radius:0 0 3px 3px"></div></div>
+              </div>
+              <div style="display:flex; justify-content:space-between; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7A766F"><span>2023</span><span>2024</span><span>2025</span></div>
+              <div style="display:flex; gap:14px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#5E5A53"><span style="display:flex; align-items:center; gap:5px"><span style="width:8px; height:8px; background:#C9973F; border-radius:2px"></span>海外</span><span style="display:flex; align-items:center; gap:5px"><span style="width:8px; height:8px; background:#0F1B2D; border-radius:2px"></span>境内</span><span style="display:flex; align-items:center; gap:5px"><span style="width:8px; height:8px; background:#6E6A63; border-radius:2px"></span>其他</span></div>
+            </div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.85; color:#23272E">二、业务结构与增长拆解</div>
+          </div>
+        </div>
+        <div style="padding:12px 18px 26px; background:#FFFFFF; border-top:1px solid #E9E5DE; display:flex; align-items:center; gap:8px">
+          <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:11px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#4C4840">Word</div>
+          <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:11px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#4C4840">PPT</div>
+          <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:11px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#4C4840">分享</div>
+          <div style="flex:1.2; text-align:center; background:#0F1B2D; border-radius:12px; padding:11px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#FFFFFF">继续追问</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">成果是交付物，不是聊天记录：带目录、图表与引用页码，底部常驻导出与追问。</div></sc-if>
+    </div>
+
+    <!-- 5 筛选器 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">05</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">标的筛选 · 条件到结果</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 12px; border-bottom:1px solid #E9E5DE; background:#FFFFFF">
+          <div style="font-size:17px; color:#0F1B2D">‹</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">标的筛选</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#8A5E22">存为模板</div>
+        </div>
+        <div style="flex:1; overflow:hidden; display:flex; flex-direction:column; gap:14px; padding:14px 18px 0">
+          <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:9px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">你说的是</div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.6; color:#23272E">找无人机产业链里研发占比高、海外收入过半、近三年营收连增的公司</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:9px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">拆成了 4 个条件，可以直接改</div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px">
+              <div style="background:#FFFFFF; border:1px solid #D6C7A6; border-radius:8px; padding:8px 11px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#23272E">所属产业链 = 无人机 <span style="color:#6E6A63">✕</span></div>
+              <div style="background:#FFFFFF; border:1px solid #D6C7A6; border-radius:8px; padding:8px 11px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#23272E">研发费用率 ≥ 8% <span style="color:#6E6A63">✕</span></div>
+              <div style="background:#FFFFFF; border:1px solid #D6C7A6; border-radius:8px; padding:8px 11px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#23272E">海外收入占比 &gt; 50% <span style="color:#6E6A63">✕</span></div>
+              <div style="background:#FFFFFF; border:1px solid #D6C7A6; border-radius:8px; padding:8px 11px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#23272E">营收 3 年连增 <span style="color:#6E6A63">✕</span></div>
+              <div style="border:1px dashed #C8C3B9; border-radius:8px; padding:8px 11px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">+ 加条件</div>
+            </div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:baseline">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:700; color:#0F1B2D">命中 <span style="font-family:'IBM Plex Mono',monospace; color:#8A5E22">14</span> 家</div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#5E5A53">按研发费用率排序 ▾</div>
+          </div>
+          <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; overflow:hidden">
+            <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 0.9fr; gap:6px; background:#F5F2EE; padding:9px 12px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#5E5A53"><span>名称</span><span style="text-align:right">研发率</span><span style="text-align:right">海外占比</span><span style="text-align:right">涨跌</span></div>
+            <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 0.9fr; gap:6px; padding:11px 12px; border-top:1px solid #EDE9E3; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#23272E"><span style="font-family:'Noto Sans SC',sans-serif; font-size:13px">影石创新</span><span style="text-align:right">11.4%</span><span style="text-align:right">73.8%</span><span style="text-align:right; color:#C0392B">+2.31%</span></div>
+            <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 0.9fr; gap:6px; padding:11px 12px; border-top:1px solid #EDE9E3; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#23272E"><span style="font-family:'Noto Sans SC',sans-serif; font-size:13px">纵横股份</span><span style="text-align:right">10.2%</span><span style="text-align:right">58.1%</span><span style="text-align:right; color:#1B6B4C">−0.84%</span></div>
+            <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 0.9fr; gap:6px; padding:11px 12px; border-top:1px solid #EDE9E3; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#23272E"><span style="font-family:'Noto Sans SC',sans-serif; font-size:13px">道通科技</span><span style="text-align:right">9.8%</span><span style="text-align:right">81.2%</span><span style="text-align:right; color:#C0392B">+1.07%</span></div>
+            <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 0.9fr; gap:6px; padding:11px 12px; border-top:1px solid #EDE9E3; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#23272E"><span style="font-family:'Noto Sans SC',sans-serif; font-size:13px">中光学</span><span style="text-align:right">9.1%</span><span style="text-align:right">52.6%</span><span style="text-align:right; color:#C0392B">+0.42%</span></div>
+            <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 0.9fr; gap:6px; padding:11px 12px; border-top:1px solid #EDE9E3; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#23272E"><span style="font-family:'Noto Sans SC',sans-serif; font-size:13px">万丰奥威</span><span style="text-align:right">8.6%</span><span style="text-align:right">55.0%</span><span style="text-align:right; color:#1B6B4C">−1.12%</span></div>
+            <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 0.9fr; gap:6px; padding:11px 12px; border-top:1px solid #EDE9E3; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#23272E"><span style="font-family:'Noto Sans SC',sans-serif; font-size:13px">长盈精密</span><span style="text-align:right">8.4%</span><span style="text-align:right">61.3%</span><span style="text-align:right; color:#C0392B">+0.95%</span></div>
+            <div style="display:grid; grid-template-columns:1.5fr 1fr 1fr 0.9fr; gap:6px; padding:11px 12px; border-top:1px solid #EDE9E3; font-family:'IBM Plex Mono',monospace; font-size:12px; color:#23272E"><span style="font-family:'Noto Sans SC',sans-serif; font-size:13px">奥普光电</span><span style="text-align:right">8.2%</span><span style="text-align:right">53.7%</span><span style="text-align:right; color:#1B6B4C">−0.36%</span></div>
+            <div style="padding:11px 12px; border-top:1px solid #EDE9E3; text-align:center; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#8A5E22">查看全部 14 家</div>
+          </div>
+        </div>
+        <div style="padding:12px 18px 26px; background:#FFFFFF; border-top:1px solid #E9E5DE; display:flex; gap:10px">
+          <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#4C4840">加入自选</div>
+          <div style="flex:1.3; text-align:center; background:#0F1B2D; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#FFFFFF">生成对比分析</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">自然语言先转成显式条件再执行，用户能核对和修改口径——这比直接给结果更可信。</div></sc-if>
+    </div>
+
+    <!-- 6 文档速读 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">06</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">文档速读 · 上传即摘要</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 12px; border-bottom:1px solid #E9E5DE; background:#FFFFFF">
+          <div style="font-size:17px; color:#0F1B2D">‹</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">文档速读</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#8A5E22">原文</div>
+        </div>
+        <div style="flex:1; overflow:hidden; display:flex; flex-direction:column; gap:14px; padding:14px 18px 0">
+          <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; align-items:center; gap:12px">
+            <div style="width:38px; height:46px; border-radius:6px; background:#F5EEE1; color:#8A5E22; display:flex; align-items:center; justify-content:center; font-family:'IBM Plex Mono',monospace; font-size:10px; font-weight:500">PDF</div>
+            <div style="flex:1; display:flex; flex-direction:column; gap:4px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">影石创新 2025 年年度报告.pdf</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">218 页 · 读完用了 96 秒</div>
+            </div>
+          </div>
+
+          <div style="display:flex; gap:16px; border-bottom:1px solid #E9E5DE; padding-bottom:9px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; font-weight:500; color:#0F1B2D; border-bottom:2px solid #C9973F; padding-bottom:7px; margin-bottom:-11px">摘要</div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#7A766F">关键数据</div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#7A766F">风险段落</div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#7A766F">问文档</div>
+          </div>
+
+          <div style="display:flex; flex-direction:column; gap:12px">
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:9px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; font-weight:700; color:#0F1B2D">三句话看完</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; line-height:1.8; color:#23272E">全年收入同比增长 38.2%，增量主要来自全景相机与运动相机海外渠道<span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; margin:0 2px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">p32</span>；毛利率微升至 51.3%<span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; margin:0 2px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">p48</span>；研发费用率提至 11.4%，新增两条影像算法产线<span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; margin:0 2px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">p61</span>。</div>
+            </div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; font-weight:700; color:#0F1B2D">抽取的关键指标</div>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                <div style="display:flex; flex-direction:column; gap:3px"><span style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">营业收入</span><span style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#0F1B2D">68.4 亿</span></div>
+                <div style="display:flex; flex-direction:column; gap:3px"><span style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">归母净利</span><span style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#0F1B2D">11.2 亿</span></div>
+                <div style="display:flex; flex-direction:column; gap:3px"><span style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">经营现金流</span><span style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#0F1B2D">13.9 亿</span></div>
+                <div style="display:flex; flex-direction:column; gap:3px"><span style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">存货周转</span><span style="font-family:'IBM Plex Mono',monospace; font-size:16px; color:#0F1B2D">4.1 次</span></div>
+              </div>
+            </div>
+            <div style="background:#FFFCF5; border:1px solid #D6C7A6; border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:7px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; font-weight:700; color:#8A5E22">值得注意</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; line-height:1.75; color:#4A3A1E">前五大客户集中度由 41% 升至 49%，管理层在"经营风险"一节新增关税相关表述<span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; margin:0 2px; border-radius:4px; background:#F2E3C4; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">p73</span>。</div>
+            </div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:11px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; font-weight:700; color:#0F1B2D">跳到常看的段落</div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#23272E">管理层讨论与分析<span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7A766F">p28</span></div>
+              <div style="display:flex; justify-content:space-between; align-items:center; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#23272E">分产品与分地区收入<span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#7A766F">p41</span></div>
+            </div>
+          </div>
+        </div>
+        <div style="padding:12px 18px 26px; background:#FFFFFF; border-top:1px solid #E9E5DE; display:flex; align-items:center; gap:10px">
+          <div style="flex:1; background:#F5F2EE; border-radius:999px; padding:11px 14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#A8A49C">就这份文档提问…</div>
+          <div style="width:36px; height:36px; border-radius:50%; background:#0F1B2D; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:15px">↑</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">摘要、指标、风险分三层，角标直接给页码，点开跳原文；文档本身成为对话上下文。</div></sc-if>
+    </div>
+
+    <!-- 7 成果库 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">07</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">成果库 · 历史与收藏</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="flex:1; overflow:hidden; display:flex; flex-direction:column; gap:14px; padding:12px 20px 0">
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:23px; font-weight:700; color:#0F1B2D">成果库</div>
+          <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:999px; padding:10px 14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#A8A49C">搜索会话、报告、文档</div>
+          <div style="display:flex; gap:8px">
+            <div style="background:#0F1B2D; color:#FFFFFF; border-radius:999px; padding:7px 13px; font-family:'Noto Sans SC',sans-serif; font-size:12px">全部</div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; color:#4C4840; border-radius:999px; padding:7px 13px; font-family:'Noto Sans SC',sans-serif; font-size:12px">报告</div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; color:#4C4840; border-radius:999px; padding:7px 13px; font-family:'Noto Sans SC',sans-serif; font-size:12px">筛选结果</div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; color:#4C4840; border-radius:999px; padding:7px 13px; font-family:'Noto Sans SC',sans-serif; font-size:12px">收藏</div>
+          </div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">今天</div>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:7px">
+              <div style="display:flex; justify-content:space-between; align-items:center"><span style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">影石创新：影像硬件出海</span><span style="background:#F5EEE1; color:#8A5E22; border-radius:5px; padding:3px 6px; font-family:'Noto Sans SC',sans-serif; font-size:10px">报告</span></div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">12 页 · 引用 41 处 · 14:08</div>
+            </div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:7px">
+              <div style="display:flex; justify-content:space-between; align-items:center"><span style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">无人机产业链 14 家候选</span><span style="background:#EAF3EE; color:#1B6B4C; border-radius:5px; padding:3px 6px; font-family:'Noto Sans SC',sans-serif; font-size:10px">筛选</span></div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">4 个条件 · 已加入自选 3 只 · 11:26</div>
+            </div>
+          </div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">本周</div>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:7px">
+              <div style="display:flex; justify-content:space-between; align-items:center"><span style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">2025 年报速读</span><span style="background:#F3EFF9; color:#5B3E8C; border-radius:5px; padding:3px 6px; font-family:'Noto Sans SC',sans-serif; font-size:10px">文档</span></div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">218 页 · 9 月 19 日</div>
+            </div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:7px">
+              <div style="display:flex; justify-content:space-between; align-items:center"><span style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">怎么看 AI 眼镜这条线</span><span style="background:#F5F2EE; color:#5E5A53; border-radius:5px; padding:3px 6px; font-family:'Noto Sans SC',sans-serif; font-size:10px">问答</span></div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">6 轮对话 · 9 月 18 日</div>
+            </div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:7px">
+              <div style="display:flex; justify-content:space-between; align-items:center"><span style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">影像模组三家对比</span><span style="background:#F5EEE1; color:#8A5E22; border-radius:5px; padding:3px 6px; font-family:'Noto Sans SC',sans-serif; font-size:10px">报告</span></div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">6 页 · 已导出 Word · 9 月 17 日</div>
+            </div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:13px; display:flex; flex-direction:column; gap:7px">
+              <div style="display:flex; justify-content:space-between; align-items:center"><span style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">高研发低估值筛选模板</span><span style="background:#EAF3EE; color:#1B6B4C; border-radius:5px; padding:3px 6px; font-family:'Noto Sans SC',sans-serif; font-size:10px">筛选</span></div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">5 个条件 · 每周一自动重跑 · 9 月 16 日</div>
+            </div>
+          </div>
+
+        </div>
+        <div style="display:flex; justify-content:space-around; align-items:flex-start; padding:10px 8px 22px; background:#FFFFFF; border-top:1px solid #E9E5DE">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>首页</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>任务</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#0F1B2D; font-weight:500"><div style="width:22px; height:22px; border-radius:7px; background:#0F1B2D"></div>成果库</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>我的</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">按"成果"而非"会话"组织：报告、筛选结果、文档、问答混排，标签区分类型。</div></sc-if>
+    </div>
+
+    <!-- 8 我的 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">08</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">我的 · 额度与偏好</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="flex:1; overflow:hidden; display:flex; flex-direction:column; gap:16px; padding:14px 20px 0">
+          <div style="display:flex; align-items:center; gap:13px">
+            <div style="width:52px; height:52px; border-radius:50%; background:#0F1B2D; color:#C9973F; display:flex; align-items:center; justify-content:center; font-family:'Noto Sans SC',sans-serif; font-size:19px; font-weight:700">陈</div>
+            <div style="display:flex; flex-direction:column; gap:4px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:18px; font-weight:700; color:#0F1B2D">陈其琛</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">机构版 · 研究部 · 席位已认证</div>
+            </div>
+          </div>
+          <div style="flex-shrink:0; background:#0F1B2D; border-radius:16px; padding:16px; display:flex; flex-direction:column; gap:12px">
+            <div style="display:flex; justify-content:space-between; align-items:center"><span style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#C9973F">本月深度任务额度</span><span style="font-family:'IBM Plex Mono',monospace; font-size:13px; color:#FFFFFF">18 / 50</span></div>
+            <div style="height:4px; border-radius:2px; background:rgba(255,255,255,0.18)"><div style="width:36%; height:4px; background:#C9973F; border-radius:2px"></div></div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:rgba(255,255,255,0.7)">日常问答不限次，额度每月 1 日重置</div>
+          </div>
+          <div style="flex-shrink:0; background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; overflow:hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">默认输出语言<span style="color:#7A766F; font-size:13px">中文 ›</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; border-top:1px solid #EDE9E3; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">报告模板<span style="color:#7A766F; font-size:13px">研究部标准版 ›</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; border-top:1px solid #EDE9E3; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">数据溯源角标<span style="width:40px; height:23px; border-radius:999px; background:#0F1B2D; display:flex; align-items:center; justify-content:flex-end; padding:2px; box-sizing:border-box"><span style="width:19px; height:19px; border-radius:50%; background:#FFFFFF; display:block"></span></span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; border-top:1px solid #EDE9E3; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">任务完成推送<span style="width:40px; height:23px; border-radius:999px; background:#0F1B2D; display:flex; align-items:center; justify-content:flex-end; padding:2px; box-sizing:border-box"><span style="width:19px; height:19px; border-radius:50%; background:#FFFFFF; display:block"></span></span></div>
+          </div>
+          <div style="flex-shrink:0; background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; overflow:hidden">
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">我的自选与组合<span style="color:#7A766F; font-size:13px">›</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; border-top:1px solid #EDE9E3; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">数据权限与席位<span style="color:#7A766F; font-size:13px">已开通 6 项 ›</span></div>
+            <div style="display:flex; justify-content:space-between; align-items:center; padding:14px; border-top:1px solid #EDE9E3; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">合规与免责声明<span style="color:#7A766F; font-size:13px">›</span></div>
+          </div>
+          <div style="flex-shrink:0; background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; text-align:center; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#8A5E22">退出登录</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; line-height:1.7; color:#6E6A63">本应用提供的信息仅供参考，不构成投资建议。</div>
+        </div>
+        <div style="display:flex; justify-content:space-around; align-items:flex-start; padding:10px 8px 22px; background:#FFFFFF; border-top:1px solid #E9E5DE">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>首页</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>任务</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>成果库</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#0F1B2D; font-weight:500"><div style="width:22px; height:22px; border-radius:7px; background:#0F1B2D"></div>我的</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">机构场景下额度与报告模板是高频设置项，溯源角标做成开关以适配不同汇报口径。</div></sc-if>
+    </div>
+
+    <!-- 9 澄清追问 + 键盘态 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">09</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">开工前反问 · 输入与键盘态</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 12px; border-bottom:1px solid #E9E5DE; background:#FFFFFF">
+          <div style="font-size:17px; color:#0F1B2D">‹</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">新任务</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#6E6A63">额度 18/50</div>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:12px; padding:16px 18px 12px; overflow:hidden">
+          <div style="align-self:flex-end; max-width:78%; background:#0F1B2D; color:#FFFFFF; border-radius:16px 16px 6px 16px; padding:12px 14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.6">帮我做一份消费级无人机的行业分析</div>
+          <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:15px; display:flex; flex-direction:column; gap:13px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.7; color:#23272E">开工前先确认两件事，免得口径对不上：</div>
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#6E6A63">范围</div>
+              <div style="display:flex; flex-wrap:wrap; gap:8px">
+                <div style="background:#0F1B2D; color:#FFFFFF; border-radius:999px; padding:8px 13px; font-family:'Noto Sans SC',sans-serif; font-size:13px">全球</div>
+                <div style="background:#FFFFFF; border:1px solid #DBD6CD; color:#3D4656; border-radius:999px; padding:8px 13px; font-family:'Noto Sans SC',sans-serif; font-size:13px">只看中国</div>
+                <div style="background:#FFFFFF; border:1px solid #DBD6CD; color:#3D4656; border-radius:999px; padding:8px 13px; font-family:'Noto Sans SC',sans-serif; font-size:13px">含港股同业</div>
+              </div>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:8px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#6E6A63">时间跨度</div>
+              <div style="display:flex; flex-wrap:wrap; gap:8px">
+                <div style="background:#FFFFFF; border:1px solid #DBD6CD; color:#3D4656; border-radius:999px; padding:8px 13px; font-family:'Noto Sans SC',sans-serif; font-size:13px">近三年</div>
+                <div style="background:#FFFFFF; border:1px solid #DBD6CD; color:#3D4656; border-radius:999px; padding:8px 13px; font-family:'Noto Sans SC',sans-serif; font-size:13px">近五年</div>
+              </div>
+            </div>
+            <div style="padding-top:3px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#8A5E22">跳过，按默认口径直接开始</div>
+          </div>
+        </div>
+        <div style="background:#FFFFFF; border-top:1px solid #E9E5DE; padding:10px 14px; display:flex; flex-direction:column; gap:10px">
+          <div style="display:flex; gap:8px; align-items:center">
+            <div style="display:flex; align-items:center; gap:5px; background:#F5F2EE; border-radius:8px; padding:6px 9px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#3D4656">@ 引用标的</div>
+            <div style="display:flex; align-items:center; gap:5px; background:#F5F2EE; border-radius:8px; padding:6px 9px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#3D4656">/ 技能</div>
+            <div style="display:flex; align-items:center; gap:5px; background:#F5F2EE; border-radius:8px; padding:6px 9px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#3D4656">截图问股</div>
+          </div>
+          <div style="display:flex; align-items:flex-end; gap:10px">
+            <div style="flex:1; background:#F5F2EE; border:1px solid #E7E3DC; border-radius:18px; padding:9px 12px; display:flex; flex-wrap:wrap; gap:6px; align-items:center">
+              <span style="background:#FFFFFF; border:1px solid #D6C7A6; border-radius:7px; padding:4px 8px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#8A5E22">@影石创新</span>
+              <span style="font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">重点看毛利率结构</span>
+              <span style="width:1.5px; height:17px; background:#0F1B2D; display:inline-block"></span>
+            </div>
+            <div style="width:38px; height:38px; border-radius:50%; background:#0F1B2D; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:15px">↑</div>
+          </div>
+        </div>
+        <div style="background:#F1EEE9; border-top:1px solid #E1DCD3; padding:7px 5px 12px; display:flex; flex-direction:column; gap:7px">
+          <div style="display:flex; gap:14px; padding:4px 10px 7px; border-bottom:1px solid #E1DCD3; font-family:'Noto Sans SC',sans-serif; font-size:15px; color:#23272E"><span style="color:#8A5E22">毛利率</span><span>毛利</span><span>毛利率结构</span><span style="color:#6E6A63">›</span></div>
+          <div style="display:flex; gap:5px; justify-content:center">
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">q</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">w</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">e</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">r</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">t</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">y</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">u</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">i</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">o</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">p</div>
+          </div>
+          <div style="display:flex; gap:5px; justify-content:center; padding:0 18px">
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">a</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">s</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">d</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">f</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">g</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">h</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">j</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">k</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">l</div>
+          </div>
+          <div style="display:flex; gap:5px; justify-content:center; align-items:stretch">
+            <div style="width:42px; background:#DCD7CE; border-radius:6px; padding:11px 0; text-align:center; font-size:14px; color:#23272E">⇧</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">z</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">x</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">c</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">v</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">b</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">n</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:16px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">m</div>
+            <div style="width:42px; background:#DCD7CE; border-radius:6px; padding:11px 0; text-align:center; font-size:14px; color:#23272E">⌫</div>
+          </div>
+          <div style="display:flex; gap:5px; align-items:stretch">
+            <div style="width:48px; background:#DCD7CE; border-radius:6px; padding:11px 0; text-align:center; font-family:'IBM Plex Sans',sans-serif; font-size:13px; color:#23272E">123</div>
+            <div style="width:40px; background:#DCD7CE; border-radius:6px; padding:11px 0; text-align:center; font-size:14px; color:#23272E">☺</div>
+            <div style="flex:1; background:#FFFFFF; border-radius:6px; padding:11px 0; text-align:center; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E; box-shadow:0 1px 0 rgba(40,32,20,0.14)">空格</div>
+            <div style="width:66px; background:#0F1B2D; border-radius:6px; padding:11px 0; text-align:center; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#FFFFFF">发送</div>
+          </div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">需求含糊时先反问再开工，比直接给一份口径错的报告更省时间；@ 引用标的与 / 技能让能力被发现，不必只依赖首页卡片。</div></sc-if>
+    </div>
+
+    <!-- 10 引用浮层 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">10</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">点开角标 · 原文定位</span>
+      </div>
+      <div style="position:relative; width:390px; height:844px; background:#FFFFFF; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:14px; padding:16px 20px 0; overflow:hidden">
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:20px; font-weight:700; color:#0F1B2D; line-height:1.4">影石创新：影像硬件出海的确定性与边界</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.85; color:#23272E">公司已从单品类影像设备商转为多品类出海平台，2025 年海外收入占比 <span style="background:#F5EEE1; border-bottom:1.5px solid #C9973F; padding:1px 2px">73.8%</span><span style="display:inline-flex; align-items:center; justify-content:center; min-width:17px; height:17px; margin:0 3px; border-radius:5px; background:#0F1B2D; color:#FFFFFF; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">7</span>。增长的确定性来自渠道复用与研发摊薄，边界在于单一影像芯片供应与关税敞口。</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.85; color:#6E6A63">分产品看，全景相机贡献主要增量，运动相机进入换机周期…</div>
+        </div>
+        <div style="position:absolute; inset:0; background:rgba(26,22,16,0.32)"></div>
+        <div style="position:absolute; left:0; right:0; bottom:0; background:#FFFFFF; border-radius:22px 22px 44px 44px; box-shadow:0 -10px 30px rgba(40,32,20,0.16); padding:12px 20px 30px; display:flex; flex-direction:column; gap:14px">
+          <div style="align-self:center; width:38px; height:4px; border-radius:2px; background:#DBD6CD"></div>
+          <div style="display:flex; justify-content:space-between; align-items:flex-start">
+            <div style="display:flex; flex-direction:column; gap:4px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">引用 7 · 2025 年年度报告</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#6E6A63">第 48 页 · 披露日 2026-03-28</div>
+            </div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#6E6A63">关闭</div>
+          </div>
+          <div style="background:#FAF8F5; border:1px solid #EDE9E3; border-radius:14px; padding:14px; display:flex; flex-direction:column; gap:9px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">原文片段</div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; line-height:1.85; color:#23272E">…报告期内，公司境外销售收入为 504,912.36 万元，<span style="background:#F5EEE1; border-bottom:1.5px solid #C9973F">占营业收入比重 73.80%</span>，较上年同期增加 4.12 个百分点，主要系全景相机产品在欧美零售渠道铺设完成…</div>
+          </div>
+          <div style="display:flex; gap:8px">
+            <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#4C4840">看全文</div>
+            <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#4C4840">存到引用夹</div>
+            <div style="flex:1.1; text-align:center; background:#0F1B2D; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#FFFFFF">就这段提问</div>
+          </div>
+          <div style="display:flex; justify-content:space-between; align-items:center; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">
+            <span>本段还有 2 处相关引用</span><span style="color:#8A5E22">查看全部 41 处</span>
+          </div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">溯源要落到原文句子级：角标直接弹出片段并高亮对应数字，核对成本从"去翻年报"降到一次点击。</div></sc-if>
+    </div>
+
+    <!-- 11 任务中心 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">11</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">任务中心 · 异步与失败重跑</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:13px; padding:12px 20px 0; overflow:hidden">
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:23px; font-weight:700; color:#0F1B2D">任务</div>
+          <div style="display:flex; gap:8px">
+            <div style="background:#0F1B2D; color:#FFFFFF; border-radius:999px; padding:7px 13px; font-family:'Noto Sans SC',sans-serif; font-size:12px">全部 6</div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; color:#4C4840; border-radius:999px; padding:7px 13px; font-family:'Noto Sans SC',sans-serif; font-size:12px">进行中 2</div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; color:#4C4840; border-radius:999px; padding:7px 13px; font-family:'Noto Sans SC',sans-serif; font-size:12px">需处理 1</div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; color:#4C4840; border-radius:999px; padding:7px 13px; font-family:'Noto Sans SC',sans-serif; font-size:12px">订阅 2</div>
+          </div>
+
+          <div style="flex-shrink:0; background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">消费级无人机行业深度</div>
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22">62%</div>
+            </div>
+            <div style="height:4px; border-radius:2px; background:#EDE9E3; overflow:hidden"><div style="width:62%; height:4px; background:#C9973F"></div></div>
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">第 3 步，共 5 步 · 约 1 分 20 秒</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#6E6A63">停止</div>
+            </div>
+          </div>
+
+          <div style="flex-shrink:0; background:#FFFCF5; border:1px solid #D6C7A6; border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">光学模组三家对比</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#8A5E22">需你确认</div>
+            </div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.7; color:#4A3A1E">其中一家未披露分产品毛利率，缺口会影响对比表第 3 行。</div>
+            <div style="display:flex; gap:8px">
+              <div style="flex:1; text-align:center; background:#FFFFFF; border:1px solid #D6C7A6; border-radius:10px; padding:9px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#8A5E22">用行业均值替代</div>
+              <div style="flex:1; text-align:center; background:#FFFFFF; border:1px solid #D6C7A6; border-radius:10px; padding:9px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#8A5E22">留空并标注</div>
+            </div>
+          </div>
+
+          <div style="flex-shrink:0; background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; flex-direction:column; gap:5px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">港股同业估值对比</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">数据源超时中断 · 14:02</div>
+            </div>
+            <div style="border:1px solid #DBD6CD; border-radius:10px; padding:8px 13px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#4C4840">重跑</div>
+          </div>
+
+          <div style="flex-shrink:0; background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; flex-direction:column; gap:5px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">高研发低估值筛选</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">每周一 08:30 自动重跑 · 完成后推送</div>
+            </div>
+            <div style="width:40px; height:23px; border-radius:999px; background:#0F1B2D; display:flex; align-items:center; justify-content:flex-end; padding:2px; box-sizing:border-box"><div style="width:19px; height:19px; border-radius:50%; background:#FFFFFF"></div></div>
+          </div>
+
+          <div style="flex-shrink:0; background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; flex-direction:column; gap:5px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">盘前简报 · 自选池</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">交易日 08:00 推送 · 含异动归因</div>
+            </div>
+            <div style="width:40px; height:23px; border-radius:999px; background:#0F1B2D; display:flex; align-items:center; justify-content:flex-end; padding:2px; box-sizing:border-box"><div style="width:19px; height:19px; border-radius:50%; background:#FFFFFF"></div></div>
+          </div>
+
+          <div style="flex-shrink:0; background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; display:flex; justify-content:space-between; align-items:center">
+            <div style="display:flex; flex-direction:column; gap:5px">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">影石创新分析报告</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">已完成 14:08 · 12 页 · 41 处引用</div>
+            </div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#8A5E22">查看成果</div>
+          </div>
+
+        </div>
+        <div style="display:flex; justify-content:space-around; align-items:flex-start; padding:10px 8px 22px; background:#FFFFFF; border-top:1px solid #E9E5DE">
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>首页</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#0F1B2D; font-weight:500"><div style="width:22px; height:22px; border-radius:7px; background:#0F1B2D"></div>任务</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>成果库</div>
+          <div style="display:flex; flex-direction:column; align-items:center; gap:4px; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#6E6A63"><div style="width:22px; height:22px; border-radius:7px; border:1.5px solid #C8C3B9"></div>我的</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">长任务必须能离开页面：进行中可停止、缺数据时把决定权交回用户、中断可重跑、筛选模板可订阅成定时任务。</div></sc-if>
+    </div>
+
+    <!-- 12 局部重写 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">12</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">选中段落 · 局部重写</span>
+      </div>
+      <div style="position:relative; width:390px; height:844px; background:#FFFFFF; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 12px; border-bottom:1px solid #E9E5DE">
+          <div style="font-size:17px; color:#0F1B2D">‹</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">影石创新 · 分析报告</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#6E6A63">数据截至 09-19</div>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:14px; padding:16px 20px 0; overflow:hidden">
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:16px; font-weight:700; color:#0F1B2D">三、行业位置与同业对比</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.85; color:#23272E">公司在全景影像细分市场占据领先份额，与运动相机头部厂商形成错位竞争。</div>
+          <div style="position:relative; display:flex; flex-direction:column; gap:12px">
+            <div style="background:#F5EEE1; border-left:2px solid #C9973F; padding:10px 12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.85; color:#23272E">渠道端，公司海外以线上直营与专业零售并行，2025 年线下门店数量同比增加约四成，单店产出稳定，渠道扩张尚未出现摊薄效应。</div>
+            <div style="align-self:center; display:flex; align-items:center; gap:4px; background:#0F1B2D; border-radius:12px; padding:9px 10px; box-shadow:0 8px 20px rgba(40,32,20,0.22)">
+              <span style="color:#FFFFFF; font-family:'Noto Sans SC',sans-serif; font-size:13px; padding:0 7px">改写</span>
+              <span style="width:1px; height:15px; background:rgba(255,255,255,0.25)"></span>
+              <span style="color:#FFFFFF; font-family:'Noto Sans SC',sans-serif; font-size:13px; padding:0 7px">缩短</span>
+              <span style="width:1px; height:15px; background:rgba(255,255,255,0.25)"></span>
+              <span style="color:#FFFFFF; font-family:'Noto Sans SC',sans-serif; font-size:13px; padding:0 7px">补数据</span>
+              <span style="width:1px; height:15px; background:rgba(255,255,255,0.25)"></span>
+              <span style="color:#C9973F; font-family:'Noto Sans SC',sans-serif; font-size:13px; padding:0 7px">换口径</span>
+            </div>
+          </div>
+          <div style="background:#FAF8F5; border:1px solid #EDE9E3; border-radius:16px; padding:14px; display:flex; flex-direction:column; gap:10px">
+            <div style="display:flex; justify-content:space-between; align-items:center">
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">正在重写这一段</div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#8A5E22">停止</div>
+            </div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.85; color:#23272E">渠道端，海外以线上直营与专业零售并行。2025 年线下门店 412 家，同比 +38.9%，单店年产出 96 万元<span style="display:inline-block; width:8px; height:15px; background:#0F1B2D; vertical-align:text-bottom; margin-left:2px"></span></div>
+          </div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.7; color:#7A766F">改动只影响这一段，其余内容与引用保持不变。</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.85; color:#23272E">供应端仍是主要变量。影像芯片单一来源供应占比约七成，若交付节奏变化，旺季备货与新机型上市窗口都会受影响<span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; margin:0 2px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">23</span>。</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.85; color:#23272E">与同业相比，公司在算法与影像后处理上的投入更高，但在多品类拓展上晚于头部厂商约两年。</div>
+        </div>
+        <div style="padding:12px 18px 26px; border-top:1px solid #E9E5DE; display:flex; gap:8px">
+          <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#4C4840">保留原文</div>
+          <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#4C4840">再来一版</div>
+          <div style="flex:1.2; text-align:center; background:#0F1B2D; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#FFFFFF">采用</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">成果要能被人改：段落级选中后重写、缩短、补数据，生成中可停止、可再来一版，采用前原文始终保留。</div></sc-if>
+    </div>
+
+    <!-- 13 语音提问 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">13</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">语音提问 · 边说边转写</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 12px; border-bottom:1px solid #E9E5DE; background:#FFFFFF">
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#6E6A63">取消</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">语音提问</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#8A5E22">改用键盘</div>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:16px; padding:22px 22px 0; overflow:hidden">
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">正在听 · 00:06</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:22px; font-weight:500; line-height:1.6; color:#0F1B2D; text-wrap:pretty">影石创新和道通科技这两年的研发投入比一下，顺便看看<span style="color:#A8A49C">海外收入…</span></div>
+          <div style="display:flex; flex-direction:column; gap:9px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">已识别到</div>
+            <div style="display:flex; flex-wrap:wrap; gap:8px">
+              <span style="background:#FFFFFF; border:1px solid #D6C7A6; border-radius:8px; padding:7px 11px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#8A5E22">影石创新 688775</span>
+              <span style="background:#FFFFFF; border:1px solid #D6C7A6; border-radius:8px; padding:7px 11px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#8A5E22">道通科技 688208</span>
+              <span style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:8px; padding:7px 11px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#4C4840">研发投入</span>
+            </div>
+          </div>
+          <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:14px; font-family:'Noto Sans SC',sans-serif; font-size:13px; line-height:1.75; color:#4C4840">口音与专有名词会被自动纠正，比如"影石"不会被听成"影视"。转写文本可在发送前直接改。</div>
+        </div>
+        <div style="padding:16px 22px 30px; background:#FFFFFF; border-top:1px solid #E9E5DE; display:flex; flex-direction:column; gap:16px; align-items:center">
+          <div style="display:flex; align-items:flex-end; gap:3px; height:44px">
+            <div style="width:3px; height:12px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:24px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:38px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:20px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:30px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:44px; background:#0F1B2D; border-radius:2px"></div><div style="width:3px; height:26px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:15px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:33px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:19px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:28px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:11px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:22px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:36px; background:#C9973F; border-radius:2px"></div><div style="width:3px; height:14px; background:#C9973F; border-radius:2px"></div>
+          </div>
+          <div style="width:74px; height:74px; border-radius:50%; background:#0F1B2D; border:6px solid #E7E3DC; display:flex; align-items:center; justify-content:center">
+            <div style="width:22px; height:22px; border-radius:6px; background:#FFFFFF"></div>
+          </div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#6E6A63">松手结束 · 上滑取消</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">移动端用嘴比用手快。转写要实时可见、实体要当场识别并可改，否则用户不敢用语音下长任务。</div></sc-if>
+    </div>
+
+    <!-- 14 截图问股 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">14</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">截图问股 · 识图解读</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 12px; border-bottom:1px solid #E9E5DE; background:#FFFFFF">
+          <div style="font-size:17px; color:#0F1B2D">‹</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">截图解读</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#6E6A63">重新选图</div>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:13px; padding:14px 18px 0; overflow:hidden">
+          <div style="align-self:flex-end; max-width:70%; background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:8px; display:flex; flex-direction:column; gap:8px">
+            <div style="background:#F5F2EE; border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:7px">
+              <div style="display:flex; align-items:flex-end; gap:3px; height:56px">
+                <div style="width:4px; height:18px; background:#C0392B"></div><div style="width:4px; height:26px; background:#C0392B"></div><div style="width:4px; height:14px; background:#1B6B4C"></div><div style="width:4px; height:31px; background:#C0392B"></div><div style="width:4px; height:39px; background:#C0392B"></div><div style="width:4px; height:22px; background:#1B6B4C"></div><div style="width:4px; height:44px; background:#C0392B"></div><div style="width:4px; height:52px; background:#C0392B"></div><div style="width:4px; height:35px; background:#1B6B4C"></div><div style="width:4px; height:47px; background:#C0392B"></div><div style="width:4px; height:56px; background:#C0392B"></div>
+              </div>
+              <div style="font-family:'Noto Sans SC',sans-serif; font-size:10px; color:#7A766F">行情截图 · 来自相册</div>
+            </div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#23272E; padding:0 3px 3px">这波是什么在涨？</div>
+          </div>
+
+          <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:15px; display:flex; flex-direction:column; gap:12px">
+            <div style="display:flex; flex-wrap:wrap; gap:7px">
+              <span style="background:#F5EEE1; color:#8A5E22; border-radius:6px; padding:4px 8px; font-family:'Noto Sans SC',sans-serif; font-size:11px">影石创新 688775</span>
+              <span style="background:#F5F2EE; color:#4C4840; border-radius:6px; padding:4px 8px; font-family:'Noto Sans SC',sans-serif; font-size:11px">日线</span>
+              <span style="background:#F5F2EE; color:#4C4840; border-radius:6px; padding:4px 8px; font-family:'Noto Sans SC',sans-serif; font-size:11px">08-18 至 09-22</span>
+            </div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.8; color:#23272E">图里这段区间涨幅 18.6%，放量集中在最近六个交易日。归因如下：</div>
+            <div style="display:flex; flex-direction:column; gap:10px">
+              <div style="display:flex; gap:9px"><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; padding-top:2px">01</span><span style="flex:1; font-family:'Noto Sans SC',sans-serif; font-size:13px; line-height:1.75; color:#23272E">9 月 12 日新机型发布会定档，当日成交额放大至前 20 日均值 2.4 倍<span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; margin:0 2px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">1</span></span></div>
+              <div style="display:flex; gap:9px"><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; padding-top:2px">02</span><span style="flex:1; font-family:'Noto Sans SC',sans-serif; font-size:13px; line-height:1.75; color:#23272E">三家卖方在两周内上调目标价，一致预期 2026 净利上修 7.3%<span style="display:inline-flex; align-items:center; justify-content:center; min-width:15px; height:15px; margin:0 2px; border-radius:4px; background:#F5EEE1; color:#8A5E22; font-family:'IBM Plex Mono',monospace; font-size:10px; vertical-align:top">2</span></span></div>
+              <div style="display:flex; gap:9px"><span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; padding-top:2px">03</span><span style="flex:1; font-family:'Noto Sans SC',sans-serif; font-size:13px; line-height:1.75; color:#23272E">同期消费电子出海指数上涨 6.2%，板块贡献约三分之一涨幅</span></div>
+            </div>
+            <div style="padding-top:10px; border-top:1px solid #EDE9E3; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#7A766F">识图结果仅依据截图中可见信息，不构成投资建议</div>
+          </div>
+
+          <div style="display:flex; flex-wrap:wrap; gap:8px">
+            <div style="background:#FFFFFF; border:1px solid #DBD6CD; border-radius:999px; padding:9px 14px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#3D4656">估值到什么位置了</div>
+            <div style="background:#FFFFFF; border:1px solid #DBD6CD; border-radius:999px; padding:9px 14px; font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#3D4656">同期同业怎么走</div>
+          </div>
+        </div>
+        <div style="padding:12px 18px 26px; background:#FFFFFF; border-top:1px solid #E9E5DE; display:flex; align-items:center; gap:10px">
+          <div style="flex:1; background:#F5F2EE; border-radius:999px; padding:11px 14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#A8A49C">继续追问…</div>
+          <div style="width:36px; height:36px; border-radius:50%; background:#0F1B2D; color:#FFFFFF; display:flex; align-items:center; justify-content:center; font-size:15px">↑</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">先回读识别到的标的、周期与区间，用户确认理解对了再看结论；归因分条并标明板块贡献，避免把行情归给单一事件。</div></sc-if>
+    </div>
+
+    <!-- 15 图表交互 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">15</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">图表取数 · 单图导出</span>
+      </div>
+      <div style="width:390px; height:844px; background:#FFFFFF; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:8px 18px 12px; border-bottom:1px solid #E9E5DE">
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#6E6A63">关闭</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; font-weight:500; color:#0F1B2D">图 1 · 分地区收入结构</div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; color:#8A5E22">横屏</div>
+        </div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:16px; padding:18px 20px 0; overflow:hidden">
+          <div style="display:flex; gap:7px">
+            <div style="background:#0F1B2D; color:#FFFFFF; border-radius:8px; padding:7px 12px; font-family:'Noto Sans SC',sans-serif; font-size:12px">近三年</div>
+            <div style="background:#F5F2EE; color:#4C4840; border-radius:8px; padding:7px 12px; font-family:'Noto Sans SC',sans-serif; font-size:12px">近五年</div>
+            <div style="background:#F5F2EE; color:#4C4840; border-radius:8px; padding:7px 12px; font-family:'Noto Sans SC',sans-serif; font-size:12px">单季</div>
+            <div style="background:#F5F2EE; color:#4C4840; border-radius:8px; padding:7px 12px; font-family:'Noto Sans SC',sans-serif; font-size:12px">占比</div>
+          </div>
+          <div style="position:relative; background:#FAF8F5; border:1px solid #EDE9E3; border-radius:16px; padding:16px 14px 12px; display:flex; flex-direction:column; gap:12px">
+            <div style="position:absolute; left:50%; top:16px; bottom:44px; width:1px; background:#C9973F"></div>
+            <div style="position:absolute; left:calc(50% + 10px); top:14px; background:#0F1B2D; border-radius:10px; padding:10px 12px; display:flex; flex-direction:column; gap:5px; box-shadow:0 8px 20px rgba(40,32,20,0.22)">
+              <div style="font-family:'IBM Plex Mono',monospace; font-size:11px; color:#C9973F">2024</div>
+              <div style="display:flex; justify-content:space-between; gap:14px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#FFFFFF"><span>海外</span><span style="font-family:'IBM Plex Mono',monospace">34.8 亿</span></div>
+              <div style="display:flex; justify-content:space-between; gap:14px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#FFFFFF"><span>境内</span><span style="font-family:'IBM Plex Mono',monospace">14.1 亿</span></div>
+              <div style="display:flex; justify-content:space-between; gap:14px; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:rgba(255,255,255,0.72)"><span>同比</span><span style="font-family:'IBM Plex Mono',monospace">+27.4%</span></div>
+            </div>
+            <div style="display:flex; align-items:flex-end; gap:22px; height:230px; padding:0 8px">
+              <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:3px"><div style="height:86px; background:#C9973F; border-radius:4px 4px 0 0"></div><div style="height:54px; background:#0F1B2D"></div><div style="height:22px; background:#A8A49C; border-radius:0 0 4px 4px"></div></div>
+              <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:3px"><div style="height:112px; background:#C9973F; border-radius:4px 4px 0 0"></div><div style="height:60px; background:#0F1B2D"></div><div style="height:26px; background:#A8A49C; border-radius:0 0 4px 4px"></div></div>
+              <div style="flex:1; display:flex; flex-direction:column; justify-content:flex-end; gap:3px"><div style="height:148px; background:#C9973F; border-radius:4px 4px 0 0"></div><div style="height:66px; background:#0F1B2D"></div><div style="height:21px; background:#A8A49C; border-radius:0 0 4px 4px"></div></div>
+            </div>
+            <div style="display:flex; justify-content:space-between; padding:0 22px; font-family:'IBM Plex Mono',monospace; font-size:11px; color:#7A766F"><span>2023</span><span>2024</span><span>2025</span></div>
+            <div style="display:flex; gap:14px; padding-top:4px; border-top:1px solid #EDE9E3; font-family:'Noto Sans SC',sans-serif; font-size:11px; color:#5E5A53"><span style="display:flex; align-items:center; gap:5px"><span style="width:8px; height:8px; background:#C9973F; border-radius:2px"></span>海外</span><span style="display:flex; align-items:center; gap:5px"><span style="width:8px; height:8px; background:#0F1B2D; border-radius:2px"></span>境内</span><span style="display:flex; align-items:center; gap:5px"><span style="width:8px; height:8px; background:#A8A49C; border-radius:2px"></span>其他</span></div>
+          </div>
+          <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.7; color:#7A766F">长按取数，左右拖动比较年份 · 数据截至 2026-09-19，口径与报告正文一致</div>
+        </div>
+        <div style="padding:12px 18px 26px; border-top:1px solid #E9E5DE; display:flex; gap:8px">
+          <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#4C4840">导出本图</div>
+          <div style="flex:1; text-align:center; border:1px solid #DBD6CD; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#4C4840">看数据表</div>
+          <div style="flex:1.2; text-align:center; background:#0F1B2D; border-radius:12px; padding:12px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#FFFFFF">就这张图提问</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">图表是结论的一部分，必须能取数、换口径、单独导出，并标明数据截止时间。</div></sc-if>
+    </div>
+
+    <!-- 16 首次使用 -->
+    <div style="display:flex; flex-direction:column; gap:14px; width:390px">
+      <div style="display:flex; align-items:baseline; gap:10px">
+        <span style="font-family:'IBM Plex Mono',monospace; font-size:12px; color:#8A5E22; font-weight:500">16</span>
+        <span style="font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:700; color:#0F1B2D">首次使用 · 能力与边界</span>
+      </div>
+      <div style="width:390px; height:844px; background:#F8F7F4; border-radius:44px; border:1px solid #DBD6CD; box-shadow:0 20px 44px rgba(40,32,20,0.10); overflow:hidden; display:flex; flex-direction:column">
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px 26px 6px; font-size:13px; font-weight:600; color:#0F1B2D"><span>9:41</span><span style="display:flex; gap:5px; align-items:center"><span style="width:16px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span><span style="width:22px; height:9px; border:1px solid #0F1B2D; border-radius:2px; display:inline-block"></span></span></div>
+        <div style="flex:1; display:flex; flex-direction:column; gap:18px; padding:26px 22px 0; overflow:hidden">
+          <div style="width:44px; height:44px; border-radius:13px; background:#0F1B2D; color:#C9973F; display:flex; align-items:center; justify-content:center; font-family:'Noto Sans SC',sans-serif; font-size:20px; font-weight:700">玑</div>
+          <div style="display:flex; flex-direction:column; gap:9px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:25px; font-weight:700; color:#0F1B2D; line-height:1.35">把整理交给它，<br>把判断留给自己</div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:14px; line-height:1.75; color:#5E5A53; text-wrap:pretty">说一句话，它会拆解需求、取数、核对口径，最后给你一份能直接用的稿子。</div>
+          </div>
+          <div style="display:flex; flex-direction:column; gap:10px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">试试这三句</div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:14px; padding:13px 14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">写一份影石创新的公司分析</div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:14px; padding:13px 14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">消费级无人机这条赛道现在什么格局</div>
+            <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:14px; padding:13px 14px; font-family:'Noto Sans SC',sans-serif; font-size:14px; color:#23272E">筛研发占比高、海外收入过半的公司</div>
+          </div>
+          <div style="background:#FFFFFF; border:1px solid #E7E3DC; border-radius:16px; padding:15px; display:flex; flex-direction:column; gap:10px">
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; font-weight:700; color:#0F1B2D">先说清边界</div>
+            <div style="font-family:'Noto Sans SC',sans-serif; font-size:13px; line-height:1.8; color:#4C4840">数据来自持牌金融数据库与公开披露，每条结论都可追到原文页码。行情为 15 分钟延时；不提供买卖建议，也不预测点位。</div>
+          </div>
+        </div>
+        <div style="padding:14px 22px 30px; background:#FFFFFF; border-top:1px solid #E9E5DE; display:flex; flex-direction:column; gap:12px">
+          <div style="background:#0F1B2D; border-radius:14px; padding:15px; text-align:center; font-family:'Noto Sans SC',sans-serif; font-size:15px; font-weight:500; color:#FFFFFF">开始第一个任务</div>
+          <div style="text-align:center; font-family:'Noto Sans SC',sans-serif; font-size:12px; color:#7A766F">继续即表示同意服务条款与隐私政策</div>
+        </div>
+      </div>
+      <sc-if value="{{ showAnnotations }}" hint-placeholder-val="{{ true }}"><div style="font-family:'Noto Sans SC',sans-serif; font-size:12px; line-height:1.6; color:#6B7480; max-width:390px">冷启动只需三件事：能干什么、给三句可直接点的示例、把数据来源与不做什么讲在前面。</div></sc-if>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showAnnotations&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;原型看板&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    return { showAnnotations: this.props.showAnnotations ?? true };
+  }
+}
+</script>
+</body>
+</html>
