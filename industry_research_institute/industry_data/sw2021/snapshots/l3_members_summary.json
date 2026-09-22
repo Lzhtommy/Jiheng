@@ -1,0 +1,94 @@
+{
+  "source": "akshare.index_component_sw (swsresearch.com). Box curl→legulegu HTTP 504; WebFetch OK but slow; swsresearch set-equal to legulegu gold for 850531.SI.",
+  "fetched_at": "2026-09-16 17:44 CST",
+  "l3_target": 335,
+  "l3_with_stock_rows": 335,
+  "l3_empty": 0,
+  "stock_member_rows": 5205,
+  "enriched_rows": 5205,
+  "unique_ts_codes": 5205,
+  "download_failures": 0,
+  "gold_850531_overlap": {
+    "gold_n": 10,
+    "got_n": 10,
+    "intersection": 10,
+    "only_gold": [],
+    "only_got": []
+  },
+  "validation": {
+    "unknown_l3_index_codes": [],
+    "unknown_l3_count": 0,
+    "rows_with_l2_not_in_l2_yaml": 0,
+    "bad_l2_samples": [],
+    "local_l3_registry_count": 346,
+    "local_l2_registry_count": 134,
+    "official_l3_missing_from_site_list": [
+      "850412.SI",
+      "851244.SI",
+      "851332.SI",
+      "851544.SI",
+      "851928.SI",
+      "852171.SI",
+      "857672.SI",
+      "857681.SI",
+      "857693.SI",
+      "857861.SI",
+      "859931.SI"
+    ],
+    "official_missing_count": 11,
+    "site_codes_not_in_local_l3": [],
+    "count_mismatch_vs_akshare_info": 7,
+    "count_mismatch_samples": [
+      {
+        "code": "850562.SI",
+        "name": "镍",
+        "site_count": 2,
+        "got": 1
+      },
+      {
+        "code": "850814.SI",
+        "name": "数字芯片设计",
+        "site_count": 55,
+        "got": 54
+      },
+      {
+        "code": "850861.SI",
+        "name": "电子化学品Ⅲ",
+        "site_count": 36,
+        "got": 35
+      },
+      {
+        "code": "858811.SI",
+        "name": "其他运输设备",
+        "site_count": 9,
+        "got": 8
+      },
+      {
+        "code": "851524.SI",
+        "name": "其他生物制品",
+        "site_count": 33,
+        "got": 32
+      },
+      {
+        "code": "850731.SI",
+        "name": "仪器仪表",
+        "site_count": 55,
+        "got": 54
+      },
+      {
+        "code": "850725.SI",
+        "name": "能源及重型设备",
+        "site_count": 58,
+        "got": 57
+      }
+    ]
+  },
+  "paths": {
+    "by_l3_dir": "/workspace/sw2021_l3_members/by_l3",
+    "members_csv": "/workspace/sw2021_l3_members/sw2021_l3_stock_members.csv",
+    "enriched_csv": "/workspace/sw2021_l3_members/sw2021_l3_stock_members_enriched.csv",
+    "summary_json": "/workspace/sw2021_l3_members/summary.json",
+    "l3_yaml": "/workspace/value_router/industry_data/sw2021/registries/l3.yaml",
+    "l2_yaml": "/workspace/value_router/industry_data/sw2021/registries/l2.yaml"
+  }
+}

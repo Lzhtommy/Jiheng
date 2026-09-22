@@ -1,0 +1,129 @@
+version: v1
+source: valuation_inputs
+l1_code: "270000"
+l1_name: 电子
+note: Frozen v1 coverage — 17 unique stocks from valuation_inputs. Classification is Shenwan 2021.
+stocks:
+  - stock_code: "002371"
+    stock_name: 北方华创
+    class_name: "3562 半导体器件专用设备制造"
+    l2_code: "270100"
+    l2_name: 半导体
+    l3_code: "270108"
+    l3_name: 半导体设备
+  - stock_code: "300604"
+    stock_name: 长川科技
+    class_name: "3562 半导体器件专用设备制造"
+    l2_code: "270100"
+    l2_name: 半导体
+    l3_code: "270108"
+    l3_name: 半导体设备
+  - stock_code: "300373"
+    stock_name: 扬杰科技
+    class_name: "3972半导体分立器件"
+    l2_code: "270100"
+    l2_name: 半导体
+    l3_code: "270102"
+    l3_name: 分立器件
+  - stock_code: "300623"
+    stock_name: 捷捷微电
+    class_name: "3972半导体分立器件"
+    l2_code: "270100"
+    l2_name: 半导体
+    l3_code: "270102"
+    l3_name: 分立器件
+  - stock_code: "600584"
+    stock_name: 长电科技
+    class_name: "3973集成电路封装测试"
+    l2_code: "270100"
+    l2_name: 半导体
+    l3_code: "270107"
+    l3_name: 集成电路封测
+  - stock_code: "603005"
+    stock_name: 晶方科技
+    class_name: "3973集成电路封装测试"
+    l2_code: "270100"
+    l2_name: 半导体
+    l3_code: "270107"
+    l3_name: 集成电路封测
+  - stock_code: "300666"
+    stock_name: 江丰电子
+    class_name: "3979半导体材料器件与代工"
+    l2_code: "270100"
+    l2_name: 半导体
+    l3_code: "270103"
+    l3_name: 半导体材料
+  - stock_code: "002409"
+    stock_name: 雅克科技
+    class_name: "3985电子专用材料制造"
+    l2_code: "270100"
+    l2_name: 半导体
+    l3_code: "270103"
+    l3_name: 半导体材料
+    class_sw_note: 表内 class_name=3985电子专用材料制造，申万归入半导体材料，以申万为准。
+  - stock_code: "300408"
+    stock_name: 三环集团
+    class_name: "3981阻容感"
+    l2_code: "270200"
+    l2_name: 元件
+    l3_code: "270203"
+    l3_name: 被动元件
+  - stock_code: "600563"
+    stock_name: 法拉电子
+    class_name: "3981阻容感"
+    l2_code: "270200"
+    l2_name: 元件
+    l3_code: "270203"
+    l3_name: 被动元件
+  - stock_code: "001389"
+    stock_name: 广合科技
+    class_name: "3982电子电路"
+    l2_code: "270200"
+    l2_name: 元件
+    l3_code: "270202"
+    l3_name: 印制电路板
+  - stock_code: "002463"
+    stock_name: 沪电股份
+    class_name: "3982电子电路"
+    l2_code: "270200"
+    l2_name: 元件
+    l3_code: "270202"
+    l3_name: 印制电路板
+  - stock_code: "002916"
+    stock_name: 深南电路
+    class_name: "3982电子电路"
+    l2_code: "270200"
+    l2_name: 元件
+    l3_code: "270202"
+    l3_name: 印制电路板
+  - stock_code: "300476"
+    stock_name: 胜宏科技
+    class_name: "3982电子电路"
+    l2_code: "270200"
+    l2_name: 元件
+    l3_code: "270202"
+    l3_name: 印制电路板
+  - stock_code: "300054"
+    stock_name: 鼎龙股份
+    class_name: "3985电子专用材料制造"
+    l2_code: "270600"
+    l2_name: 电子化学品Ⅱ
+    l3_code: "270601"
+    l3_name: 电子化学品Ⅲ
+    class_sw_note: 表内 class_name=3985电子专用材料制造，申万归入电子化学品Ⅲ，以申万为准。
+  - stock_code: "300236"
+    stock_name: 上海新阳
+    class_name: "3985电子专用材料制造"
+    l2_code: "270600"
+    l2_name: 电子化学品Ⅱ
+    l3_code: "270601"
+    l3_name: 电子化学品Ⅲ
+    class_sw_note: 表内 class_name=3985电子专用材料制造，申万归入电子化学品Ⅲ，以申万为准。
+  - stock_code: "300346"
+    stock_name: 南大光电
+    class_name: "3985电子专用材料制造"
+    l2_code: "270600"
+    l2_name: 电子化学品Ⅱ
+    l3_code: "270601"
+    l3_name: 电子化学品Ⅲ
+    class_sw_note: 表内 class_name=3985电子专用材料制造，申万归入电子化学品Ⅲ，以申万为准。

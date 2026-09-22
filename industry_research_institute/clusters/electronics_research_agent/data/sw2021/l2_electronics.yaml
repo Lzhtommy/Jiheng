@@ -1,0 +1,61 @@
+version: SW2021
+level: L2
+count: 6
+scope: electronics_only
+industries:
+- code: '270100'
+  index_code: '801081'
+  l1_code: '270000'
+  l1_name: 电子
+  name: 半导体
+  spec_id: sw2_270100
+  is_pub: '1'
+  members: '49'
+  aliases: []
+- code: '270200'
+  index_code: '801083'
+  l1_code: '270000'
+  l1_name: 电子
+  name: 元件
+  spec_id: sw2_270200
+  is_pub: '1'
+  members: '43'
+  aliases: []
+- code: '270300'
+  index_code: '801084'
+  l1_code: '270000'
+  l1_name: 电子
+  name: 光学光电子
+  spec_id: sw2_270300
+  is_pub: '1'
+  members: '76'
+  aliases: []
+- code: '270400'
+  index_code: '801082'
+  l1_code: '270000'
+  l1_name: 电子
+  name: 其他电子Ⅱ
+  spec_id: sw2_270400
+  is_pub: '1'
+  members: '26'
+  aliases:
+  - 其他电子
+- code: '270500'
+  index_code: '801085'
+  l1_code: '270000'
+  l1_name: 电子
+  name: 消费电子
+  spec_id: sw2_270500
+  is_pub: '1'
+  members: '74'
+  aliases: []
+- code: '270600'
+  index_code: '801086'
+  l1_code: '270000'
+  l1_name: 电子
+  name: 电子化学品Ⅱ
+  spec_id: sw2_270600
+  is_pub: '1'
+  members: '16'
+  aliases:
+  - 电子化学品

@@ -1,0 +1,7 @@
+# Connection defaults. Password is never stored here.
+# Override with VR_PG_* environment variables (see .env.example).
+host: ""
+port: 5432
+user: postgres
+database: 
+connect_timeout: 8
