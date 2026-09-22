@@ -221,6 +221,16 @@
     .scene-content { min-width:0; }
     .scene-intro { padding:12px 14px; border:1px solid #4b5f88; border-radius:15px; color:#d5def4; background:#ffffff08; font-size:13px; }
     .scene-intro strong { display:block; margin-bottom:4px; color:#f3d18f; font-size:11px; letter-spacing:.08em; }
+    .lesson-card { padding:16px; border:1px solid #71d3b777; border-radius:17px; background:linear-gradient(145deg,#71d3b714,#efbc7210); }
+    .lesson-card > strong { color:#a6edda; font-size:11px; letter-spacing:.12em; }
+    .lesson-card h3 { margin:7px 0 5px; color:#f1f4ff; font-size:19px; }
+    .lesson-card > p { margin:0; color:#d3dcf3; font-size:13px; line-height:1.7; }
+    .lesson-points { display:grid; gap:7px; margin-top:14px; }
+    .lesson-point { display:flex; gap:8px; align-items:flex-start; color:#cbd8f1; font-size:12px; }
+    .lesson-point i { width:18px; height:18px; display:grid; place-items:center; flex:none; color:#13253e; border-radius:50%; background:var(--teal); font-size:10px; font-style:normal; font-weight:900; }
+    .lesson-analogy { margin-top:14px; padding:10px 11px; border-left:3px solid var(--gold); border-radius:7px; color:#f0dfb8; background:#efbc7212; font-size:12px; line-height:1.6; }
+    .lesson-analogy b { display:block; margin-bottom:3px; color:#ffd990; font-size:11px; }
+    .scene-start { width:100%; margin-top:15px; border:0; border-radius:11px; padding:11px 13px; color:#14233d; background:linear-gradient(135deg,#a4d8ff,#71d3b7); font-weight:900; box-shadow:0 7px 18px #71d3b733; }
     .scene-objects { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:11px; }
     .scene-object { min-height:112px; border:1px solid #4c6088; border-radius:13px; padding:10px; text-align:left; color:#dce5fb; background:#ffffff07; transition:.18s ease; }
     .scene-object:hover { border-color:#9ab7ef; transform:translateY(-2px); background:#ffffff11; }
@@ -272,6 +282,7 @@
       scene: null,
       sceneEvidence: new Set(),
       sceneAnswer: null,
+      sceneStarted: false,
     };
     const esc = (value) => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
     const byId = (id) => state.scenario.nodes.find(node => node.id === id);
@@ -379,6 +390,20 @@
         sceneModal.innerHTML = '';
         return;
       }
+      if (!state.sceneStarted) {
+        const lesson = scene.lesson;
+        sceneModal.innerHTML = `<section class="scene-card" role="dialog" aria-modal="true" aria-label="${esc(scene.title)}新手讲解">
+          <header class="scene-head"><div><div class="eyebrow">${esc(scene.eyebrow)}</div><h2>先认识这里</h2><p>你第一次进入这个产业链节点，墨会先用白话讲清楚它是什么。</p></div><button class="scene-close" data-scene-close>暂时离开</button></header>
+          <div class="scene-stage">
+            <div class="scene-hero"><img src="/static/assets/guide-mo.png" alt="你，产业链探索者" /><div class="scene-hero-tag">你 · 先学习</div></div>
+            <div class="scene-content"><div class="lesson-card"><strong>新手讲解 · 先弄懂再调查</strong><h3>${esc(lesson.headline)}</h3><p>${esc(lesson.plain)}</p><div class="lesson-points">${lesson.points.map(point => `<div class="lesson-point"><i>✓</i><span>${esc(point)}</span></div>`).join('')}</div><div class="lesson-analogy"><b>生活类比</b>${esc(lesson.analogy)}</div><button class="scene-start" data-scene-start>我明白了，开始进入现场 →</button></div></div>
+          </div>
+        </section>`;
+        sceneModal.classList.add('show');
+        sceneModal.querySelector('[data-scene-close]').addEventListener('click', closeScene);
+        sceneModal.querySelector('[data-scene-start]').addEventListener('click', () => { state.sceneStarted = true; renderSceneModal(); });
+        return;
+      }
       const investigated = state.sceneEvidence.size === scene.objects.length;
       const selected = scene.answers.find(option => option.id === state.sceneAnswer);
       sceneModal.innerHTML = `<section class="scene-card" role="dialog" aria-modal="true" aria-label="${esc(scene.title)}场景">
@@ -462,6 +487,7 @@
       state.scene = id;
       state.sceneEvidence = new Set();
       state.sceneAnswer = null;
+      state.sceneStarted = false;
       render();
     }
 
@@ -469,6 +495,7 @@
       state.scene = null;
       state.sceneEvidence = new Set();
       state.sceneAnswer = null;
+      state.sceneStarted = false;
       render();
     }
 
@@ -501,6 +528,7 @@
       state.scene = null;
       state.sceneEvidence = new Set();
       state.sceneAnswer = null;
+      state.sceneStarted = false;
       persist();
       render();
     }

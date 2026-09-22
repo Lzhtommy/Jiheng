@@ -11,6 +11,7 @@ def test_catl_world_has_a_playable_mission():
     assert scenario["chapters"][-1]["node_ids"] == ["automaker", "storage"]
     assert all("scene" in node for node in scenario["nodes"])
     assert all(len(node["scene"]["objects"]) == 3 for node in scenario["nodes"])
+    assert all(len(node["scene"]["lesson"]["points"]) == 3 for node in scenario["nodes"])
     assert scenario["risk_challenge"]["options"]
 
 
