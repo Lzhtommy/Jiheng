@@ -61,6 +61,11 @@
     .eyebrow { color:#91a7d8; font-size:11px; letter-spacing:.14em; text-transform:uppercase; font-weight:800; }
     .crew h2, .task h2 { margin:4px 0 2px; font-size:17px; }
     .small { color:var(--muted); font-size:12px; }
+    .player-card { margin:12px 0 15px; padding:11px; display:flex; gap:10px; align-items:center; border:1px solid #71d3b766; border-radius:15px; background:linear-gradient(135deg, #71d3b718, #efbc7210); box-shadow:0 8px 22px #00000018; }
+    .player-avatar { width:44px; height:44px; flex:none; display:grid; place-items:center; border:1px solid #ffe1a0; border-radius:14px 14px 7px 14px; color:#18213c; font-weight:900; font-size:16px; background:linear-gradient(145deg, #ffe5a8, #71d3b7); box-shadow:inset -4px -4px #00000016, 0 0 0 4px #efbc7215; }
+    .player-card b { display:block; font-size:13px; }
+    .player-card span { display:block; color:#a9e5d4; font-size:11px; margin-top:2px; }
+    .player-card em { display:block; margin-top:3px; color:#99a8ca; font-size:10px; font-style:normal; }
     .agents { display:grid; gap:9px; margin-top:14px; }
     .agent-card { display:flex; gap:10px; padding:9px; border:1px solid transparent; border-radius:14px; background:#ffffff07; transition:.2s ease; }
     .agent-card.active { border-color:var(--agent-color); background:linear-gradient(100deg, color-mix(in srgb, var(--agent-color) 14%, transparent), #ffffff08); transform:translateX(2px); }
@@ -128,6 +133,7 @@
     .node .icon { width:22px; height:22px; display:grid; place-items:center; color:#11172c; border-radius:7px; background:var(--node-color); font-size:14px; font-weight:900; margin-bottom:5px; }
     .node b { display:block; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .node span { display:block; color:#d6def6b8; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .node .node-action { margin-top:5px; color:#a8f1da; font-size:9px; letter-spacing:.04em; }
     .node .lock { position:absolute; top:8px; right:8px; color:#e2e9fc; font-size:12px; }
     .pulse { position:absolute; z-index:1; width:8px; height:8px; border-radius:50%; background:#c8d8ff; box-shadow:0 0 0 0 #b7ccff; animation:pulse 2.2s infinite; }
     @keyframes pulse { 70% { box-shadow:0 0 0 15px #b7ccff00; } 100% { box-shadow:0 0 0 0 #b7ccff00; } }
@@ -190,7 +196,7 @@
     .completion-actions button { color:#11243d; border:0; background:var(--teal); }
     @media (max-width:1180px) { .layout { grid-template-columns:230px minmax(430px,1fr); } .task { grid-column:2; position:static; } .world-panel { min-height:auto; } }
     @media (max-width:820px) { .app { padding:15px 12px 30px; } .topbar { align-items:flex-start; } .top-actions { justify-content:flex-start; } .layout { grid-template-columns:1fr; } .crew, .task { position:static; } .world-panel { order:-1; } .world-footer { grid-template-columns:1fr; } .map { height:430px; } .node { width:100px; } }
-    @media (max-width:520px) { .topbar { display:block; } .top-actions { margin-top:12px; } .world-head { display:block; } .snapshot { text-align:left; padding-left:0; } .chapter-intro { padding-left:14px; padding-right:14px; } .chapter-number { font-size:32px; } .map { height:390px; margin:12px 8px; } .node { width:82px; min-height:70px; padding:7px; } .node b { font-size:10px; } .node span { font-size:9px; } .world-footer { padding:0 12px 13px; } .guide-scene img { right:-26px; width:172px; } .guide-copy { width:67%; padding-left:11px; } .guide-copy p { font-size:11px; } }
+    @media (max-width:520px) { .topbar { display:block; } .top-actions { margin-top:12px; } .world-head { display:block; } .snapshot { text-align:left; padding-left:0; } .chapter-intro { padding-left:14px; padding-right:14px; } .chapter-number { font-size:32px; } .map { height:390px; margin:12px 8px; } .node { width:82px; min-height:70px; padding:7px; } .node b { font-size:10px; } .node span { font-size:9px; } .world-footer { padding:0 12px 13px; } .guide-scene img { right:-26px; width:172px; } .guide-copy { width:67%; padding-left:11px; } .guide-copy p { font-size:11px; } .player-card { margin-top:10px; } }
   </style>
 </head>
 <body>
@@ -256,7 +262,9 @@
         </header>
         <main class="layout">
           <aside class="panel crew">
-            <div class="eyebrow">Agent Crew</div><h2>调查小队</h2><div class="small">他们会各自取证，也会互相质疑。</div>
+            <div class="eyebrow">Player Profile</div><h2>你的调查档案</h2><div class="small">你是这次探索的主人公。</div>
+            <div class="player-card"><div class="player-avatar">你</div><div><b>产业链探索者</b><span>新手调查员 · Lv.1</span><em>点击节点，亲手点亮一家公司</em></div></div>
+            <div class="eyebrow">Companions</div><h2>同行角色</h2><div class="small">他们提供提示和反驳，但结论由你拼出来。</div>
             <div class="agents">${s.agents.map(item => {
               const active = item.id === dialogue.agentId || s.nodes.some(node => node.agent_id === item.id && state.opened.has(node.id));
               const status = active && item.id !== 'risk' ? '线索已更新' : item.status;
@@ -271,15 +279,15 @@
             <div class="world-head"><div><div class="eyebrow">Company world / ${esc(s.code)}</div><h2>${esc(chapter.title)}</h2><p>${esc(s.world_name)} · ${esc(chapter.subtitle)}</p></div><div class="snapshot">${esc(s.notice)}</div></div>
             <div class="chapter-strip">${s.chapters.map((item, index) => { const done = chapterComplete(item); const accessible = chapterAccessible(index); return `<button class="chapter-tab ${index === state.chapter ? 'current' : ''} ${done ? 'done' : ''} ${accessible ? '' : 'locked'}" data-chapter="${index}" ${accessible ? '' : 'disabled'}><small>${esc(item.number)} · ${esc(item.eyebrow)}</small><b>${esc(item.title)}</b></button>`; }).join('')}</div>
             <div class="chapter-page">
-              <div class="chapter-intro"><div><div class="eyebrow">${esc(chapter.eyebrow)}</div><h3>${esc(chapter.brief)}</h3><p>当前页面完成后，进入下一段产业链。</p></div><div class="chapter-number">${esc(chapter.number)}</div></div>
+              <div class="chapter-intro"><div><div class="eyebrow">${esc(chapter.eyebrow)}</div><h3>${esc(chapter.brief)}</h3><p>你正在调查这一段链路。点击节点，亲手把它点亮。</p></div><div class="chapter-number">${esc(chapter.number)}</div></div>
               <div class="map">
                 <svg class="route-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${renderRoutes()}</svg>
                 <i class="pulse" style="left:48%;top:48%"></i><i class="pulse" style="left:74%;top:29%;animation-delay:.8s"></i>
                 ${chapterNodes().map(renderNode).join('')}
-                <div class="map-hint">点击本页发亮节点，完成 ${esc(chapter.eyebrow)} 调查</div>
+                <div class="map-hint">由你点击节点，点亮 ${esc(chapter.eyebrow)} 线索</div>
               </div>
               <div class="world-footer">
-                <div class="status-card"><b>总调查进度 · ${progress}/${s.nodes.length}</b><p>${pageDone ? (state.chapter < s.chapters.length - 1 ? '本页线索已收齐，可以切换到下一条链路。' : '四条链路全部收齐，风险猎人正在等待你的答案。') : '先完成本页线索。每个节点都会交出一条带来源标签的证据。'}</p><div class="progress-bar">${s.nodes.map(node => `<i class="${isOpened(node.id) ? 'done' : ''}"></i>`).join('')}</div>${renderChapterNav()}</div>
+                <div class="status-card"><b>你的点亮进度 · ${progress}/${s.nodes.length}</b><p>${pageDone ? (state.chapter < s.chapters.length - 1 ? '这一页已经被你点亮，可以切换到下一条链路。' : '四条链路全部被你点亮，风险猎人正在等待你的答案。') : '继续点击本页节点。每个节点都会交出一条带来源标签的证据。'}</p><div class="progress-bar">${s.nodes.map(node => `<i class="${isOpened(node.id) ? 'done':''}"></i>`).join('')}</div>${renderChapterNav()}</div>
                 <div class="guide-card"><b>这不是股价预测</b><p>游戏目标是建立可检验的因果链；专业页保留完整来源与多空论证。</p></div>
               </div>
             </div>
@@ -287,7 +295,7 @@
           <aside class="panel task">
             <div class="eyebrow">Current mission</div><div class="mission-title">${esc(s.mission.title)}</div><p class="brief">${esc(s.mission.brief)}</p>
             <ul class="steps">${s.chapters.map((item, index) => `<li class="step ${chapterComplete(item) ? 'done' : ''} ${index === state.chapter ? 'current' : ''}"><i>${chapterComplete(item) ? '✓' : item.number}</i><span>${esc(item.eyebrow)}：${esc(item.title)}</span></li>`).join('')}</ul>
-            <section class="guide-scene"><img src="/static/assets/guide-mo.png" alt="墨，档案官" /><div class="guide-copy"><span class="guide-label">本页向导</span><b>墨 · 档案官</b><p>${esc(chapter.guide)}</p></div></section>
+            <section class="guide-scene"><img src="/static/assets/guide-mo.png" alt="墨，档案官" /><div class="guide-copy"><span class="guide-label">同行向导 · 不是主角</span><b>墨 · 档案官</b><p>${esc(chapter.guide)}</p></div></section>
             <section class="dialogue dialogue-compact"><div class="dialogue-top"><div class="pixel-avatar" style="--agent-color:${speaking.color}">${esc(speaking.glyph)}</div><div><div class="who">${esc(speaking.name)} · ${esc(speaking.title)}</div><div class="role">实时调查记录</div></div></div><p>${esc(dialogue.text)}</p></section>
             ${renderChallenge()}
             <div class="notice">${esc(s.notice)}</div>
@@ -343,7 +351,7 @@
       const index = ids.indexOf(node.id);
       const x = ids.length === 1 ? 50 : 34 + index * 32;
       const y = ids.length === 1 ? 46 : 48;
-      return `<button class="node ${unlocked ? '' : 'locked'} ${opened ? 'opened' : ''}" style="left:${x}%;top:${y}%;--node-color:${node.color}" data-node="${node.id}" ${unlocked ? '' : 'aria-disabled="true"'}><span class="icon">${icon}</span><b>${esc(node.label)}</b><span>${esc(node.caption)}</span>${unlocked ? '' : '<i class="lock">⌑</i>'}</button>`;
+      return `<button class="node ${unlocked ? '' : 'locked'} ${opened ? 'opened' : ''}" style="left:${x}%;top:${y}%;--node-color:${node.color}" data-node="${node.id}" ${unlocked ? '' : 'aria-disabled="true"'}><span class="icon">${icon}</span><b>${esc(node.label)}</b><span>${esc(node.caption)}</span>${unlocked ? `<span class="node-action">${opened ? '已由你点亮' : '点击由你点亮'}</span>` : '<i class="lock">⌑</i>'}</button>`;
     }
 
     function renderChallenge() {
@@ -365,7 +373,7 @@
       }
       state.opened.add(id);
       state.selectedNode = id;
-      setDialogue(node.agent_id, node.message);
+      setDialogue(node.agent_id, `你点亮了「${node.label}」。${node.message}`);
       persist();
       render();
     }
