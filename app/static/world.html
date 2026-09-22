@@ -105,7 +105,6 @@
     .chapter-tab.current { border-color:var(--teal); background:#71d3b718; color:#e5fff5; box-shadow:0 0 0 2px #71d3b70f; }
     .chapter-tab.done { border-color:#6d8d9a; color:#caeee4; }
     .chapter-tab.locked { opacity:.48; cursor:not-allowed; }
-    .chapter-page { animation:chapterIn .34s ease both; }
     @keyframes chapterIn { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:none; } }
     .chapter-intro { display:flex; justify-content:space-between; gap:14px; align-items:flex-end; padding:14px 20px 0; }
     .chapter-intro .eyebrow { color:var(--gold); }
@@ -113,7 +112,7 @@
     .chapter-intro p { max-width:510px; color:#b8c5e2; font-size:12px; margin:3px 0 0; }
     .chapter-number { color:#efbc72aa; font-weight:900; font-size:42px; line-height:1; }
     .map {
-      margin:13px 14px 14px; height:465px; position:relative; overflow:hidden; border:1px solid #415275; border-radius:18px;
+      margin:13px 14px 14px; height:520px; position:relative; overflow:hidden; border:1px solid #415275; border-radius:18px;
       background:
         radial-gradient(circle at 52% 50%, #31509053 0, transparent 42%),
         radial-gradient(circle at 12% 72%, #8a6a3542 0, transparent 25%),
@@ -132,20 +131,31 @@
     .route-lines { position:absolute; inset:0; width:100%; height:100%; overflow:visible; }
     .route { fill:none; stroke:#7691c177; stroke-width:2.3; stroke-dasharray:7 8; animation:dash 12s linear infinite; }
     .route.active { stroke:#e9cb8b; filter:drop-shadow(0 0 5px #f1c46a); }
+    .route.reachable { stroke:#cbbb8bcc; }
     @keyframes dash { to { stroke-dashoffset:-120; } }
     .map-hint { position:absolute; left:18px; bottom:14px; color:#d8e3ffbf; font-size:11px; background:#07112677; border:1px solid #6680ae6b; padding:5px 8px; border-radius:999px; }
     .node {
       position:absolute; z-index:3; width:112px; min-height:78px; padding:8px; transform:translate(-50%, -50%); border-radius:15px; border:1px solid color-mix(in srgb, var(--node-color) 70%, #ffffff); color:#f4f7ff; text-align:left;
       background:linear-gradient(145deg, color-mix(in srgb, var(--node-color) 24%, #172746), #14203cdb); box-shadow:0 8px 20px #00000035; transition:transform .2s, filter .2s, opacity .2s, border-color .2s;
     }
-    .node:hover:not(.locked) { transform:translate(-50%, -50%) translateY(-4px) scale(1.025); filter:brightness(1.12); }
-    .node.locked { cursor:not-allowed; opacity:.43; border-style:dashed; filter:grayscale(.4); }
-    .node.opened { box-shadow:0 0 0 3px color-mix(in srgb, var(--node-color) 24%, transparent), 0 10px 28px #00000049; }
+    .node:hover:not(.fogged) { transform:translate(-50%, -50%) translateY(-4px) scale(1.025); filter:brightness(1.12); }
+    /* 未探索：可见但雾化，仍可点击，点下由档案官说明还差哪一步 */
+    .node.fogged { opacity:.45; border-style:dashed; filter:grayscale(.55) blur(.7px); }
+    .node.fogged:hover { opacity:.78; filter:grayscale(.2) blur(0); }
+    .node.fogged .node-action { color:#c3cce8; }
+    .node.opened { box-shadow:0 0 0 3px color-mix(in srgb, var(--node-color) 34%, transparent), 0 10px 28px #00000049; }
+    /* 当前聚焦的链路：亮环并把其余节点压暗 */
+    .node.in-chapter { box-shadow:0 0 0 3px #efbc7273, 0 10px 26px #00000049; animation:nodeFocus 2.6s ease-in-out infinite; }
+    .node.dimmed { opacity:.5; filter:saturate(.5); }
+    .node.entering { animation:nodeEnter 1.9s ease-in-out infinite; }
+    /* 聚焦靠 border-color 呼吸，调查中靠 box-shadow 呼吸，两者可同时生效 */
+    @keyframes nodeFocus { 0%,100% { border-color:color-mix(in srgb, var(--node-color) 70%, #ffffff); } 50% { border-color:#ffd88a; } }
+    @keyframes nodeEnter { 0%,100% { box-shadow:0 0 0 0 #71d3b700; } 50% { box-shadow:0 0 0 9px #71d3b733; } }
+    .node.in-chapter.entering { animation:nodeFocus 2.6s ease-in-out infinite, nodeEnter 1.9s ease-in-out infinite; }
     .node .icon { width:22px; height:22px; display:grid; place-items:center; color:#11172c; border-radius:7px; background:var(--node-color); font-size:14px; font-weight:900; margin-bottom:5px; }
     .node b { display:block; font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .node span { display:block; color:#d6def6b8; font-size:10px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
     .node .node-action { margin-top:5px; color:#a8f1da; font-size:9px; letter-spacing:.04em; }
-    .node .lock { position:absolute; top:8px; right:8px; color:#e2e9fc; font-size:12px; }
     .pulse { position:absolute; z-index:1; width:8px; height:8px; border-radius:50%; background:#c8d8ff; box-shadow:0 0 0 0 #b7ccff; animation:pulse 2.2s infinite; }
     @keyframes pulse { 70% { box-shadow:0 0 0 15px #b7ccff00; } 100% { box-shadow:0 0 0 0 #b7ccff00; } }
     .world-footer { padding:0 18px 17px; display:grid; grid-template-columns:1.2fr .8fr; gap:12px; }
@@ -251,8 +261,8 @@
     .scene-complete { border:0; border-radius:10px; padding:9px 12px; color:#14233d; background:var(--teal); font-weight:800; }
     .scene-complete:disabled { cursor:not-allowed; opacity:.4; filter:grayscale(1); }
     @media (max-width:1180px) { .layout { grid-template-columns:230px minmax(430px,1fr); } .task { grid-column:2; position:static; } .world-panel { min-height:auto; } }
-    @media (max-width:820px) { .app { padding:15px 12px 30px; } .topbar { align-items:flex-start; } .top-actions { justify-content:flex-start; } .layout { grid-template-columns:1fr; } .crew, .task { position:static; } .world-panel { order:-1; } .world-footer { grid-template-columns:1fr; } .map { height:430px; } .node { width:100px; } .scene-stage { grid-template-columns:150px 1fr; gap:12px; } .scene-hero { min-height:240px; } .scene-hero img { width:145px; height:225px; } }
-    @media (max-width:520px) { .topbar { display:block; } .top-actions { margin-top:12px; } .brand { gap:9px; } .brand-mark { width:43px; height:43px; border-radius:14px; } .brand-mark svg { width:35px; height:35px; } .brand-cn { font-size:19px; } .brand-en { font-size:10px; } .brand-subtitle { font-size:9px; gap:4px; } .world-head { display:block; } .snapshot { text-align:left; padding-left:0; } .chapter-intro { padding-left:14px; padding-right:14px; } .chapter-number { font-size:32px; } .map { height:390px; margin:12px 8px; } .node { width:82px; min-height:70px; padding:7px; } .node b { font-size:10px; } .node span { font-size:9px; } .world-footer { padding:0 12px 13px; } .guide-copy { width:67%; padding-left:11px; } .guide-copy p { font-size:11px; } .guide-mini-avatar { right:-10px; } .protagonist { transform:translate(-50%,-50%) scale(.78); } .protagonist-tag { font-size:10px; } .player-card { margin-top:10px; } .scene-modal { padding:8px; } .scene-head { padding:14px 14px 8px; } .scene-head h2 { font-size:20px; } .scene-stage { display:block; padding:0 14px 14px; } .scene-hero { min-height:150px; margin-bottom:10px; } .scene-hero img { width:118px; height:170px; } .scene-object { min-height:96px; padding:8px; } .scene-object p { font-size:10px; } .scene-bottom { display:block; } .scene-complete { width:100%; margin-top:8px; } }
+    @media (max-width:820px) { .app { padding:15px 12px 30px; } .topbar { align-items:flex-start; } .top-actions { justify-content:flex-start; } .layout { grid-template-columns:1fr; } .crew, .task { position:static; } .world-panel { order:-1; } .world-footer { grid-template-columns:1fr; } .map { height:470px; } .node { width:100px; } .scene-stage { grid-template-columns:150px 1fr; gap:12px; } .scene-hero { min-height:240px; } .scene-hero img { width:145px; height:225px; } }
+    @media (max-width:520px) { .topbar { display:block; } .top-actions { margin-top:12px; } .brand { gap:9px; } .brand-mark { width:43px; height:43px; border-radius:14px; } .brand-mark svg { width:35px; height:35px; } .brand-cn { font-size:19px; } .brand-en { font-size:10px; } .brand-subtitle { font-size:9px; gap:4px; } .world-head { display:block; } .snapshot { text-align:left; padding-left:0; } .chapter-intro { padding-left:14px; padding-right:14px; } .chapter-number { font-size:32px; } .map { height:430px; margin:12px 8px; } .node { width:82px; min-height:70px; padding:7px; } .node b { font-size:10px; } .node span { font-size:9px; } .world-footer { padding:0 12px 13px; } .guide-copy { width:67%; padding-left:11px; } .guide-copy p { font-size:11px; } .guide-mini-avatar { right:-10px; } .protagonist { transform:translate(-50%,-50%) scale(.78); } .protagonist-tag { font-size:10px; } .player-card { margin-top:10px; } .scene-modal { padding:8px; } .scene-head { padding:14px 14px 8px; } .scene-head h2 { font-size:20px; } .scene-stage { display:block; padding:0 14px 14px; } .scene-hero { min-height:150px; margin-bottom:10px; } .scene-hero img { width:118px; height:170px; } .scene-object { min-height:96px; padding:8px; } .scene-object p { font-size:10px; } .scene-bottom { display:block; } .scene-complete { width:100%; margin-top:8px; } }
   </style>
 </head>
 <body>
@@ -273,7 +283,8 @@
     const state = {
       scenario: null,
       opened: new Set(Array.isArray(savedSession.opened) ? savedSession.opened : []),
-      selectedNode: null,
+      revisited: new Set(Array.isArray(savedSession.revisited) ? savedSession.revisited : []),
+      paused: savedSession.paused && typeof savedSession.paused === 'object' ? savedSession.paused : null,
       dialogue: null,
       hardOnly: false,
       answer: savedSession.answer || null,
@@ -292,7 +303,6 @@
     const isOpened = (id) => state.opened.has(id);
     const evidence = () => state.scenario.nodes.filter(node => state.opened.has(node.id)).map(node => node.clue);
     const currentChapter = () => state.scenario.chapters[state.chapter];
-    const chapterNodes = (chapter = currentChapter()) => chapter.node_ids.map(byId).filter(Boolean);
     const chapterComplete = (chapter = currentChapter()) => chapter.node_ids.every(id => state.opened.has(id));
     const allNodesOpened = () => state.scenario.nodes.every(node => state.opened.has(node.id));
     const chapterAccessible = (index) => index === 0 || state.scenario.chapters.slice(0, index).every(chapter => chapterComplete(chapter));
@@ -304,7 +314,7 @@
       }
       return max;
     };
-    const persist = () => sessionStorage.setItem(savedKey, JSON.stringify({ opened: [...state.opened], chapter: state.chapter, answer: state.answer }));
+    const persist = () => sessionStorage.setItem(savedKey, JSON.stringify({ opened: [...state.opened], revisited: [...state.revisited], paused: state.paused, chapter: state.chapter, answer: state.answer }));
 
     function setDialogue(agentId, text) {
       state.dialogue = { agentId, text };
@@ -338,18 +348,18 @@
             </section>
           </aside>
           <section class="panel world-panel">
-            <div class="world-head"><div><div class="eyebrow">Company world / ${esc(s.code)}</div><h2>${esc(chapter.title)}</h2><p>${esc(s.world_name)} · ${esc(chapter.subtitle)}</p></div><div class="snapshot">${esc(s.notice)}</div></div>
+            <div class="world-head"><div><div class="eyebrow">Company world / ${esc(s.code)}</div><h2>${esc(s.world_name)}</h2><p>当前聚焦 · ${esc(chapter.number)} ${esc(chapter.eyebrow)} · ${esc(chapter.title)}</p></div><div class="snapshot">${esc(s.notice)}</div></div>
             <div class="chapter-strip">${s.chapters.map((item, index) => { const done = chapterComplete(item); const accessible = chapterAccessible(index); return `<button class="chapter-tab ${index === state.chapter ? 'current' : ''} ${done ? 'done' : ''} ${accessible ? '' : 'locked'}" data-chapter="${index}" ${accessible ? '' : 'disabled'}><small>${esc(item.number)} · ${esc(item.eyebrow)}</small><b>${esc(item.title)}</b></button>`; }).join('')}</div>
             <div class="chapter-page">
-              <div class="chapter-intro"><div><div class="eyebrow">${esc(chapter.eyebrow)}</div><h3>${esc(chapter.brief)}</h3><p>你正在调查这一段链路。点击节点，亲手把它点亮。</p></div><div class="chapter-number">${esc(chapter.number)}</div></div>
+              <div class="chapter-intro"><div><div class="eyebrow">当前聚焦 · ${esc(chapter.eyebrow)}</div><h3>${esc(chapter.brief)}</h3><p>五段链路都在同一张地图上。雾里的节点要按链路依次点亮。</p></div><div class="chapter-number">${esc(chapter.number)}</div></div>
               <div class="map">
                 <svg class="route-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${renderRoutes()}</svg>
                 <div class="protagonist"><img src="/static/assets/guide-mo.png" alt="你，产业链探索者" /><div class="protagonist-tag">你 · 产业链探索者</div></div>
-                ${chapterNodes().map(renderNode).join('')}
-                <div class="map-hint">由你点击节点，点亮 ${esc(chapter.eyebrow)} 线索</div>
+                ${s.nodes.map(renderNode).join('')}
+                <div class="map-hint">点击雾中的节点，亲手点亮整条产业链</div>
               </div>
               <div class="world-footer">
-                <div class="status-card"><b>你的点亮进度 · ${progress}/${s.nodes.length}</b><p>${pageDone ? (state.chapter < s.chapters.length - 1 ? '这一页已经被你点亮，可以切换到下一条链路。' : '四条链路全部被你点亮，风险猎人正在等待你的答案。') : '继续点击本页节点。每个节点都会交出一条带来源标签的证据。'}</p><div class="progress-bar">${s.nodes.map(node => `<i class="${isOpened(node.id) ? 'done':''}"></i>`).join('')}</div>${renderChapterNav()}</div>
+                <div class="status-card"><b>你的点亮进度 · ${progress}/${s.nodes.length}</b><p>${pageDone ? (state.chapter < s.chapters.length - 1 ? '这一段链路已经点亮，可以聚焦下一段。' : '四条链路全部被你点亮，风险猎人正在等待你的答案。') : '继续调查雾中的节点。每个节点都会交出一条带来源标签的证据。'}</p><div class="progress-bar">${s.nodes.map(node => `<i class="${isOpened(node.id) ? 'done':''}"></i>`).join('')}</div>${renderChapterNav()}</div>
                 <div class="guide-card"><b>这不是股价预测</b><p>游戏目标是建立可检验的因果链；专业页保留完整来源与多空论证。</p></div>
               </div>
             </div>
@@ -434,37 +444,39 @@
 
     function renderChapterNav() {
       const s = state.scenario;
-      const previous = state.chapter > 0 ? '<button class="secondary" data-previous>← 上一页</button>' : '';
-      if (!chapterComplete()) return `${previous}<div class="page-lock">收齐本页线索后，下一条链路会亮起。</div>`;
+      const previous = state.chapter > 0 ? '<button class="secondary" data-previous>← 上一段</button>' : '';
+      if (!chapterComplete()) return `${previous}<div class="page-lock">收齐这一段线索后，雾会散开。</div>`;
       if (state.chapter < s.chapters.length - 1) {
         const next = s.chapters[state.chapter + 1];
-        return `<div class="chapter-nav">${previous}<button class="primary" data-next>进入 ${esc(next.eyebrow)} →</button></div>`;
+        return `<div class="chapter-nav">${previous}<button class="primary" data-next>聚焦 ${esc(next.eyebrow)} →</button></div>`;
       }
       return `${previous}${allNodesOpened() ? '<div class="page-lock">四条链路已完成，回答右侧的风险挑战。</div>' : ''}`;
     }
 
+    // 链路连线直接由 unlock_after 推导：父节点 → 子节点。坐标全部来自后端，前端不重算。
     function renderRoutes() {
-      const ids = currentChapter().node_ids;
-      const position = (id) => {
-        const index = ids.indexOf(id);
-        return ids.length === 1 ? { x: 80, y: 48 } : (index === 0 ? { x: 19, y: 31 } : { x: 81, y: 69 });
-      };
-      const center = { x: 50, y: 55 };
-      return ids.map(id => {
-        const node = byId(id), target = position(id);
-        const active = state.opened.has(id) || isUnlocked(node);
-        return `<line class="route ${active ? 'active' : ''}" x1="${center.x}" y1="${center.y}" x2="${target.x}" y2="${target.y}" />`;
-      }).join('');
+      return state.scenario.nodes.flatMap(node => node.unlock_after.map(parentId => {
+        const parent = byId(parentId);
+        if (!parent) return '';
+        const crossed = isOpened(node.id);
+        const reachable = !crossed && isUnlocked(node);
+        return `<line class="route ${crossed ? 'active' : reachable ? 'reachable' : ''}" x1="${parent.x}" y1="${parent.y}" x2="${node.x}" y2="${node.y}" />`;
+      })).join('');
     }
 
     function renderNode(node) {
       const unlocked = isUnlocked(node), opened = isOpened(node.id);
-      const icon = opened ? '✓' : unlocked ? '⌁' : '⌕';
-      const ids = currentChapter().node_ids;
-      const index = ids.indexOf(node.id);
-      const x = ids.length === 1 ? 80 : (index === 0 ? 19 : 81);
-      const y = ids.length === 1 ? 48 : (index === 0 ? 31 : 69);
-      return `<button class="node ${unlocked ? '' : 'locked'} ${opened ? 'opened' : ''}" style="left:${x}%;top:${y}%;--node-color:${node.color}" data-node="${node.id}" ${unlocked ? '' : 'aria-disabled="true"'}><span class="icon">${icon}</span><b>${esc(node.label)}</b><span>${esc(node.caption)}</span>${unlocked ? `<span class="node-action">${opened ? '重新进入现场' : '进入现场调查'}</span>` : '<i class="lock">⌑</i>'}</button>`;
+      const investigating = Boolean(state.paused) && state.paused.nodeId === node.id;
+      const revisited = state.revisited.has(node.id);
+      const focused = currentChapter().node_ids.includes(node.id);
+      const classes = ['node'];
+      if (!unlocked) classes.push('fogged');
+      if (opened) classes.push('opened');
+      if (investigating) classes.push('entering');
+      if (focused) classes.push('in-chapter'); else if (unlocked) classes.push('dimmed');
+      const icon = !unlocked ? '⌕' : investigating ? '◌' : opened ? '✓' : '⌁';
+      const action = !unlocked ? '进入调查' : investigating ? '继续调查' : opened ? (revisited ? '已复访 · 再进一次' : '重新进入现场') : '进入现场调查';
+      return `<button class="${classes.join(' ')}" style="left:${node.x}%;top:${node.y}%;--node-color:${node.color}" data-node="${node.id}"><span class="icon">${icon}</span><b>${esc(node.label)}</b><span>${esc(node.caption)}</span><span class="node-action">${action}</span></button>`;
     }
 
     function renderChallenge() {
@@ -480,22 +492,28 @@
       if (!isUnlocked(node)) {
         const missing = node.unlock_after.find(item => !state.opened.has(item));
         const target = byId(missing);
-        setDialogue('archivist', `这条通道还没有打开。请先完成「${target ? target.label : '上一条线索'}」的调查。`);
+        setDialogue('archivist', `这条通道还没有打开。请先完成「${target ? target.label : '上一条线索'}」的调查，雾才会散开。`);
         render();
         return;
       }
+      const paused = state.paused && state.paused.nodeId === id ? state.paused : null;
       state.scene = id;
-      state.sceneEvidence = new Set();
+      state.sceneEvidence = new Set(paused ? paused.evidence : []);
       state.sceneAnswer = null;
-      state.sceneStarted = false;
+      state.sceneStarted = Boolean(paused);
       render();
     }
 
     function closeScene() {
+      const nodeId = state.scene;
+      if (nodeId && state.sceneEvidence.size && !state.opened.has(nodeId)) {
+        state.paused = { nodeId, evidence: [...state.sceneEvidence] };
+      }
       state.scene = null;
       state.sceneEvidence = new Set();
       state.sceneAnswer = null;
       state.sceneStarted = false;
+      persist();
       render();
     }
 
@@ -522,8 +540,9 @@
       const node = byId(state.scene);
       const scene = node && node.scene;
       if (!node || !scene || !state.sceneAnswer || state.sceneEvidence.size !== scene.objects.length) return;
+      if (state.opened.has(node.id)) state.revisited.add(node.id);
       state.opened.add(node.id);
-      state.selectedNode = node.id;
+      if (state.paused && state.paused.nodeId === node.id) state.paused = null;
       setDialogue(node.agent_id, `你完成了「${node.label}」的调查。${scene.takeaway}`);
       state.scene = null;
       state.sceneEvidence = new Set();
@@ -545,7 +564,7 @@
     function goChapter(index) {
       if (!state.scenario || index < 0 || index >= state.scenario.chapters.length) return;
       if (index > state.chapter && !chapterComplete()) {
-        setDialogue('archivist', '这一页还有线索没有收齐。先完成当前链路，再继续向前。');
+        setDialogue('archivist', '这一段链路还有线索没有收齐。先完成它，再聚焦下一段。');
         render();
         return;
       }
@@ -580,7 +599,10 @@
           return;
         }
         state.scenario = data;
-        state.opened = new Set([...state.opened].filter(id => data.nodes.some(node => node.id === id)));
+        const nodeIds = new Set(data.nodes.map(node => node.id));
+        state.opened = new Set([...state.opened].filter(id => nodeIds.has(id)));
+        state.revisited = new Set([...state.revisited].filter(id => nodeIds.has(id)));
+        if (state.paused && (!nodeIds.has(state.paused.nodeId) || !Array.isArray(state.paused.evidence))) state.paused = null;
         state.chapter = Math.min(state.chapter, maxAccessibleChapter());
         state.dialogue = { agentId: 'archivist', text: data.agents.find(item => item.id === 'archivist').intro };
         persist();

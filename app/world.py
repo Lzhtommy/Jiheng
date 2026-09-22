@@ -11,6 +11,10 @@ def world_scenario(code: str) -> dict[str, Any] | None:
     The scenario is intentionally a historical/demo snapshot. The client owns the
     short-lived play session; the server remains the source of the company and
     evidence metadata so a later real-data adapter can replace this fixture.
+
+    Each node carries ``x``/``y`` as a percentage position on the single main map,
+    laid out around the player standing at the centre. The client renders those
+    values directly and must not recompute positions from the chapter grouping.
     """
 
     stock = get_stock(code)
@@ -125,8 +129,8 @@ def world_scenario(code: str) -> dict[str, Any] | None:
                 "id": "lithium",
                 "label": "盐湖矿区",
                 "caption": "上游原料",
-                "x": 10,
-                "y": 43,
+                "x": 50,
+                "y": 13,
                 "color": "#efbc72",
                 "agent_id": "upstream",
                 "initially_unlocked": True,
@@ -167,8 +171,8 @@ def world_scenario(code: str) -> dict[str, Any] | None:
                 "id": "materials",
                 "label": "材料工坊",
                 "caption": "正极 / 负极 / 电解液",
-                "x": 30,
-                "y": 24,
+                "x": 13,
+                "y": 47,
                 "color": "#d99ad5",
                 "agent_id": "upstream",
                 "initially_unlocked": False,
@@ -209,7 +213,7 @@ def world_scenario(code: str) -> dict[str, Any] | None:
                 "id": "battery",
                 "label": "电芯城",
                 "caption": "宁德时代核心业务",
-                "x": 52,
+                "x": 87,
                 "y": 47,
                 "color": "#81aefc",
                 "agent_id": "archivist",
@@ -251,8 +255,8 @@ def world_scenario(code: str) -> dict[str, Any] | None:
                 "id": "automaker",
                 "label": "车企港",
                 "caption": "下游客户与竞争",
-                "x": 75,
-                "y": 29,
+                "x": 32,
+                "y": 82,
                 "color": "#71d3b7",
                 "agent_id": "downstream",
                 "initially_unlocked": False,
@@ -293,8 +297,8 @@ def world_scenario(code: str) -> dict[str, Any] | None:
                 "id": "storage",
                 "label": "储能灯塔",
                 "caption": "第二需求出口",
-                "x": 87,
-                "y": 61,
+                "x": 68,
+                "y": 82,
                 "color": "#9aa8ff",
                 "agent_id": "downstream",
                 "initially_unlocked": False,

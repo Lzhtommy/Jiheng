@@ -19,3 +19,28 @@ def test_other_demo_companies_get_a_clear_world_message():
     scenario = world_scenario("600519")
     assert scenario is not None
     assert scenario["available"] is False
+
+
+def test_world_map_coordinates_are_renderable():
+    """The client places every node straight from x/y, so they must be valid and distinct."""
+    nodes = world_scenario("300750")["nodes"]
+    positions = set()
+    for node in nodes:
+        for axis in ("x", "y"):
+            assert isinstance(node[axis], (int, float))
+            assert 0 < node[axis] < 100
+        positions.add((node["x"], node["y"]))
+    assert len(positions) == len(nodes)
+
+
+def test_world_unlock_chain_reaches_every_node():
+    """Route lines are derived from unlock_after, so the chain must be one connected tree."""
+    nodes = world_scenario("300750")["nodes"]
+    roots = [node["id"] for node in nodes if node["initially_unlocked"]]
+    assert len(roots) == 1
+    reached = set(roots)
+    for _ in range(len(nodes)):
+        for node in nodes:
+            if node["id"] not in reached and set(node["unlock_after"]) <= reached:
+                reached.add(node["id"])
+    assert reached == {node["id"] for node in nodes}
