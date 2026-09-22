@@ -1,0 +1,11 @@
+{
+    "mcpServers": {
+      "financial-mcp-remote": {
+        "type": "streamableHttp",
+        "url": "https://mcp.agentladle.com/mcp",
+        "headers": {
+          "Authorization": "Bearer sk-99b8097d5cd44bba9b058de2504fbbe4"
+        }
+      }
+    }
+  }
