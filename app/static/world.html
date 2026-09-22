@@ -89,6 +89,20 @@
     .world-head h2 { margin:2px 0; font-size:23px; }
     .world-head p { margin:3px 0 0; color:var(--muted); font-size:12px; }
     .snapshot { color:#cdd7f2; font-size:11px; padding:6px 8px; text-align:right; max-width:165px; }
+    .chapter-strip { display:flex; gap:7px; padding:14px 18px 0; overflow:auto; scrollbar-width:thin; }
+    .chapter-tab { min-width:104px; border:1px solid #435579; border-radius:12px; padding:8px 10px; color:#9da9c9; background:#ffffff06; text-align:left; transition:.18s ease; }
+    .chapter-tab small { display:block; font-size:10px; letter-spacing:.08em; color:#7483a7; }
+    .chapter-tab b { display:block; margin-top:2px; font-size:11px; white-space:nowrap; }
+    .chapter-tab.current { border-color:var(--teal); background:#71d3b718; color:#e5fff5; box-shadow:0 0 0 2px #71d3b70f; }
+    .chapter-tab.done { border-color:#6d8d9a; color:#caeee4; }
+    .chapter-tab.locked { opacity:.48; cursor:not-allowed; }
+    .chapter-page { animation:chapterIn .34s ease both; }
+    @keyframes chapterIn { from { opacity:0; transform:translateX(14px); } to { opacity:1; transform:none; } }
+    .chapter-intro { display:flex; justify-content:space-between; gap:14px; align-items:flex-end; padding:14px 20px 0; }
+    .chapter-intro .eyebrow { color:var(--gold); }
+    .chapter-intro h3 { margin:3px 0 0; font-size:18px; }
+    .chapter-intro p { max-width:510px; color:#b8c5e2; font-size:12px; margin:3px 0 0; }
+    .chapter-number { color:#efbc72aa; font-weight:900; font-size:42px; line-height:1; }
     .map {
       margin:13px 14px 14px; height:465px; position:relative; overflow:hidden; border:1px solid #415275; border-radius:18px;
       background:
@@ -137,6 +151,14 @@
     .dialogue .pixel-avatar { width:31px; height:31px; font-size:16px; border-radius:9px 9px 4px 9px; }
     .dialogue .who { font-size:12px; font-weight:800; } .dialogue .role { font-size:10px; color:var(--muted); }
     .dialogue p { margin:8px 0 0; color:#d6def3; font-size:12px; }
+    .guide-scene { min-height:196px; position:relative; overflow:hidden; margin:0 0 10px; border:1px solid #4d5f84; border-radius:16px; background:radial-gradient(circle at 80% 20%, #efbc7230, transparent 35%), linear-gradient(145deg, #24355d, #111a33); }
+    .guide-scene::after { content:""; position:absolute; left:0; right:0; bottom:0; height:48px; background:linear-gradient(transparent, #0b1228b8); pointer-events:none; }
+    .guide-scene img { position:absolute; z-index:1; right:-8px; bottom:-35px; width:205px; max-height:270px; object-fit:contain; object-position:center bottom; filter:drop-shadow(0 14px 17px #00000060); }
+    .guide-copy { position:relative; z-index:2; width:58%; padding:14px 0 13px 14px; }
+    .guide-copy .guide-label { color:#a4e4d0; font-size:10px; letter-spacing:.12em; text-transform:uppercase; font-weight:800; }
+    .guide-copy b { display:block; margin-top:4px; font-size:15px; }
+    .guide-copy p { margin:7px 0 0; color:#d2dcf5; font-size:12px; }
+    .dialogue-compact { padding:10px; }
     .challenge { margin-top:14px; padding-top:14px; border-top:1px solid #415274; }
     .challenge h3 { font-size:13px; margin:0 0 6px; color:#ffd3d9; }
     .challenge p { color:#c0c9e3; font-size:12px; margin:0 0 9px; }
@@ -145,6 +167,11 @@
     .challenge-response { margin-top:10px; padding:9px; border-left:3px solid var(--pink); background:#ed8b9810; color:#f1ccd1; border-radius:7px; font-size:12px; }
     .primary { width:100%; border:0; border-radius:11px; padding:10px; margin-top:12px; font-weight:800; color:#132236; background:linear-gradient(135deg, #a4d8ff, #71d3b7); box-shadow:0 6px 18px #71d3b733; }
     .primary:disabled { cursor:not-allowed; opacity:.4; filter:grayscale(1); }
+    .chapter-nav { display:flex; gap:8px; align-items:center; margin-top:11px; }
+    .chapter-nav .primary { margin-top:0; flex:1; }
+    .secondary { border:1px solid #596b91; border-radius:10px; padding:8px 10px; color:#d9e4ff; background:#ffffff08; font-size:11px; }
+    .secondary:hover { background:#ffffff14; }
+    .page-lock { margin-top:10px; padding:8px 9px; border-radius:9px; color:#9ba9c9; background:#ffffff06; font-size:11px; }
     .notice { margin-top:14px; color:#aab5d0; font-size:11px; padding:9px; background:#ffffff08; border-radius:10px; }
     .loading, .error { min-height:60vh; display:grid; place-items:center; color:#c7d4f6; font-size:15px; }
     .error { color:#ffc7ce; text-align:center; padding:30px; }
@@ -163,7 +190,7 @@
     .completion-actions button { color:#11243d; border:0; background:var(--teal); }
     @media (max-width:1180px) { .layout { grid-template-columns:230px minmax(430px,1fr); } .task { grid-column:2; position:static; } .world-panel { min-height:auto; } }
     @media (max-width:820px) { .app { padding:15px 12px 30px; } .topbar { align-items:flex-start; } .top-actions { justify-content:flex-start; } .layout { grid-template-columns:1fr; } .crew, .task { position:static; } .world-panel { order:-1; } .world-footer { grid-template-columns:1fr; } .map { height:430px; } .node { width:100px; } }
-    @media (max-width:520px) { .topbar { display:block; } .top-actions { margin-top:12px; } .world-head { display:block; } .snapshot { text-align:left; padding-left:0; } .map { height:390px; margin:12px 8px; } .node { width:82px; min-height:70px; padding:7px; } .node b { font-size:10px; } .node span { font-size:9px; } .world-footer { padding:0 12px 13px; } }
+    @media (max-width:520px) { .topbar { display:block; } .top-actions { margin-top:12px; } .world-head { display:block; } .snapshot { text-align:left; padding-left:0; } .chapter-intro { padding-left:14px; padding-right:14px; } .chapter-number { font-size:32px; } .map { height:390px; margin:12px 8px; } .node { width:82px; min-height:70px; padding:7px; } .node b { font-size:10px; } .node span { font-size:9px; } .world-footer { padding:0 12px 13px; } .guide-scene img { right:-26px; width:172px; } .guide-copy { width:67%; padding-left:11px; } .guide-copy p { font-size:11px; } }
   </style>
 </head>
 <body>
@@ -172,8 +199,23 @@
   <script>
     const app = document.getElementById('app');
     const completion = document.getElementById('completion');
-    const code = new URLSearchParams(location.search).get('code') || '300750';
-    const state = { scenario: null, opened: new Set(), selectedNode: null, dialogue: null, hardOnly: false, answer: null, completed: false };
+    const query = new URLSearchParams(location.search);
+    const code = query.get('code') || '300750';
+    const savedKey = `jiheng-world-${code}`;
+    let savedSession = {};
+    try { savedSession = JSON.parse(sessionStorage.getItem(savedKey) || '{}') || {}; } catch (_) { savedSession = {}; }
+    const requestedChapter = Number(query.get('chapter'));
+    const savedChapter = Number(savedSession.chapter);
+    const state = {
+      scenario: null,
+      opened: new Set(Array.isArray(savedSession.opened) ? savedSession.opened : []),
+      selectedNode: null,
+      dialogue: null,
+      hardOnly: false,
+      answer: savedSession.answer || null,
+      completed: false,
+      chapter: Number.isFinite(requestedChapter) ? Math.max(0, Math.floor(requestedChapter)) : (Number.isFinite(savedChapter) ? Math.max(0, Math.floor(savedChapter)) : 0),
+    };
     const esc = (value) => String(value ?? '').replace(/[&<>'"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
     const byId = (id) => state.scenario.nodes.find(node => node.id === id);
     const agent = (id) => state.scenario.agents.find(item => item.id === id);
@@ -181,7 +223,20 @@
     const isUnlocked = (node) => node.initially_unlocked || state.opened.has(node.id) || node.unlock_after.every(id => state.opened.has(id));
     const isOpened = (id) => state.opened.has(id);
     const evidence = () => state.scenario.nodes.filter(node => state.opened.has(node.id)).map(node => node.clue);
-    const requiredNodes = () => state.scenario.nodes.slice(0, state.scenario.mission.goal);
+    const currentChapter = () => state.scenario.chapters[state.chapter];
+    const chapterNodes = (chapter = currentChapter()) => chapter.node_ids.map(byId).filter(Boolean);
+    const chapterComplete = (chapter = currentChapter()) => chapter.node_ids.every(id => state.opened.has(id));
+    const allNodesOpened = () => state.scenario.nodes.every(node => state.opened.has(node.id));
+    const chapterAccessible = (index) => index === 0 || state.scenario.chapters.slice(0, index).every(chapter => chapterComplete(chapter));
+    const maxAccessibleChapter = () => {
+      let max = 0;
+      for (let index = 1; index < state.scenario.chapters.length; index += 1) {
+        if (!chapterComplete(state.scenario.chapters[index - 1])) break;
+        max = index;
+      }
+      return max;
+    };
+    const persist = () => sessionStorage.setItem(savedKey, JSON.stringify({ opened: [...state.opened], chapter: state.chapter, answer: state.answer }));
 
     function setDialogue(agentId, text) {
       state.dialogue = { agentId, text };
@@ -189,9 +244,11 @@
 
     function render() {
       const s = state.scenario;
+      const chapter = currentChapter();
       const dialogue = state.dialogue || { agentId: 'archivist', text: s.agents[0].intro };
-      const speaking = agent(dialogue.agentId);
-      const progress = Math.min(openedCount(), s.mission.goal);
+      const speaking = agent(dialogue.agentId) || s.agents[0];
+      const progress = openedCount();
+      const pageDone = chapterComplete(chapter);
       app.innerHTML = `
         <header class="topbar">
           <a class="brand" href="/"><div class="mark">玑</div><div><h1>玑衡 World</h1><div class="subtitle">产业链调查游戏 · 研究模式的第二现场</div></div></a>
@@ -211,24 +268,27 @@
             </section>
           </aside>
           <section class="panel world-panel">
-            <div class="world-head"><div><div class="eyebrow">Company world / ${esc(s.code)}</div><h2>${esc(s.world_name)}</h2><p>${esc(s.subtitle)}</p></div><div class="snapshot">${esc(s.notice)}</div></div>
-            <div class="map">
-              <svg class="route-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
-                ${renderRoutes()}
-              </svg>
-              <i class="pulse" style="left:48%;top:48%"></i><i class="pulse" style="left:74%;top:29%;animation-delay:.8s"></i>
-              ${s.nodes.map(renderNode).join('')}
-              <div class="map-hint">点击发亮节点，沿产业链收集证据</div>
-            </div>
-            <div class="world-footer">
-              <div class="status-card"><b>调查进度 · ${progress}/${s.mission.goal}</b><p>${progress < s.mission.goal ? '顺着虚线继续前进。每个节点会交出一条带来源标签的线索。' : '主线调查完成。风险猎人正在等待你的答案。'}</p><div class="progress-bar">${Array.from({length:s.mission.goal},(_,i)=>`<i class="${i < progress ? 'done':''}"></i>`).join('')}</div></div>
-              <div class="guide-card"><b>这不是股价预测</b><p>游戏目标是建立可检验的因果链；专业页保留完整来源与多空论证。</p></div>
+            <div class="world-head"><div><div class="eyebrow">Company world / ${esc(s.code)}</div><h2>${esc(chapter.title)}</h2><p>${esc(s.world_name)} · ${esc(chapter.subtitle)}</p></div><div class="snapshot">${esc(s.notice)}</div></div>
+            <div class="chapter-strip">${s.chapters.map((item, index) => { const done = chapterComplete(item); const accessible = chapterAccessible(index); return `<button class="chapter-tab ${index === state.chapter ? 'current' : ''} ${done ? 'done' : ''} ${accessible ? '' : 'locked'}" data-chapter="${index}" ${accessible ? '' : 'disabled'}><small>${esc(item.number)} · ${esc(item.eyebrow)}</small><b>${esc(item.title)}</b></button>`; }).join('')}</div>
+            <div class="chapter-page">
+              <div class="chapter-intro"><div><div class="eyebrow">${esc(chapter.eyebrow)}</div><h3>${esc(chapter.brief)}</h3><p>当前页面完成后，进入下一段产业链。</p></div><div class="chapter-number">${esc(chapter.number)}</div></div>
+              <div class="map">
+                <svg class="route-lines" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">${renderRoutes()}</svg>
+                <i class="pulse" style="left:48%;top:48%"></i><i class="pulse" style="left:74%;top:29%;animation-delay:.8s"></i>
+                ${chapterNodes().map(renderNode).join('')}
+                <div class="map-hint">点击本页发亮节点，完成 ${esc(chapter.eyebrow)} 调查</div>
+              </div>
+              <div class="world-footer">
+                <div class="status-card"><b>总调查进度 · ${progress}/${s.nodes.length}</b><p>${pageDone ? (state.chapter < s.chapters.length - 1 ? '本页线索已收齐，可以切换到下一条链路。' : '四条链路全部收齐，风险猎人正在等待你的答案。') : '先完成本页线索。每个节点都会交出一条带来源标签的证据。'}</p><div class="progress-bar">${s.nodes.map(node => `<i class="${isOpened(node.id) ? 'done' : ''}"></i>`).join('')}</div>${renderChapterNav()}</div>
+                <div class="guide-card"><b>这不是股价预测</b><p>游戏目标是建立可检验的因果链；专业页保留完整来源与多空论证。</p></div>
+              </div>
             </div>
           </section>
           <aside class="panel task">
             <div class="eyebrow">Current mission</div><div class="mission-title">${esc(s.mission.title)}</div><p class="brief">${esc(s.mission.brief)}</p>
-            <ul class="steps">${requiredNodes().map((node, index) => `<li class="step ${isOpened(node.id) ? 'done' : ''}"><i>${isOpened(node.id) ? '✓' : index + 1}</i><span>调查 ${esc(node.label)}：${esc(node.caption)}</span></li>`).join('')}</ul>
-            <section class="dialogue"><div class="dialogue-top"><div class="pixel-avatar" style="--agent-color:${speaking.color}">${esc(speaking.glyph)}</div><div><div class="who">${esc(speaking.name)} · ${esc(speaking.title)}</div><div class="role">实时调查记录</div></div></div><p>${esc(dialogue.text)}</p></section>
+            <ul class="steps">${s.chapters.map((item, index) => `<li class="step ${chapterComplete(item) ? 'done' : ''} ${index === state.chapter ? 'current' : ''}"><i>${chapterComplete(item) ? '✓' : item.number}</i><span>${esc(item.eyebrow)}：${esc(item.title)}</span></li>`).join('')}</ul>
+            <section class="guide-scene"><img src="/static/assets/guide-mo.png" alt="墨，档案官" /><div class="guide-copy"><span class="guide-label">本页向导</span><b>墨 · 档案官</b><p>${esc(chapter.guide)}</p></div></section>
+            <section class="dialogue dialogue-compact"><div class="dialogue-top"><div class="pixel-avatar" style="--agent-color:${speaking.color}">${esc(speaking.glyph)}</div><div><div class="who">${esc(speaking.name)} · ${esc(speaking.title)}</div><div class="role">实时调查记录</div></div></div><p>${esc(dialogue.text)}</p></section>
             ${renderChallenge()}
             <div class="notice">${esc(s.notice)}</div>
           </aside>
@@ -236,6 +296,11 @@
       document.getElementById('hardToggle').addEventListener('change', event => { state.hardOnly = event.target.checked; render(); });
       document.querySelectorAll('[data-node]').forEach(button => button.addEventListener('click', () => visit(button.dataset.node)));
       document.querySelectorAll('[data-answer]').forEach(button => button.addEventListener('click', () => answer(button.dataset.answer)));
+      document.querySelectorAll('[data-chapter]').forEach(button => button.addEventListener('click', () => goChapter(Number(button.dataset.chapter))));
+      const nextButton = document.querySelector('[data-next]');
+      if (nextButton) nextButton.addEventListener('click', () => goChapter(state.chapter + 1));
+      const previousButton = document.querySelector('[data-previous]');
+      if (previousButton) previousButton.addEventListener('click', () => goChapter(state.chapter - 1));
       const closeButton = document.querySelector('[data-complete]');
       if (closeButton) closeButton.addEventListener('click', finish);
     }
@@ -246,11 +311,27 @@
       return clues.map(clue => `<li class="clue ${clue.kind}"><b>${esc(clue.id)} · ${esc(clue.title)}</b><span class="source">${clue.kind === 'hard' ? '硬数据' : 'AI 推断'} · ${esc(clue.source)}</span></li>`).join('');
     }
 
+    function renderChapterNav() {
+      const s = state.scenario;
+      const previous = state.chapter > 0 ? '<button class="secondary" data-previous>← 上一页</button>' : '';
+      if (!chapterComplete()) return `${previous}<div class="page-lock">收齐本页线索后，下一条链路会亮起。</div>`;
+      if (state.chapter < s.chapters.length - 1) {
+        const next = s.chapters[state.chapter + 1];
+        return `<div class="chapter-nav">${previous}<button class="primary" data-next>进入 ${esc(next.eyebrow)} →</button></div>`;
+      }
+      return `${previous}${allNodesOpened() ? '<div class="page-lock">四条链路已完成，回答右侧的风险挑战。</div>' : ''}`;
+    }
+
     function renderRoutes() {
-      const routes = [['lithium','materials'],['materials','battery'],['battery','automaker'],['automaker','storage']];
-      return routes.map(([from, to]) => {
-        const a = byId(from), b = byId(to);
-        const active = state.opened.has(from) && (state.opened.has(to) || isUnlocked(b));
+      const ids = currentChapter().node_ids;
+      const position = (id) => {
+        const index = ids.indexOf(id);
+        return ids.length === 1 ? { x: 50, y: 46 } : { x: 34 + index * 32, y: 48 };
+      };
+      return ids.slice(1).map((id, index) => {
+        const from = byId(ids[index]), to = byId(id);
+        const a = position(from.id), b = position(to.id);
+        const active = state.opened.has(from.id) && (state.opened.has(to.id) || isUnlocked(to));
         return `<line class="route ${active ? 'active' : ''}" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" />`;
       }).join('');
     }
@@ -258,35 +339,62 @@
     function renderNode(node) {
       const unlocked = isUnlocked(node), opened = isOpened(node.id);
       const icon = opened ? '✓' : unlocked ? '⌁' : '⌕';
-      return `<button class="node ${unlocked ? '' : 'locked'} ${opened ? 'opened' : ''}" style="left:${node.x}%;top:${node.y}%;--node-color:${node.color}" data-node="${node.id}" ${unlocked ? '' : 'aria-disabled="true"'}><span class="icon">${icon}</span><b>${esc(node.label)}</b><span>${esc(node.caption)}</span>${unlocked ? '' : '<i class="lock">⌑</i>'}</button>`;
+      const ids = currentChapter().node_ids;
+      const index = ids.indexOf(node.id);
+      const x = ids.length === 1 ? 50 : 34 + index * 32;
+      const y = ids.length === 1 ? 46 : 48;
+      return `<button class="node ${unlocked ? '' : 'locked'} ${opened ? 'opened' : ''}" style="left:${x}%;top:${y}%;--node-color:${node.color}" data-node="${node.id}" ${unlocked ? '' : 'aria-disabled="true"'}><span class="icon">${icon}</span><b>${esc(node.label)}</b><span>${esc(node.caption)}</span>${unlocked ? '' : '<i class="lock">⌑</i>'}</button>`;
     }
 
     function renderChallenge() {
       const s = state.scenario;
-      if (openedCount() < s.mission.goal) return '';
+      if (!allNodesOpened()) return '';
       const selected = s.risk_challenge.options.find(option => option.id === state.answer);
       return `<section class="challenge"><h3>${esc(s.risk_challenge.title)}</h3><p>${esc(s.risk_challenge.prompt)}</p>${s.risk_challenge.options.map(option => `<button class="option ${state.answer === option.id ? 'selected' : ''}" data-answer="${option.id}">${esc(option.label)}</button>`).join('')}${selected ? `<div class="challenge-response">${esc(selected.response)}</div><button class="primary" data-complete>生成理解卡</button>` : ''}</section>`;
     }
 
     function visit(id) {
       const node = byId(id);
+      if (!node) return;
       if (!isUnlocked(node)) {
         const missing = node.unlock_after.find(item => !state.opened.has(item));
         const target = byId(missing);
-        setDialogue('archivist', `这条通道还没有打开。请先完成「${target.label}」的调查。`);
+        setDialogue('archivist', `这条通道还没有打开。请先完成「${target ? target.label : '上一条线索'}」的调查。`);
         render();
         return;
       }
       state.opened.add(id);
       state.selectedNode = id;
       setDialogue(node.agent_id, node.message);
+      persist();
       render();
     }
 
     function answer(id) {
       const option = state.scenario.risk_challenge.options.find(item => item.id === id);
+      if (!option) return;
       state.answer = id;
       setDialogue('risk', option.response);
+      persist();
+      render();
+    }
+
+    function goChapter(index) {
+      if (!state.scenario || index < 0 || index >= state.scenario.chapters.length) return;
+      if (index > state.chapter && !chapterComplete()) {
+        setDialogue('archivist', '这一页还有线索没有收齐。先完成当前链路，再继续向前。');
+        render();
+        return;
+      }
+      if (!chapterAccessible(index)) {
+        setDialogue('archivist', '前面的链路还没有完成，现在还不能跳过去。');
+        render();
+        return;
+      }
+      state.chapter = index;
+      state.dialogue = { agentId: 'archivist', text: currentChapter().guide };
+      persist();
+      history.pushState({}, '', `/world?code=${encodeURIComponent(code)}&chapter=${index}`);
       render();
     }
 
@@ -309,12 +417,24 @@
           return;
         }
         state.scenario = data;
+        state.opened = new Set([...state.opened].filter(id => data.nodes.some(node => node.id === id)));
+        state.chapter = Math.min(state.chapter, maxAccessibleChapter());
         state.dialogue = { agentId: 'archivist', text: data.agents.find(item => item.id === 'archivist').intro };
+        persist();
         render();
       } catch (error) {
         app.innerHTML = `<div class="error"><div><h2>产业链世界暂时失联</h2><p>${esc(error.message)}</p><a class="ghost-link" href="/">回到研究台</a></div></div>`;
       }
     }
+    window.addEventListener('popstate', () => {
+      if (!state.scenario) return;
+      const requested = Number(new URLSearchParams(location.search).get('chapter'));
+      const next = Number.isFinite(requested) ? Math.max(0, Math.min(Math.floor(requested), maxAccessibleChapter())) : 0;
+      state.chapter = next;
+      state.dialogue = { agentId: 'archivist', text: currentChapter().guide };
+      persist();
+      render();
+    });
     boot();
   </script>
 </body>

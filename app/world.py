@@ -40,6 +40,48 @@ def world_scenario(code: str) -> dict[str, Any] | None:
             "goal": 4,
             "completion_prompt": "请根据已收集线索，写出一条你认为最合理的传导链。",
         },
+        "chapters": [
+            {
+                "id": "upstream",
+                "number": "01",
+                "eyebrow": "上游资源",
+                "title": "盐湖矿区",
+                "subtitle": "先确认冲击从哪里开始",
+                "brief": "原料价格是故事的起点，但起点不等于结论。先把第一条事实证据装进背包。",
+                "node_ids": ["lithium"],
+                "guide": "我们先不急着判断利润。先确认这次风暴从哪一种原料开始，以及它会先落在哪一层成本上。",
+            },
+            {
+                "id": "materials",
+                "number": "02",
+                "eyebrow": "中游材料",
+                "title": "材料工坊",
+                "subtitle": "寻找成本传导的缓冲层",
+                "brief": "同一波原料涨价，经过库存、长协和配方之后，可能已经变了形。",
+                "node_ids": ["materials"],
+                "guide": "这里要特别小心：产业链不是一根透明管道。把‘价格上涨’和‘当期成本上涨’分开看。",
+            },
+            {
+                "id": "battery",
+                "number": "03",
+                "eyebrow": "核心制造",
+                "title": "电芯城",
+                "subtitle": "把经营结果拆回原因",
+                "brief": "来到公司核心业务，查看经营结果，但不要把一个财务指标直接当成因果解释。",
+                "node_ids": ["battery"],
+                "guide": "财务指标告诉我们发生了什么，产业链证据才帮助我们追问为什么。现在把两者放在一起。",
+            },
+            {
+                "id": "downstream",
+                "number": "04",
+                "eyebrow": "下游应用",
+                "title": "车企港 · 储能灯塔",
+                "subtitle": "判断成本有没有议价出口",
+                "brief": "最后看需求和议价能力：车企与储能，是成本压力能否继续传导的两个出口。",
+                "node_ids": ["automaker", "storage"],
+                "guide": "最后一页要做的是压力测试：需求强不强、客户能不能接受调价，以及公司有没有第二条需求出口。",
+            },
+        ],
         "agents": [
             {
                 "id": "archivist",
@@ -209,4 +251,3 @@ def world_scenario(code: str) -> dict[str, Any] | None:
             ],
         },
     }
-
