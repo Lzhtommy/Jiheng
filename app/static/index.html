@@ -90,6 +90,7 @@
         <button class="preset" data-query="高股息且现金流为正">高股息现金流</button>
         <button class="preset" data-query="帮我研究宁德时代">个股研究：宁德时代</button>
         <button class="preset world-launch" type="button">进入产业链世界 · 宁德时代</button>
+        <button class="preset world-launch world-v2-launch" type="button">体验 World v2 · 调查版</button>
         <div class="small-note">流程：自然语言 → 结构化条件 → 证据集 → 个股诊断 → Bull / Bear 反驳</div>
       </aside>
       <main class="content">
@@ -139,6 +140,7 @@
     $('run').addEventListener('click', () => runQuery($('query').value.trim()));
     document.querySelectorAll('.preset:not(.world-launch)').forEach(button => button.addEventListener('click', () => { $('query').value = button.dataset.query; runQuery(button.dataset.query); }));
     document.querySelector('.world-launch').addEventListener('click', () => { window.location.href = '/world?code=300750'; });
+    document.querySelector('.world-v2-launch').addEventListener('click', () => { window.location.href = '/world-v2?code=300750'; });
     runQuery($('query').value);
   </script>
 </body>

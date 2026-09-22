@@ -40,6 +40,11 @@ def world() -> FileResponse:
     return FileResponse(BASE_DIR / "static" / "world.html")
 
 
+@app.get("/world-v2", include_in_schema=False)
+def world_v2() -> FileResponse:
+    return FileResponse(BASE_DIR / "static" / "world_v2.html")
+
+
 @app.get("/api/health")
 def health() -> dict[str, str]:
     return {"status": "ok", "data_mode": "demo", "notice": DATA_NOTICE}

@@ -33,3 +33,10 @@ def test_world_route_and_scenario_api_are_served():
     assert "产业链世界" in page.text
     assert response.status_code == 200
     assert response.json()["world_name"] == "电池环城"
+
+
+def test_world_v2_is_served_as_a_separate_investigation_version():
+    page = client.get("/world-v2?code=300750")
+    assert page.status_code == 200
+    assert "WORLD · FIELDWORK" in page.text
+    assert "没有选择题，先把这里的东西看明白" in page.text
