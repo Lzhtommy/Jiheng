@@ -1,0 +1,38 @@
+# OpenCode local config (contains API keys)
+opencode.json
+.codeartsdoer
+
+# Local secrets / docker-compose env
+.env
+**/.env
+docker-compose.override.yml
+
+# Local harness clone / lightweight Dockerfile (not for upstream)
+jiheng-python/.build-harness/
+jiheng-python/Dockerfile.local
+
+# Java build
+jiheng-java/target/
+*.class
+*.jar
+*.war
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+venv/
+dist/
+build/
+
+# IDE / OS
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Thumbs.db
+nul

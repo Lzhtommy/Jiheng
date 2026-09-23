@@ -1,0 +1,40 @@
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+  java:
+    build: ./jiheng-java
+    environment:
+      REDIS_HOST: redis
+      VR_PG_HOST: ${VR_PG_HOST:?set VR_PG_HOST}
+      VR_PG_PORT: ${VR_PG_PORT:-5432}
+      VR_PG_DATABASE: ${VR_PG_DATABASE:?set VR_PG_DATABASE}
+      VR_PG_USER: ${VR_PG_USER:?set VR_PG_USER}
+      VR_PG_PASSWORD: ${VR_PG_PASSWORD:?set VR_PG_PASSWORD}
+      JIHENG_PG_SCHEMA: ${JIHENG_PG_SCHEMA:-jiheng}
+      JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      SERVICE_TOKEN: ${SERVICE_TOKEN:?set SERVICE_TOKEN}
+    depends_on:
+      - redis
+  python:
+    build: ./jiheng-python
+    environment:
+      JIHENG_REDIS_HOST: redis
+      JIHENG_JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
+      JIHENG_SERVICE_TOKEN: ${SERVICE_TOKEN:?set SERVICE_TOKEN}
+      JIHENG_JAVA_INTERNAL_BASE_URL: http://java:8080
+      JIHENG_DEEPSEEK_API_KEY: ${JIHENG_DEEPSEEK_API_KEY:?set JIHENG_DEEPSEEK_API_KEY}
+      JIHENG_FINANCIAL_MCP_API_KEY: ${JIHENG_FINANCIAL_MCP_API_KEY:?set JIHENG_FINANCIAL_MCP_API_KEY}
+    depends_on:
+      - java
+      - redis
+  nginx:
+    image: nginx:1.27-alpine
+    ports:
+      - "8088:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      - java
+      - python
