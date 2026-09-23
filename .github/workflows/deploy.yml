@@ -1,0 +1,29 @@
+name: Deploy backend to Huawei Cloud
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "jiheng-java/**"
+      - "jiheng-python/**"
+      - "docker-compose.yml"
+      - "deploy/**"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch: {}
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: SSH deploy
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DEPLOY_HOST }}
+          username: ${{ secrets.DEPLOY_USER }}
+          key: ${{ secrets.DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd /opt/jiheng
+            git pull origin main
+            docker compose up -d --build
+            docker image prune -f
