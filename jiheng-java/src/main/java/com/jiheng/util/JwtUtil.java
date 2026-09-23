@@ -50,7 +50,7 @@ public class JwtUtil {
                 .issuer(jwtConfig.getIssuer())
                 .issuedAt(now)
                 .expiration(new Date(now.getTime() + expireMillis))
-                .signWith(key)
+                .signWith(key, Jwts.SIG.HS256)
                 .compact();
     }
 

@@ -7,6 +7,7 @@ import com.jiheng.service.skill.SkillService;
 import com.jiheng.util.TraceContext;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -40,7 +41,7 @@ public class SkillController {
     }
 
     @PutMapping("/skills/{skillId}/enabled")
-    public ApiResponse<Void> toggleEnabled(Long skillId, @Valid @RequestBody SkillToggleRequest request) {
+    public ApiResponse<Void> toggleEnabled(@PathVariable Long skillId, @Valid @RequestBody SkillToggleRequest request) {
         skillService.toggleSkill(traceContext.getUserId(), skillId, request.getEnabled());
         return ApiResponse.ok(null);
     }
