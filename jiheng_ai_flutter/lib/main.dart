@@ -782,6 +782,13 @@ class JihengShellState extends State<JihengShell> {
       final name = event['event']?.toString() ?? '';
       if (name.contains('error') || event['code'] != null) {
         ai.stage = Stage.done;
+        if (ai.intro.isNotEmpty || ai.sections.isNotEmpty) {
+          if (ai.risk.isEmpty) {
+            ai.risk = event['message']?.toString() ?? '内容由 AI 生成，请核查重要信息。';
+          }
+          sending = false;
+          return;
+        }
         ai.intro = '服务暂时不可用，已切换为本地演示回复。';
         ai.sections.add(const SectionData('错误信息', ['请稍后重试，或检查后端服务地址与登录状态。']));
         ai.risk = event['message']?.toString() ?? '内容由 AI 生成，请核查重要信息。';
