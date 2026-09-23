@@ -86,6 +86,7 @@ class ChatMsg {
   final List<List<String>> rows = [];
   final List<ToolCallData> toolCalls = [];
   CollabData? collab;
+  final DateTime startedAt = DateTime.now();
 }
 
 class ToolCallData {
@@ -824,10 +825,8 @@ class JihengShellState extends State<JihengShell> {
 
   Future<void> send() async {
     final text = input.text.trim();
-    if (text.isEmpty) {
-      setState(() => expertSheet = true);
-      return;
-    }
+    if (sending) return;
+    if (text.isEmpty) return;
     final ai = ChatMsg.ai(flow);
     setState(() {
       messages.add(ChatMsg.user(text));
@@ -1709,7 +1708,7 @@ class HomeView extends StatelessWidget {
               const AiGreeting(),
               if (state.messages.isEmpty) ...[
                 HomeSection(
-                  title: '金融专家',
+                  title: '分析师',
                   action: '全部专家',
                   onAction: () => state.mutate(() => state.expertSheet = true),
                   child: ExpertGrid(state: state),
@@ -1947,7 +1946,7 @@ class AiGreeting extends StatelessWidget {
                     bottomLeft: Radius.circular(14),
                     bottomRight: Radius.circular(14)),
               ),
-              child: const Text('已为你接入实时行情、研究数据与自动化金融 Agent，今天想做什么？',
+              child: const Text('已为你接入实时行情、研究数据与分析师多Agent协作，今天想做什么？',
                   style: TextStyle(fontSize: 14, height: 1.7)),
             ),
           ),
@@ -2222,14 +2221,12 @@ class MessageBubble extends StatelessWidget {
         ),
       );
     }
-    final tool = message.tool.isEmpty ? '数据检索' : message.tool;
     final intro = message.intro;
     final sections = message.sections;
     final rows = message.rows;
     final risk = message.risk;
     final ref = message.ref;
     final refCount = message.refCount;
-    final isSkill = message.skill;
     final collab = message.collab;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
@@ -2243,61 +2240,25 @@ class MessageBubble extends StatelessWidget {
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               if (collab != null)
                 CollabPanel(message: message, state: state)
-              else if (message.stage == Stage.thinking)
-                const Text('正在检索……',
-                    style: TextStyle(color: C.muted, fontSize: 13.5)),
-              if (message.toolCalls.isNotEmpty) ...[
-                for (final call in message.toolCalls)
-                  ToolCallTile(key: ValueKey(call.id), call: call),
-                const SizedBox(height: 4),
-              ],
-              if (message.stage != Stage.thinking) ...[
-                if (message.toolCalls.isEmpty && collab == null)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-                    decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xFFE7E5E0)),
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Row(children: [
-                      Text(isSkill ? '已调用技能 · $tool' : tool,
-                          style: const TextStyle(
-                              color: C.gold,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12.5)),
-                      const SizedBox(width: 8),
-                      Expanded(
-                          child: Text(
-                              message.stage == Stage.tool
-                                  ? '正在生成搜索问句…'
-                                  : '正在检索相关数据…',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
-                                  color: C.muted, fontSize: 12.5))),
-                      if (message.stage == Stage.tool)
-                        const SizedBox(
-                            width: 13,
-                            height: 13,
-                            child: CircularProgressIndicator(strokeWidth: 2))
-                      else
-                        const Text('✓',
-                            style: TextStyle(color: C.green, fontSize: 13)),
-                    ]),
-                  ),
-                const SizedBox(height: 10),
-                if (intro.isEmpty && collab != null)
-                  const SizedBox.shrink()
-                else if (intro.isEmpty)
-                  const Text('正在检索……',
-                      style: TextStyle(fontSize: 14, height: 1.7))
-                else
+              else ...[
+                if (message.toolCalls.isNotEmpty) ...[
+                  for (final call in message.toolCalls)
+                    ToolCallTile(key: ValueKey(call.id), call: call),
+                  const SizedBox(height: 4),
+                ],
+                if (intro.isNotEmpty)
                   MarkdownBody(
                     data: intro,
                     selectable: true,
                     styleSheet: answerMarkdownStyle,
                   ),
+                if (message.stage != Stage.done) ...[
+                  if (intro.isNotEmpty) const BlinkCursor(),
+                  WaitLine(
+                    startedAt: message.startedAt,
+                    label: intro.isEmpty ? '正在等待回答' : '正在生成',
+                  ),
+                ],
               ],
               if (message.stage == Stage.done) ...[
                 const SizedBox(height: 12),
@@ -2374,35 +2335,36 @@ class Composer extends StatelessWidget {
       decoration: const BoxDecoration(
           color: Colors.white, border: Border(top: BorderSide(color: C.line))),
       child: Column(children: [
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(children: [
-            ModeChip(state: state, label: '快速问答'),
-            ModeChip(state: state, label: '深度研究'),
-            ModeChip(state: state, label: '分析师', expert: true),
-            if (state.mode == '分析师' && state.expert.isNotEmpty)
-              Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: Text(state.expert,
-                    style: const TextStyle(color: C.gold, fontSize: 12.5)),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(children: [
+              ModeChip(state: state, label: '快速问答'),
+              ModeChip(state: state, label: '深度研究'),
+              ModeChip(
+                state: state,
+                label: state.mode == '分析师' && state.expert.isNotEmpty
+                    ? state.expert
+                    : '分析师',
+                value: '分析师',
+                expert: true,
               ),
-            if (state.mode == '分析师')
-              FilterChip(
-                label: const Text('多Agent模式', style: TextStyle(fontSize: 12)),
-                avatar: const Icon(Icons.hub_outlined, size: 14),
-                selected: state.collabMode,
-                showCheckmark: false,
-                visualDensity: VisualDensity.compact,
-                selectedColor: C.goldSoft,
-                onSelected: (on) => state.mutate(() {
-                  state.collabMode = on;
-                  if (on && state.selectedExpertId.isEmpty) {
-                    state.expert = state.activeExpertName;
-                    state.selectedExpertId = state.activeExpertId;
-                  }
-                }),
-              ),
-          ]),
+              if (state.mode == '分析师')
+                ModePill(
+                  label: '多Agent协作',
+                  selected: state.collabMode,
+                  optional: true,
+                  onTap: () => state.mutate(() {
+                    state.collabMode = !state.collabMode;
+                    if (state.collabMode && state.selectedExpertId.isEmpty) {
+                      state.expert = state.activeExpertName;
+                      state.selectedExpertId = state.activeExpertId;
+                    }
+                  }),
+                ),
+            ]),
+          ),
         ),
         const SizedBox(height: 8),
         Row(children: [
@@ -2412,13 +2374,18 @@ class Composer extends StatelessWidget {
               minLines: 1,
               maxLines: 4,
               onChanged: (_) => state.mutate(() {}),
-              onSubmitted: (_) => state.send(),
+              onSubmitted: (_) {
+                if (!state.sending) state.send();
+              },
               decoration: InputDecoration(
-                hintText: state.mode == '深度研究'
-                    ? '对复杂问题进行多轮检索与推理，产出深度研究报告'
-                    : state.mode == '分析师' && state.collabMode
-                        ? '先生成多智能体研究计划，确认后协作执行'
-                        : '针对各类信息查询和简单问题，提供快速回答与响应',
+                hintText: state.messages.isNotEmpty
+                    ? null
+                    : state.mode == '深度研究'
+                        ? '输入研究问题'
+                        : state.mode == '分析师' && state.collabMode
+                            ? '输入要协作研究的问题'
+                            : '输入问题',
+                hintStyle: const TextStyle(color: C.muted, fontSize: 14),
                 filled: true,
                 fillColor: C.faint,
                 border: OutlineInputBorder(
@@ -2431,24 +2398,34 @@ class Composer extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           InkWell(
-            onTap: state.send,
+            onTap: state.sending || state.input.text.trim().isEmpty
+                ? null
+                : state.send,
             borderRadius: BorderRadius.circular(999),
             child: Container(
               width: 34,
               height: 34,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: state.input.text.trim().isEmpty ? Colors.white : C.ink,
+                color: state.sending || state.input.text.trim().isNotEmpty
+                    ? C.ink
+                    : Colors.white,
                 border: Border.all(
-                    color: state.input.text.trim().isEmpty ? C.line : C.ink),
+                    color: state.sending || state.input.text.trim().isNotEmpty
+                        ? C.ink
+                        : C.line),
               ),
-              child: Icon(
-                  state.input.text.trim().isEmpty
-                      ? Icons.add
-                      : Icons.arrow_upward,
-                  size: 18,
-                  color:
-                      state.input.text.trim().isEmpty ? C.muted : Colors.white),
+              child: state.sending
+                  ? const Padding(
+                      padding: EdgeInsets.all(9),
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white),
+                    )
+                  : Icon(Icons.arrow_upward,
+                      size: 18,
+                      color: state.input.text.trim().isEmpty
+                          ? C.muted
+                          : Colors.white),
             ),
           ),
         ]),
@@ -2461,36 +2438,83 @@ class ModeChip extends StatelessWidget {
   const ModeChip(
       {required this.state,
       required this.label,
+      this.value,
       this.expert = false,
       super.key});
   final JihengShellState state;
   final String label;
+  final String? value;
   final bool expert;
 
   @override
   Widget build(BuildContext context) {
-    final selected = state.mode == label;
+    final mode = value ?? label;
+    final selected = state.mode == mode;
+    return ModePill(
+      label: label,
+      selected: selected,
+      onTap: () {
+        if (expert) {
+          state.mutate(() => state.expertSheet = true);
+        } else {
+          state.mutate(() {
+            state.mode = mode;
+            state.expert = '';
+            state.selectedExpertId = '';
+            state.collabMode = false;
+          });
+        }
+      },
+    );
+  }
+}
+
+class ModePill extends StatelessWidget {
+  const ModePill(
+      {required this.label,
+      required this.selected,
+      required this.onTap,
+      this.optional = false,
+      super.key});
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+  final bool optional;
+
+  @override
+  Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(right: 8),
-      child: ChoiceChip(
-        label: Text(label),
-        selected: selected,
-        onSelected: (_) {
-          if (expert) {
-            state.mutate(() => state.expertSheet = true);
-          } else {
-            state.mutate(() {
-              state.mode = label;
-              state.expert = '';
-              state.selectedExpertId = '';
-              state.collabMode = false;
-            });
-          }
-        },
-        selectedColor: C.goldSoft,
-        backgroundColor: C.faint,
-        labelStyle:
-            TextStyle(color: selected ? C.gold : const Color(0xFF4A5259)),
+      child: Material(
+        color: optional
+            ? (selected ? C.goldSoft : Colors.transparent)
+            : (selected ? C.goldSoft : C.faint),
+        borderRadius: BorderRadius.circular(20),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            padding: EdgeInsets.symmetric(
+                horizontal: optional ? 8 : 10, vertical: optional ? 1 : 4),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              border: Border.all(
+                  color: selected ? const Color(0xFFE4D7C4) : C.line),
+            ),
+            child: Text(
+              label,
+              softWrap: false,
+              style: TextStyle(
+                fontSize: optional ? 11 : 12,
+                color: selected
+                    ? C.gold
+                    : (optional ? C.muted : const Color(0xFF4A5259)),
+                fontFamily: 'Microsoft YaHei',
+                fontFamilyFallback: const ['Segoe UI', 'sans-serif'],
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }
@@ -3827,7 +3851,7 @@ class ExpertSheet extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.fromLTRB(18, 18, 12, 10),
               child: Row(children: [
-                const Text('选择金融专家',
+                const Text('选择分析师',
                     style: TextStyle(
                         fontFamily: 'Noto Serif SC',
                         fontWeight: FontWeight.w600,
@@ -3851,7 +3875,7 @@ class ExpertSheet extends StatelessWidget {
               child: const Row(children: [
                 Icon(Icons.search, size: 15, color: Color(0xFF8B9299)),
                 SizedBox(width: 8),
-                Text('搜索金融专家',
+                Text('搜索分析师',
                     style: TextStyle(color: Color(0xFF8B9299), fontSize: 13)),
               ]),
             ),
@@ -3987,6 +4011,87 @@ class Label extends StatelessWidget {
   }
 }
 
+class WaitLine extends StatefulWidget {
+  const WaitLine({required this.startedAt, required this.label, super.key});
+  final DateTime startedAt;
+  final String label;
+
+  @override
+  State<WaitLine> createState() => _WaitLineState();
+}
+
+class _WaitLineState extends State<WaitLine> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) {
+      if (mounted) setState(() {});
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final elapsed = DateTime.now().difference(widget.startedAt);
+    final seconds = elapsed.inSeconds.clamp(0, 359999);
+    final text = seconds >= 60
+        ? '${seconds ~/ 60}分${(seconds % 60).toString().padLeft(2, '0')}秒'
+        : '$seconds秒';
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(children: [
+        const SizedBox(
+          width: 14,
+          height: 14,
+          child: CircularProgressIndicator(strokeWidth: 2, color: C.gold),
+        ),
+        const SizedBox(width: 8),
+        Text('${widget.label} · 已等待 $text',
+            style: const TextStyle(color: C.muted, fontSize: 12.5)),
+      ]),
+    );
+  }
+}
+
+class BlinkCursor extends StatefulWidget {
+  const BlinkCursor({super.key});
+
+  @override
+  State<BlinkCursor> createState() => _BlinkCursorState();
+}
+
+class _BlinkCursorState extends State<BlinkCursor>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 700),
+  )..repeat(reverse: true);
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return FadeTransition(
+      opacity: _controller,
+      child: const Padding(
+        padding: EdgeInsets.only(top: 2),
+        child: SizedBox(width: 2, height: 16, child: ColoredBox(color: C.ink)),
+      ),
+    );
+  }
+}
+
 class ToolCallTile extends StatefulWidget {
   const ToolCallTile({required this.call, super.key});
   final ToolCallData call;
@@ -4003,6 +4108,14 @@ class _ToolCallTileState extends State<ToolCallTile> {
     final call = widget.call;
     final open = userOpen ?? call.running;
     final label = toolLabels[call.name] ?? call.name;
+    final title = call.running
+        ? '正在获取$label'
+        : (call.success! ? '已获取$label' : '获取$label失败');
+    final rawReason =
+        (call.result ?? '').replaceAll(RegExp(r'\s+'), ' ').trim();
+    final reason = call.success == false
+        ? (rawReason.length > 48 ? '${rawReason.substring(0, 48)}…' : rawReason)
+        : '';
     final Widget status = call.running
         ? const SizedBox(
             width: 12,
@@ -4027,8 +4140,7 @@ class _ToolCallTileState extends State<ToolCallTile> {
               const Icon(Icons.build_outlined, size: 14, color: C.gold),
               const SizedBox(width: 6),
               Expanded(
-                child: Text(
-                    label == call.name ? label : '$label · ${call.name}',
+                child: Text(title,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -4043,6 +4155,15 @@ class _ToolCallTileState extends State<ToolCallTile> {
             ]),
           ),
         ),
+        if (reason.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(31, 0, 11, 8),
+            child: Text(reason,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                    color: Colors.red.shade700, fontSize: 12, height: 1.4)),
+          ),
         if (open)
           Padding(
             padding: const EdgeInsets.fromLTRB(11, 0, 11, 10),
