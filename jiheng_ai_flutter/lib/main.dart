@@ -78,11 +78,11 @@ class ApiClient {
 
   static const javaBase = String.fromEnvironment(
     'JIHENG_JAVA_BASE_URL',
-    defaultValue: 'http://192.168.184.207:8088',
+    defaultValue: 'http://192.168.184.207',
   );
   static const agentBase = String.fromEnvironment(
     'JIHENG_AGENT_BASE_URL',
-    defaultValue: 'http://192.168.184.207:8088',
+    defaultValue: 'http://192.168.184.207',
   );
 
   final storage = const FlutterSecureStorage();

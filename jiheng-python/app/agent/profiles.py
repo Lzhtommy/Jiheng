@@ -10,7 +10,7 @@ class AgentProfile:
     system_prompt: str
     tool_names: tuple[str, ...]
     max_tool_rounds: int
-    reasoning_effort: str
+    reasoning_effort: str | None
 
 
 DEFAULT_TOOLS = (
@@ -40,5 +40,5 @@ def build_profile(mode: str, expert: dict | None = None) -> AgentProfile:
         system_prompt=prompt,
         tool_names=DEFAULT_TOOLS,
         max_tool_rounds=6 if is_deep else 2,
-        reasoning_effort="high" if is_deep else "medium",
+        reasoning_effort="high" if is_deep else None,
     )

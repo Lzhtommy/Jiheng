@@ -23,18 +23,20 @@ class DeepSeekToolRuntime:
         headers = {"Authorization": f"Bearer {settings.deepseek_api_key}"}
         async with httpx.AsyncClient(timeout=90) as client:
             for _ in range(profile.max_tool_rounds):
+                payload = {
+                    "model": profile.model,
+                    "messages": conversation,
+                    "tools": openai_tools(profile.tool_names),
+                    "tool_choice": "auto",
+                    "stream": False,
+                }
+                if profile.reasoning_effort:
+                    payload["reasoning_effort"] = profile.reasoning_effort
+                    payload["thinking"] = {"type": "enabled"}
                 response = await client.post(
                     f"{settings.deepseek_base_url}/chat/completions",
                     headers=headers,
-                    json={
-                        "model": profile.model,
-                        "messages": conversation,
-                        "tools": openai_tools(profile.tool_names),
-                        "tool_choice": "auto",
-                        "stream": False,
-                        "reasoning_effort": profile.reasoning_effort,
-                        "thinking": {"type": "enabled"},
-                    },
+                    json=payload,
                 )
                 response.raise_for_status()
                 message = response.json()["choices"][0]["message"]

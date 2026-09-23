@@ -38,15 +38,19 @@ class DeepSeekHarnessRuntime:
         shutil.copyfile(patch, profile_dir / "cordis.patch.yml")
 
         def run() -> str:
+            kwargs = {
+                "dsh_home": str(home),
+                "cwd": str(workspace),
+                "profile": "jiheng",
+                "provider": "deepseek-official",
+                "model": profile.model,
+                "api_key": settings.deepseek_api_key,
+                "base_url": settings.deepseek_base_url,
+            }
+            if profile.reasoning_effort:
+                kwargs["reasoning_effort"] = profile.reasoning_effort
             with DeepSeekHarness(
-                dsh_home=str(home),
-                cwd=str(workspace),
-                profile="jiheng",
-                provider="deepseek-official",
-                model=profile.model,
-                reasoning_effort=profile.reasoning_effort,
-                api_key=settings.deepseek_api_key,
-                base_url=settings.deepseek_base_url,
+                **kwargs,
             ) as harness:
                 return harness.run(prompt, session_id=context.session_key()).final_response
 
