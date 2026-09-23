@@ -78,11 +78,11 @@ class ApiClient {
 
   static const javaBase = String.fromEnvironment(
     'JIHENG_JAVA_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8080',
+    defaultValue: 'http://192.168.184.207:8088',
   );
   static const agentBase = String.fromEnvironment(
     'JIHENG_AGENT_BASE_URL',
-    defaultValue: 'http://10.0.2.2:8000',
+    defaultValue: 'http://192.168.184.207:8088',
   );
 
   final storage = const FlutterSecureStorage();
@@ -931,13 +931,25 @@ class _LoginViewState extends State<LoginView> {
     super.dispose();
   }
 
-  Future<void> _loadCaptcha() async {
+  Future<void> _loadCaptcha({bool clearInput = false}) async {
     final data = await widget.state.loadCaptcha();
     if (!mounted || data == null) return;
     setState(() {
       captchaId = data['captchaId']?.toString() ?? '';
       captchaImage = data['captchaImage']?.toString() ?? '';
+      if (clearInput) captcha.clear();
     });
+  }
+
+  Uint8List? _captchaBytes() {
+    if (!captchaImage.startsWith('data:image')) return null;
+    final comma = captchaImage.indexOf(',');
+    if (comma < 0) return null;
+    try {
+      return base64Decode(captchaImage.substring(comma + 1));
+    } catch (_) {
+      return null;
+    }
   }
 
   Future<void> _sendSms() async {
@@ -948,12 +960,21 @@ class _LoginViewState extends State<LoginView> {
     try {
       await widget.state
           .sendSms(phone.text.trim(), captcha.text.trim(), captchaId);
-      if (mounted) widget.state.snack('短信验证码已发送');
+      sms.text = '000000';
+      await _loadCaptcha(clearInput: true);
+      if (mounted) widget.state.snack('已填入默认短信验证码 000000');
     } catch (e) {
       setState(() => error = '短信发送失败：$e');
     } finally {
       if (mounted) setState(() => loading = false);
     }
+  }
+
+  void _enterDemoMode([String? reason]) {
+    widget.state.mutate(() {
+      widget.state.isLoggedIn = true;
+      widget.state.apiError = reason ?? '当前使用本地演示模式，未连接真实登录。';
+    });
   }
 
   Future<void> _login() async {
@@ -969,6 +990,7 @@ class _LoginViewState extends State<LoginView> {
         captchaId: captchaId,
       );
     } catch (e) {
+      if (!mounted) return;
       setState(() => error = '登录失败：$e');
       await _loadCaptcha();
     } finally {
@@ -980,6 +1002,7 @@ class _LoginViewState extends State<LoginView> {
   Widget build(BuildContext context) {
     final size = MediaQuery.of(context).size;
     final compact = size.height < 780;
+    final captchaBytes = _captchaBytes();
     return Scaffold(
       backgroundColor: const Color(0xFFFBFAF7),
       body: SafeArea(
@@ -1089,7 +1112,8 @@ class _LoginViewState extends State<LoginView> {
                                   color: C.text)),
                           const SizedBox(height: 10),
                           Row(children: [
-                            Expanded(
+                            Flexible(
+                              flex: 10,
                               child: LoginInput(
                                 controller: captcha,
                                 hint: '请输入图形验证码',
@@ -1099,7 +1123,7 @@ class _LoginViewState extends State<LoginView> {
                             ),
                             const SizedBox(width: 8),
                             Container(
-                              width: 72,
+                              width: 110,
                               height: 48,
                               alignment: Alignment.center,
                               decoration: BoxDecoration(
@@ -1107,22 +1131,34 @@ class _LoginViewState extends State<LoginView> {
                                 borderRadius: BorderRadius.circular(14),
                                 border: Border.all(color: C.line),
                               ),
-                              child: Text(
-                                captchaImage.isEmpty ? '7F3K' : '已获取',
-                                style: const TextStyle(
-                                    fontFamily: 'serif',
-                                    color: C.gold,
-                                    fontSize: 22,
-                                    letterSpacing: 3,
-                                    fontWeight: FontWeight.w700),
-                              ),
+                              child: captchaBytes == null
+                                  ? const Text(
+                                      '7F3K',
+                                      style: TextStyle(
+                                          fontFamily: 'serif',
+                                          color: C.gold,
+                                          fontSize: 22,
+                                          letterSpacing: 3,
+                                          fontWeight: FontWeight.w700),
+                                    )
+                                  : ClipRRect(
+                                      borderRadius: BorderRadius.circular(12),
+                                      child: Image.memory(
+                                        captchaBytes,
+                                        width: 110,
+                                        height: 48,
+                                        fit: BoxFit.contain,
+                                        gaplessPlayback: true,
+                                      ),
+                                    ),
                             ),
                             const SizedBox(width: 8),
                             SizedBox(
                               width: 88,
                               height: 48,
                               child: OutlinedButton(
-                                onPressed: _loadCaptcha,
+                                onPressed: () =>
+                                    _loadCaptcha(clearInput: true),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: C.gold,
                                   padding:
@@ -1211,10 +1247,7 @@ class _LoginViewState extends State<LoginView> {
                           ),
                           SizedBox(height: compact ? 14 : 16),
                           TextButton(
-                            onPressed: () => widget.state.mutate(() {
-                              widget.state.isLoggedIn = true;
-                              widget.state.apiError = '当前使用本地演示模式，未连接真实登录。';
-                            }),
+                            onPressed: () => _enterDemoMode(),
                             child: const Text('后端不可用时进入演示模式',
                                 style: TextStyle(
                                     color: C.gold,
