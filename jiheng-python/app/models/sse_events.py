@@ -27,6 +27,7 @@ class ToolCallEvent(BaseModel):
     tool_name: str
     tool_input: str
     is_skill: bool = False
+    node_id: str | None = None
 
 
 class ToolResultEvent(BaseModel):
@@ -35,6 +36,7 @@ class ToolResultEvent(BaseModel):
     tool_name: str
     tool_result: str
     success: bool = True
+    node_id: str | None = None
 
 
 class ReasoningStartEvent(BaseModel):

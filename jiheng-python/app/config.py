@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     # Harness 跑完整轮才产出结果，工具调用多时会远超普通流式间隔
     agent_silent_timeout_seconds: float = 300
     deep_research_timeout_seconds: float = 1800
+    multi_agent_leaf_model: str = ""
+    multi_agent_time_budget_seconds: float = 240
+    multi_agent_max_parallel: int = 4
+    multi_agent_max_nodes: int = 5
     app_root: str = str(Path(__file__).resolve().parents[1])
     dsh_home: str = "./data/dsh-home"
     dsh_workspace: str = "./data/dsh-workspace"

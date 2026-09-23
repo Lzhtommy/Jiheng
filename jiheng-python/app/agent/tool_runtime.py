@@ -21,12 +21,13 @@ class DeepSeekToolRuntime:
         conversation = [{"role": "system", "content": profile.system_prompt}, *messages]
         refs: list[dict] = []
         headers = {"Authorization": f"Bearer {settings.deepseek_api_key}"}
+        tools = await openai_tools(profile.tool_names)
         async with httpx.AsyncClient(timeout=90) as client:
             for _ in range(profile.max_tool_rounds):
                 payload = {
                     "model": profile.model,
                     "messages": conversation,
-                    "tools": openai_tools(profile.tool_names),
+                    "tools": tools,
                     "tool_choice": "auto",
                     "stream": False,
                 }

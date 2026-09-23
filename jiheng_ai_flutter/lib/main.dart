@@ -8,6 +8,8 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 import 'package:webview_flutter/webview_flutter.dart';
 
+import 'collab.dart';
+
 void main() => runApp(const JihengApp());
 
 class JihengApp extends StatelessWidget {
@@ -74,6 +76,7 @@ class ChatMsg {
   final List<SectionData> sections = [];
   final List<List<String>> rows = [];
   final List<ToolCallData> toolCalls = [];
+  CollabData? collab;
 }
 
 class ToolCallData {
@@ -266,8 +269,9 @@ class ApiClient {
     return _unwrap(response);
   }
 
-  Stream<Map<String, dynamic>> streamChat(Map<String, dynamic> body) async* {
-    final request = http.Request('POST', Uri.parse('$agentBase/chat/stream'));
+  Stream<Map<String, dynamic>> streamChat(Map<String, dynamic> body,
+      {String path = '/chat/stream'}) async* {
+    final request = http.Request('POST', Uri.parse('$agentBase$path'));
     request.headers.addAll({
       ..._headers,
       'Accept': 'text/event-stream',
@@ -277,6 +281,15 @@ class ApiClient {
     final response = await request.send();
     if (response.statusCode < 200 || response.statusCode >= 300) {
       _checkUnauthorized(response.statusCode);
+      final text = await response.stream.bytesToString();
+      try {
+        final decoded = jsonDecode(text);
+        if (decoded is Map && decoded['message'] != null) {
+          throw Exception(decoded['message']);
+        }
+      } on FormatException {
+        // Non-JSON error bodies fall through to the status code message.
+      }
       throw Exception('SSE HTTP ${response.statusCode}');
     }
 
@@ -366,6 +379,7 @@ class JihengShellState extends State<JihengShell> {
   bool isLoggedIn = false;
   bool loadingData = false;
   bool sending = false;
+  bool collabMode = false;
   String? _chatSessionId;
 
   String get chatSessionId => _chatSessionId ??=
@@ -699,6 +713,10 @@ class JihengShellState extends State<JihengShell> {
       });
       return;
     }
+    if (mode == '金融专家团' && collabMode) {
+      await _planCollab(ai, text);
+      return;
+    }
     try {
       if (mode == '深度研究') {
         final data =
@@ -750,6 +768,98 @@ class JihengShellState extends State<JihengShell> {
     }
   }
 
+  Map<String, dynamic> _collabBody(CollabData collab) => {
+        'expert': selectedExpertId,
+        'conversation_id': chatSessionId,
+        'messages': [
+          ...collab.history,
+          {'role': 'user', 'content': collab.question},
+        ],
+      };
+
+  Future<void> _planCollab(ChatMsg ai, String text) async {
+    final collab = CollabData(question: text, history: _chatHistory());
+    setState(() => ai.collab = collab);
+    try {
+      final data =
+          await api.agentPost('/chat/multi-agent/plan', _collabBody(collab));
+      if (!mounted) return;
+      setState(() {
+        collab.loadPlan(Map<String, dynamic>.from(data as Map));
+        collab.phase = 'confirm';
+        sending = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        collab.phase = 'failed';
+        ai.stage = Stage.done;
+        ai.intro = '研究计划生成失败，请稍后重试。';
+        ai.risk = e.toString();
+        sending = false;
+      });
+    }
+    _scrollDown();
+  }
+
+  Future<void> editCollabPlan(ChatMsg ai) async {
+    final collab = ai.collab!;
+    final edited = await Navigator.of(context).push<CollabData>(
+        MaterialPageRoute(builder: (_) => PlanEditorPage(collab: collab)));
+    if (edited == null || !mounted) return;
+    setState(() {
+      collab.goal = edited.goal;
+      collab.nodes = edited.nodes;
+    });
+  }
+
+  void cancelCollab(ChatMsg ai) {
+    setState(() {
+      ai.collab!.phase = 'cancelled';
+      ai.stage = Stage.done;
+      ai.intro = '已取消本次协作研究。';
+    });
+  }
+
+  Future<void> runCollab(ChatMsg ai) async {
+    final collab = ai.collab!;
+    final errors = collab.validate();
+    if (errors.isNotEmpty) {
+      snack(errors.first);
+      return;
+    }
+    setState(() {
+      collab.phase = 'research';
+      ai.stage = Stage.tool;
+      sending = true;
+    });
+    try {
+      final body = {..._collabBody(collab), 'plan': collab.toPlanJson()};
+      await for (final event
+          in api.streamChat(body, path: '/chat/multi-agent/stream')) {
+        if (!mounted) return;
+        _applySseEvent(ai, event);
+        _scrollDown();
+      }
+      if (!mounted) return;
+      setState(() {
+        if (collab.phase != 'failed') collab.phase = 'done';
+        ai.stage = Stage.done;
+        if (ai.intro.isEmpty) ai.intro = '协作研究已结束，但未生成回答。';
+        sending = false;
+      });
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        collab.phase = 'failed';
+        ai.stage = Stage.done;
+        if (ai.intro.isEmpty) ai.intro = '协作研究执行失败，请稍后重试。';
+        ai.risk = e.toString();
+        sending = false;
+      });
+    }
+  }
+
   Map<String, dynamic> _chatBody(String text) {
     return {
       'mode': mode == '深度研究'
@@ -785,10 +895,50 @@ class JihengShellState extends State<JihengShell> {
     return history.length > 10 ? history.sublist(history.length - 10) : history;
   }
 
+  bool _applyCollabEvent(
+      CollabData collab, String name, Map<String, dynamic> event) {
+    final node = collab.byId(event['node_id']?.toString());
+    switch (name) {
+      case 'phase':
+        collab.phase = event['name']?.toString() ?? collab.phase;
+      case 'agent_graph':
+        break;
+      case 'agent_status':
+        node?.status = event['status']?.toString() ?? 'pending';
+        node?.attempt = int.tryParse('${event['attempt']}') ?? 0;
+      case 'agent_message':
+        collab.messages.add(CollabMessage(
+          int.tryParse('${event['id']}') ?? collab.messages.length + 1,
+          event['from']?.toString() ?? '',
+          event['to']?.toString(),
+          event['kind']?.toString() ?? '',
+          event['summary']?.toString() ?? '',
+        ));
+      case 'agent_output':
+        node?.output = event['output']?.toString() ?? '';
+      case 'tool_call' when node != null:
+        node.toolCalls.add(ToolCallData(
+            event['call_id']?.toString() ?? '',
+            event['tool_name']?.toString() ?? '',
+            event['tool_input']?.toString() ?? ''));
+      case 'tool_result' when node != null:
+        for (final call in node.toolCalls) {
+          if (call.id == event['call_id']?.toString()) {
+            call.result = event['tool_result']?.toString() ?? '';
+            call.success = event['success'] != false;
+          }
+        }
+      default:
+        return false;
+    }
+    return true;
+  }
+
   void _applySseEvent(ChatMsg ai, Map<String, dynamic> event) {
     setState(() {
       final name = event['event']?.toString() ?? '';
       if (name.contains('error') || event['code'] != null) {
+        ai.collab?.phase = 'failed';
         ai.stage = Stage.done;
         if (ai.intro.isNotEmpty || ai.sections.isNotEmpty) {
           if (ai.risk.isEmpty) {
@@ -801,6 +951,9 @@ class JihengShellState extends State<JihengShell> {
         ai.sections.add(const SectionData('错误信息', ['请稍后重试，或检查后端服务地址与登录状态。']));
         ai.risk = event['message']?.toString() ?? '内容由 AI 生成，请核查重要信息。';
         sending = false;
+        return;
+      }
+      if (ai.collab != null && _applyCollabEvent(ai.collab!, name, event)) {
         return;
       }
       final callId = event['call_id']?.toString();
@@ -1896,6 +2049,7 @@ class MessageBubble extends StatelessWidget {
     final ref = message.ref;
     final refCount = message.refCount;
     final isSkill = message.skill;
+    final collab = message.collab;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1906,7 +2060,9 @@ class MessageBubble extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 2),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              if (message.stage == Stage.thinking)
+              if (collab != null)
+                CollabPanel(message: message, state: state)
+              else if (message.stage == Stage.thinking)
                 const Text('正在检索……',
                     style: TextStyle(color: C.muted, fontSize: 13.5)),
               if (message.toolCalls.isNotEmpty) ...[
@@ -1915,7 +2071,7 @@ class MessageBubble extends StatelessWidget {
                 const SizedBox(height: 4),
               ],
               if (message.stage != Stage.thinking) ...[
-                if (message.toolCalls.isEmpty)
+                if (message.toolCalls.isEmpty && collab == null)
                   Container(
                     padding:
                         const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
@@ -1950,7 +2106,9 @@ class MessageBubble extends StatelessWidget {
                     ]),
                   ),
                 const SizedBox(height: 10),
-                if (intro.isEmpty)
+                if (intro.isEmpty && collab != null)
+                  const SizedBox.shrink()
+                else if (intro.isEmpty)
                   const Text('正在检索……',
                       style: TextStyle(fontSize: 14, height: 1.7))
                 else
@@ -2048,10 +2206,24 @@ class Composer extends StatelessWidget {
           )
         else
           Row(children: [
-            Label(
-                text: state.expert.isEmpty
-                    ? state.mode
-                    : '${state.mode} · ${state.expert}'),
+            Flexible(
+              child: Label(
+                  text: state.expert.isEmpty
+                      ? state.mode
+                      : '${state.mode} · ${state.expert}'),
+            ),
+            if (state.mode == '金融专家团') ...[
+              const SizedBox(width: 8),
+              FilterChip(
+                label: const Text('深度协作', style: TextStyle(fontSize: 12)),
+                avatar: const Icon(Icons.hub_outlined, size: 14),
+                selected: state.collabMode,
+                showCheckmark: false,
+                visualDensity: VisualDensity.compact,
+                selectedColor: C.goldSoft,
+                onSelected: (on) => state.mutate(() => state.collabMode = on),
+              ),
+            ],
             const Spacer(),
             TextButton(
                 onPressed: () => state.mutate(() => state.modeSelected = false),
@@ -2069,7 +2241,9 @@ class Composer extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: state.mode == '深度研究'
                     ? '对复杂问题进行多轮检索与推理，产出深度研究报告'
-                    : '针对各类信息查询和简单问题，提供快速回答与响应',
+                    : state.mode == '金融专家团' && state.collabMode
+                        ? '先生成多智能体研究计划，确认后协作执行'
+                        : '针对各类信息查询和简单问题，提供快速回答与响应',
                 filled: true,
                 fillColor: C.faint,
                 border: OutlineInputBorder(

@@ -32,16 +32,19 @@ async def get_minute_kline(symbol: str, period: int = 5, count: int = 240) -> di
 
 @mcp.tool()
 async def get_index_quote() -> dict:
+    """沪深主要指数行情排行（东方财富）。查询单个指数可改用 get_realtime_quote（如 sh000001）。"""
     return await invoke("get_index_quote")
 
 
 @mcp.tool()
 async def get_sector_quote() -> dict:
+    """行业板块涨跌幅排行（东方财富）。"""
     return await invoke("get_sector_quote")
 
 
 @mcp.tool()
 async def get_fund_flow() -> dict:
+    """行业板块主力资金净流入排行（东方财富）。"""
     return await invoke("get_fund_flow")
 
 
@@ -62,16 +65,19 @@ async def list_announcements(
 
 @mcp.tool()
 async def get_corporate_calendar(limit: int = 20) -> dict:
+    """巨潮资讯近期公司大事日历（分红、股东大会、解禁等）。"""
     return await invoke("get_corporate_calendar", limit=limit)
 
 
 @mcp.tool()
 async def search_news(keyword: str, limit: int = 10) -> dict:
+    """按关键词检索财经新闻（东方财富），keyword 用公司简称或行业词，如“贵州茅台”“白酒”。"""
     return await invoke("search_news", keyword=keyword, limit=limit)
 
 
 @mcp.tool()
 async def get_official_policy(limit: int = 20) -> dict:
+    """中国政府网最新政策文件列表。"""
     return await invoke("get_official_policy", limit=limit)
 
 

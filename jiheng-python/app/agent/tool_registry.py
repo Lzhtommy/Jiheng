@@ -1,46 +1,26 @@
+from app.mcp.server import mcp
 from app.mcp.tools import invoke
 
-TOOL_SCHEMAS = {
-    "search_symbol": {"type": "object", "properties": {"keyword": {"type": "string"}}, "required": ["keyword"]},
-    "get_realtime_quote": {
-        "type": "object",
-        "properties": {"symbols": {"type": "array", "items": {"type": "string"}}},
-        "required": ["symbols"],
-    },
-    "get_kline": {
-        "type": "object",
-        "properties": {"symbol": {"type": "string"}, "period": {"type": "string"}},
-        "required": ["symbol"],
-    },
-    "get_minute_kline": {
-        "type": "object",
-        "properties": {"symbol": {"type": "string"}, "period": {"type": "integer"}},
-        "required": ["symbol"],
-    },
-    "list_announcements": {
-        "type": "object",
-        "properties": {"stock_code": {"type": "string"}, "keyword": {"type": "string"}},
-    },
-    "search_news": {"type": "object", "properties": {"keyword": {"type": "string"}}, "required": ["keyword"]},
-    "get_official_policy": {"type": "object", "properties": {}},
-    "get_index_quote": {"type": "object", "properties": {}},
-    "get_sector_quote": {"type": "object", "properties": {}},
-    "get_fund_flow": {"type": "object", "properties": {}},
-}
+_tool_specs: dict[str, dict] = {}
 
 
-def openai_tools(names: tuple[str, ...]) -> list[dict]:
-    return [
-        {
-            "type": "function",
-            "function": {
-                "name": name,
-                "description": f"Jiheng market data tool: {name}",
-                "parameters": TOOL_SCHEMAS[name],
-            },
-        }
-        for name in names
-    ]
+async def tool_specs() -> dict[str, dict]:
+    if not _tool_specs:
+        for tool in await mcp.list_tools():
+            _tool_specs[tool.name] = {
+                "type": "function",
+                "function": {
+                    "name": tool.name,
+                    "description": tool.description or tool.name,
+                    "parameters": tool.inputSchema,
+                },
+            }
+    return _tool_specs
+
+
+async def openai_tools(names: tuple[str, ...] | list[str]) -> list[dict]:
+    specs = await tool_specs()
+    return [specs[name] for name in names if name in specs]
 
 
 async def execute(name: str, arguments: dict) -> dict:

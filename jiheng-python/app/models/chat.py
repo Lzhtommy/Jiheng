@@ -2,6 +2,8 @@ from enum import Enum
 
 from pydantic import BaseModel, Field
 
+from app.agent.multi_agent.plan import Plan
+
 
 class ChatMode(str, Enum):
     QUICK = "quick"
@@ -22,3 +24,13 @@ class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(..., min_length=1)
     model: str | None = None
     system_prompt: str | None = None
+
+
+class PlanRequest(BaseModel):
+    expert: str
+    conversation_id: str
+    messages: list[ChatMessage] = Field(..., min_length=1)
+
+
+class MultiAgentRequest(PlanRequest):
+    plan: Plan
