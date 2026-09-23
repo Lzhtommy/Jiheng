@@ -23,10 +23,11 @@ class FallbackRuntime:
                 yield event
 
 
-def create_runtime():
-    if settings.agent_runtime == "tool-calls":
+def create_runtime(kind: str | None = None):
+    kind = kind or settings.agent_runtime
+    if kind == "tool-calls":
         return DeepSeekToolRuntime()
-    if settings.agent_runtime != "harness-sdk":
-        raise RuntimeError(f"Unsupported agent runtime: {settings.agent_runtime}")
+    if kind != "harness-sdk":
+        raise RuntimeError(f"Unsupported agent runtime: {kind}")
     harness = DeepSeekHarnessRuntime()
     return FallbackRuntime(harness, DeepSeekToolRuntime()) if settings.agent_allow_tool_calls_fallback else harness

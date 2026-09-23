@@ -59,6 +59,6 @@ def build_profile(mode: str, expert: dict | None = None) -> AgentProfile:
         model=model,
         system_prompt=prompt,
         tool_names=DEFAULT_TOOLS,
-        max_tool_rounds=6 if is_deep else 2,
+        max_tool_rounds={"deep": 6, "expert": 4}.get(mode, 3),
         reasoning_effort="high" if is_deep else None,
     )

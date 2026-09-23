@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
@@ -47,7 +48,15 @@ class C {
   static const green = Color(0xFF12805C);
 }
 
-enum PageKey { home, reports, profile, skills, reminders, notifications }
+enum PageKey {
+  home,
+  reports,
+  profile,
+  skills,
+  reminders,
+  notifications,
+  favorites
+}
 
 enum Stage { thinking, tool, done }
 
@@ -145,14 +154,24 @@ String prettyJson(String? raw) {
 class ApiClient {
   ApiClient();
 
-  static const javaBase = String.fromEnvironment(
-    'JIHENG_JAVA_BASE_URL',
-    defaultValue: 'http://113.45.32.33',
-  );
-  static const agentBase = String.fromEnvironment(
-    'JIHENG_AGENT_BASE_URL',
-    defaultValue: 'http://113.45.32.33',
-  );
+  static const _javaOverride = String.fromEnvironment('JIHENG_JAVA_BASE_URL');
+  static const _agentOverride = String.fromEnvironment('JIHENG_AGENT_BASE_URL');
+
+  /// 本机页面连本机服务；部署到服务器后走当前站点，由 nginx 转发。
+  static String get javaBase => _javaOverride.isNotEmpty
+      ? _javaOverride
+      : _localOrOrigin('http://127.0.0.1:8080');
+
+  static String get agentBase => _agentOverride.isNotEmpty
+      ? _agentOverride
+      : _localOrOrigin('http://127.0.0.1:8000');
+
+  static String _localOrOrigin(String local) {
+    if (!kIsWeb) return local;
+    final host = Uri.base.host;
+    if (host == 'localhost' || host == '127.0.0.1') return local;
+    return Uri.base.origin;
+  }
 
   final storage = const FlutterSecureStorage();
   String? accessToken;
@@ -369,11 +388,11 @@ class JihengShellState extends State<JihengShell> {
   List<Map<String, dynamic>> apiReports = [];
   List<Map<String, dynamic>> apiNotifications = [];
   List<Map<String, dynamic>> apiTasks = [];
+  List<Map<String, dynamic>> apiConversations = [];
   final List<Map<String, dynamic>> localTasks = [];
-  final Set<String> favorites = {};
+  final List<String> favorites = [];
   bool drawerOpen = false;
   bool expertSheet = false;
-  bool modeSelected = false;
   bool worldOpen = false;
   bool authReady = false;
   bool isLoggedIn = false;
@@ -390,6 +409,7 @@ class JihengShellState extends State<JihengShell> {
     super.initState();
     api.onUnauthorized = _handleUnauthorized;
     _bootstrap();
+    loadFavorites();
   }
 
   Future<void> _handleUnauthorized() async {
@@ -430,6 +450,7 @@ class JihengShellState extends State<JihengShell> {
       isLoggedIn = api.accessToken != null && api.accessToken!.isNotEmpty;
       authReady = true;
     });
+    if (isLoggedIn) await loadRemoteData();
   }
 
   Future<void> login({
@@ -450,6 +471,7 @@ class JihengShellState extends State<JihengShell> {
       isLoggedIn = true;
       apiError = null;
     });
+    await loadRemoteData();
   }
 
   Future<Map<String, dynamic>?> loadCaptcha() async {
@@ -498,6 +520,7 @@ class JihengShellState extends State<JihengShell> {
       _loadNotifications(),
       _loadProfile(),
       _loadTasks(),
+      _loadConversations(),
     ]);
     if (!mounted) return;
     setState(() => loadingData = false);
@@ -571,6 +594,44 @@ class JihengShellState extends State<JihengShell> {
     }
   }
 
+  Future<void> _loadConversations() async {
+    try {
+      final data = await api.get('/api/v1/conversations');
+      final rows = (data as List? ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+      if (mounted) setState(() => apiConversations = rows);
+    } catch (e) {
+      _rememberApiError(e);
+    }
+  }
+
+  Future<void> openConversation(String conversationId) async {
+    try {
+      final data =
+          await api.get('/api/v1/conversations/$conversationId/messages');
+      final rows = (data as List? ?? [])
+          .map((e) => Map<String, dynamic>.from(e as Map))
+          .toList();
+      if (!mounted) return;
+      setState(() {
+        messages
+          ..clear()
+          ..addAll(rows.map((row) => row['role'] == 'user'
+              ? ChatMsg.user(asText(row['content']))
+              : (ChatMsg.ai('generic')
+                ..intro = asText(row['content'])
+                ..stage = Stage.done)));
+        _chatSessionId = conversationId;
+        page = PageKey.home;
+        drawerOpen = false;
+      });
+    } catch (e) {
+      _rememberApiError(e);
+      snack('对话加载失败');
+    }
+  }
+
   Future<void> _loadTasks() async {
     try {
       final data = await api.get('/api/v1/tasks');
@@ -608,16 +669,17 @@ class JihengShellState extends State<JihengShell> {
   Future<void> exportReport(Map<String, dynamic> report) async {
     final reportId = asText(report['reportId'] ?? report['report_id']);
     if (reportId.isEmpty || !isLoggedIn) {
-      snack('导出处理中 · mock');
+      snack('演示报告不支持导出，请登录后导出自己的报告');
       return;
     }
     try {
       final data =
           await api.post('/api/v1/reports/$reportId/export', {'format': 'pdf'});
-      snack('导出任务已创建：${data['task_id'] ?? 'mock'}');
+      final taskId = asText(data is Map ? data['task_id'] : null);
+      snack(taskId.isEmpty ? '导出任务已提交' : '导出任务已创建：$taskId');
     } catch (e) {
       _rememberApiError(e);
-      snack('导出处理中 · mock');
+      snack('导出失败，请稍后重试');
     }
   }
 
@@ -641,19 +703,51 @@ class JihengShellState extends State<JihengShell> {
     }
   }
 
-  Future<void> createTaskMock() async {
+  Future<void> createTask() async {
+    final title = TextEditingController();
+    final cron = TextEditingController(text: '0 30 8 ? * MON');
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('创建定时任务', style: TextStyle(fontSize: 16)),
+        content: Column(mainAxisSize: MainAxisSize.min, children: [
+          TextField(
+              controller: title,
+              decoration: const InputDecoration(labelText: '任务名称')),
+          const SizedBox(height: 8),
+          TextField(
+              controller: cron,
+              decoration: const InputDecoration(
+                  labelText: '执行时间（cron）', hintText: '0 30 8 ? * MON')),
+        ]),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('取消')),
+          FilledButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('创建')),
+        ],
+      ),
+    );
+    final taskTitle = title.text.trim();
+    final taskCron = cron.text.trim();
+    title.dispose();
+    cron.dispose();
+    if (confirmed != true || taskTitle.isEmpty) return;
     final task = <String, dynamic>{
       'taskId': 'local-${DateTime.now().millisecondsSinceEpoch}',
       'type': 'reminder',
       'status': 'enabled',
-      'title': '每周一 08:30 自动重跑高研发低估值筛选',
+      'title': taskTitle,
+      'cron': taskCron,
     };
     var synced = false;
     try {
       if (isLoggedIn) {
         await api.post('/api/v1/tasks', {
           'type': task['type'],
-          'cron': '0 30 8 ? * MON',
+          'cron': taskCron,
           'payload': jsonEncode(task),
         });
         synced = true;
@@ -667,7 +761,7 @@ class JihengShellState extends State<JihengShell> {
       reminders.insert(0, asText(task['title']));
     });
     if (synced) await _loadTasks();
-    snack('已创建 mock 任务');
+    snack(synced ? '定时任务已创建' : '已保存在本地');
   }
 
   void go(PageKey next) {
@@ -679,6 +773,41 @@ class JihengShellState extends State<JihengShell> {
 
   void mutate(VoidCallback change) {
     setState(change);
+  }
+
+  static const _favoritesKey = 'favorites';
+
+  Future<void> loadFavorites() async {
+    try {
+      final raw = await api.storage.read(key: _favoritesKey);
+      final decoded = raw == null || raw.isEmpty ? [] : jsonDecode(raw);
+      if (decoded is List && mounted) {
+        setState(() => favorites
+          ..clear()
+          ..addAll(decoded.map((e) => e.toString())));
+      }
+    } on MissingPluginException {
+      // 测试环境没有本地存储。
+    }
+  }
+
+  Future<void> toggleFavorite(String text) async {
+    final content = text.trim();
+    if (content.isEmpty) return;
+    setState(() {
+      if (!favorites.remove(content)) favorites.insert(0, content);
+    });
+    snack(favorites.contains(content) ? '已收藏' : '已取消收藏');
+    try {
+      await api.storage.write(key: _favoritesKey, value: jsonEncode(favorites));
+    } on MissingPluginException {
+      // 测试环境没有本地存储。
+    }
+  }
+
+  Future<void> shareAnswer(String text) async {
+    await Clipboard.setData(ClipboardData(text: text.trim()));
+    snack('已复制，可粘贴分享');
   }
 
   void setPrompt(String text, String nextFlow) {
@@ -845,6 +974,7 @@ class JihengShellState extends State<JihengShell> {
       setState(() {
         if (collab.phase != 'failed') collab.phase = 'done';
         ai.stage = Stage.done;
+        _loadConversations();
         if (ai.intro.isEmpty) ai.intro = '协作研究已结束，但未生成回答。';
         sending = false;
       });
@@ -1029,6 +1159,7 @@ class JihengShellState extends State<JihengShell> {
         if (ai.intro.isEmpty) ai.intro = '已完成分析。';
         if (ai.risk.isEmpty) ai.risk = '内容由 AI 生成，请核查重要信息。';
         sending = false;
+        _loadConversations();
       }
     });
   }
@@ -1090,6 +1221,8 @@ class JihengShellState extends State<JihengShell> {
         return RemindersView(state: this);
       case PageKey.notifications:
         return NotificationsView(state: this);
+      case PageKey.favorites:
+        return FavoritesView(state: this);
     }
   }
 }
@@ -1881,6 +2014,40 @@ Color colorFromHex(dynamic value, Color fallback) {
   return Color(int.parse('FF$text', radix: 16));
 }
 
+const planLabels = {'basic': '基础版', 'pro': '专业版', 'institution': '机构版'};
+
+String planLabel(dynamic value) => planLabels[asText(value)] ?? asText(value);
+
+const reportKindLabels = {
+  'deep_research': '深度研究',
+  'company': '公司研究',
+  'company_research': '公司研究',
+  'morning': '晨报',
+  'morning_brief': '晨报',
+};
+
+String reportKindLabel(dynamic value) =>
+    reportKindLabels[asText(value)] ?? asText(value, '深度研究');
+
+const reportStateLabels = {
+  'completed': '已完成',
+  'draft': '草稿',
+  'running': '生成中',
+  'failed': '失败',
+};
+
+String reportStateLabel(dynamic value) =>
+    reportStateLabels[asText(value)] ?? asText(value, '已完成');
+
+String asTime(dynamic value) {
+  final text = asText(value);
+  final parsed = DateTime.tryParse(text);
+  if (parsed == null) return text;
+  final local = parsed.toLocal();
+  String two(int n) => n.toString().padLeft(2, '0');
+  return '${two(local.month)}-${two(local.day)} ${two(local.hour)}:${two(local.minute)}';
+}
+
 String asText(dynamic value, [String fallback = '']) {
   final text = value?.toString();
   return text == null || text.isEmpty ? fallback : text;
@@ -1914,7 +2081,6 @@ class ExpertGrid extends StatelessWidget {
             state.expert = name;
             state.selectedExpertId = expertId;
             state.mode = '分析师';
-            state.modeSelected = true;
           }),
           borderRadius: BorderRadius.circular(12),
           child: Container(
@@ -2170,14 +2336,13 @@ class MessageBubble extends StatelessWidget {
                       },
                       child: const Text('复制')),
                   TextButton(
-                      onPressed: () => state.mutate(() {
-                            state.favorites
-                                .add(intro.isEmpty ? message.flow : intro);
-                            state.snack('已收藏到本地 mock');
-                          }),
-                      child: const Text('收藏')),
+                      onPressed: () => state.toggleFavorite(
+                          intro.isEmpty ? message.flow : intro),
+                      child: Text(state.favorites.contains(intro)
+                          ? '取消收藏'
+                          : '收藏')),
                   TextButton(
-                      onPressed: () => state.snack('系统分享待接入 · mock'),
+                      onPressed: () => state.shareAnswer('$intro\n$risk'),
                       child: const Text('分享')),
                 ]),
               ],
@@ -2200,25 +2365,19 @@ class Composer extends StatelessWidget {
       decoration: const BoxDecoration(
           color: Colors.white, border: Border(top: BorderSide(color: C.line))),
       child: Column(children: [
-        if (!state.modeSelected)
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Row(children: [
-              ModeChip(state: state, label: '快速问答'),
-              ModeChip(state: state, label: '深度研究'),
-              ModeChip(state: state, label: '分析师', expert: true),
-            ]),
-          )
-        else
-          Row(children: [
-            Flexible(
-              child: Label(
-                  text: state.expert.isEmpty
-                      ? state.mode
-                      : '${state.mode} · ${state.expert}'),
-            ),
-            if (state.mode == '分析师') ...[
-              const SizedBox(width: 8),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(children: [
+            ModeChip(state: state, label: '快速问答'),
+            ModeChip(state: state, label: '深度研究'),
+            ModeChip(state: state, label: '分析师', expert: true),
+            if (state.mode == '分析师' && state.expert.isNotEmpty)
+              Padding(
+                padding: const EdgeInsets.only(right: 8),
+                child: Text(state.expert,
+                    style: const TextStyle(color: C.gold, fontSize: 12.5)),
+              ),
+            if (state.mode == '分析师')
               FilterChip(
                 label: const Text('多Agent模式', style: TextStyle(fontSize: 12)),
                 avatar: const Icon(Icons.hub_outlined, size: 14),
@@ -2228,12 +2387,8 @@ class Composer extends StatelessWidget {
                 selectedColor: C.goldSoft,
                 onSelected: (on) => state.mutate(() => state.collabMode = on),
               ),
-            ],
-            const Spacer(),
-            TextButton(
-                onPressed: () => state.mutate(() => state.modeSelected = false),
-                child: const Text('取消')),
           ]),
+        ),
         const SizedBox(height: 8),
         Row(children: [
           Expanded(
@@ -2311,7 +2466,9 @@ class ModeChip extends StatelessWidget {
           } else {
             state.mutate(() {
               state.mode = label;
-              state.modeSelected = true;
+              state.expert = '';
+              state.selectedExpertId = '';
+              state.collabMode = false;
             });
           }
         },
@@ -2382,10 +2539,11 @@ class ReportsView extends StatelessWidget {
         'refCount': 9,
       },
     ];
-    final source = fallback;
+    final source = state.api.accessToken == null ? fallback : state.apiReports;
     final reports = source
         .where((r) =>
-            state.reportTab == '全部' || asText(r['kind']) == state.reportTab)
+            state.reportTab == '全部' ||
+            reportKindLabel(r['kind']) == state.reportTab)
         .toList();
     return Column(children: [
       PrototypeHeader(title: '我的报告', onBack: () => state.go(PageKey.home)),
@@ -2403,24 +2561,27 @@ class ReportsView extends StatelessWidget {
         ]),
       ),
       Expanded(
-        child: ListView(children: [
-          for (final group in ['本周', '更早'])
-            if (reports.any((r) => asText(r['group'], '本周') == group)) ...[
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
-                child: Text(group,
-                    style: const TextStyle(
-                        color: Color(0xFFA3AAB0), fontSize: 11.5)),
-              ),
-              for (final report
-                  in reports.where((r) => asText(r['group'], '本周') == group))
-                ReportTile(
-                  report: report,
-                  onOpen: () => state.openReport(report),
-                  onExport: () => state.exportReport(report),
-                ),
-            ],
-        ]),
+        child: reports.isEmpty
+            ? const Center(
+                child: Text('还没有报告',
+                    style: TextStyle(color: C.muted, fontSize: 13.5)))
+            : ListView(children: [
+                for (final group in ['本周', '更早'])
+                  if (reports.any((r) => asText(r['group'], '本周') == group)) ...[
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
+                      child: Text(group,
+                          style: const TextStyle(
+                              color: Color(0xFFA3AAB0), fontSize: 11.5)),
+                    ),
+                    for (final report in reports
+                        .where((r) => asText(r['group'], '本周') == group))
+                      ReportTile(
+                        report: report,
+                        onOpen: () => state.openReport(report),
+                      ),
+                  ],
+              ]),
       ),
     ]);
   }
@@ -2430,15 +2591,15 @@ class ReportTile extends StatelessWidget {
   const ReportTile(
       {required this.report,
       required this.onOpen,
-      required this.onExport,
+      this.onExport,
       super.key});
   final Map<String, dynamic> report;
   final VoidCallback onOpen;
-  final VoidCallback onExport;
+  final VoidCallback? onExport;
 
   @override
   Widget build(BuildContext context) {
-    final status = asText(report['state']);
+    final status = reportStateLabel(report['state']);
     return Container(
       margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       padding: const EdgeInsets.all(14),
@@ -2453,11 +2614,11 @@ class ReportTile extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
             decoration: BoxDecoration(
                 color: C.goldSoft, borderRadius: BorderRadius.circular(3)),
-            child: Text(asText(report['kind']),
+            child: Text(reportKindLabel(report['kind']),
                 style: const TextStyle(color: C.gold, fontSize: 10.5)),
           ),
           const SizedBox(width: 8),
-          Text(asText(report['createdAt'] ?? report['created_at']),
+          Text(asTime(report['createdAt'] ?? report['created_at']),
               style: const TextStyle(color: Color(0xFFADB4BA), fontSize: 11.5)),
           const Spacer(),
           Text(status,
@@ -2491,18 +2652,45 @@ class ReportTile extends StatelessWidget {
                       color: C.gold,
                       fontSize: 12,
                       fontWeight: FontWeight.w600))),
-          const SizedBox(width: 14),
-          InkWell(
-              onTap: onExport,
-              child: const Text('导出',
-                  style: TextStyle(
-                      color: C.gold,
-                      fontSize: 12,
-                      fontWeight: FontWeight.w600))),
+          if (onExport != null) ...[
+            const SizedBox(width: 14),
+            InkWell(
+                onTap: onExport,
+                child: const Text('导出',
+                    style: TextStyle(
+                        color: C.gold,
+                        fontSize: 12,
+                        fontWeight: FontWeight.w600))),
+          ],
         ]),
       ]),
     );
   }
+}
+
+String _taskTitle(Map<String, dynamic> task) {
+  final payload = task['payload'];
+  if (payload is String && payload.startsWith('{')) {
+    try {
+      final decoded = jsonDecode(payload);
+      if (decoded is Map && asText(decoded['title']).isNotEmpty) {
+        return asText(decoded['title']);
+      }
+    } catch (_) {}
+  }
+  return asText(task['taskId'] ?? task['task_id']);
+}
+
+String _skillMeta(Map<String, dynamic> skill) {
+  final preset = asText(skill['meta']);
+  if (preset.isNotEmpty) return preset;
+  final edited = asTime(skill['lastEditedAt']);
+  final runs = int.tryParse('${skill['runCount'] ?? ''}');
+  final parts = [
+    if (edited.isNotEmpty) '最近编辑 $edited',
+    if (runs != null && runs > 0) '已运行 $runs 次',
+  ];
+  return parts.join(' · ');
 }
 
 class PrototypeHeader extends StatelessWidget {
@@ -2545,7 +2733,7 @@ class SkillsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final official = <Map<String, dynamic>>[
+    final officialFallback = <Map<String, dynamic>>[
       {
         'name': '有色板块深度透视',
         'description': '有色金属板块深度分析，采用通用框架+品种插件模…',
@@ -2592,7 +2780,7 @@ class SkillsView extends StatelessWidget {
         'kind': 'official'
       },
     ];
-    final mine = <Map<String, dynamic>>[
+    final mineFallback = <Map<String, dynamic>>[
       {
         'name': '组合周度复盘',
         'description': '按持仓权重拆解本周组合收益来源，输出归因表与调仓建议。',
@@ -2613,6 +2801,9 @@ class SkillsView extends StatelessWidget {
       },
       ...state.localCustomSkills,
     ];
+    final demo = state.api.accessToken == null;
+    final official = demo ? officialFallback : state.apiSkills;
+    final mine = demo ? mineFallback : state.customSkills;
     final all = [...official, ...mine];
     final selectedRows = state.skillTab == '我创建的'
         ? mine
@@ -2790,13 +2981,17 @@ class SkillsView extends StatelessWidget {
     description.dispose();
     if (result == null) return;
     final skill = <String, dynamic>{...result, 'kind': 'custom'};
-    state.mutate(() => state.localCustomSkills.add(skill));
-    if (state.isLoggedIn) {
-      try {
-        await state.api.post('/api/v1/skills', result);
-      } catch (error) {
-        state._rememberApiError(error);
-      }
+    if (state.api.accessToken == null) {
+      state.mutate(() => state.localCustomSkills.add(skill));
+      return;
+    }
+    try {
+      await state.api.post('/api/v1/skills', result);
+      await state._loadSkills();
+      state.snack('技能已创建');
+    } catch (error) {
+      state._rememberApiError(error);
+      state.snack('技能创建失败');
     }
   }
 }
@@ -2888,9 +3083,9 @@ class SkillListRow extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                       color: C.muted, fontSize: 12, height: 1.6)),
-              if (asText(skill['meta']).isNotEmpty) ...[
+              if (_skillMeta(skill).isNotEmpty) ...[
                 const SizedBox(height: 6),
-                Text(asText(skill['meta']),
+                Text(_skillMeta(skill),
                     style: const TextStyle(
                         color: Color(0xFFADB4BA), fontSize: 11.5)),
               ],
@@ -2942,7 +3137,7 @@ class RemindersView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const tasks = <Map<String, dynamic>>[];
+    final tasks = [...state.apiTasks, ...state.localTasks];
     return Column(children: [
       PrototypeHeader(title: '定时与提醒', onBack: () => state.go(PageKey.home)),
       Expanded(
@@ -2964,7 +3159,7 @@ class RemindersView extends StatelessWidget {
                       style: TextStyle(color: C.muted, fontSize: 12.5)),
                 ])),
             InkWell(
-              onTap: state.createTaskMock,
+              onTap: state.createTask,
               child: Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 9),
@@ -2992,9 +3187,10 @@ class RemindersView extends StatelessWidget {
         for (final task in tasks)
           CardTile(
             title: asText(
-                task['title'] ?? task['taskId'] ?? task['task_id'], '自动化任务'),
+                task['title'] ?? _taskTitle(task), '自动化任务'),
             subtitle:
-                '${asText(task['type'], 'reminder')} · ${asText(task['status'], 'enabled')}',
+                '${asText(task['type'], 'reminder')} · ${asText(task['status'], 'enabled')}'
+                '${asText(task['cron']).isEmpty ? '' : ' · ${task['cron']}'}',
             trailing: '删除',
             onTrailingTap: () async {
               final id = asText(task['taskId'] ?? task['task_id']);
@@ -3013,7 +3209,6 @@ class RemindersView extends StatelessWidget {
                 state.apiTasks.remove(task);
               });
             },
-            onTap: () => state.snack('任务详情待接入 · mock'),
           ),
         Container(
           margin: const EdgeInsets.only(top: 20),
@@ -3049,10 +3244,36 @@ class RemindersView extends StatelessWidget {
         for (final reminder in state.reminders)
           CardTile(
               title: reminder,
-              subtitle: '提醒任务',
-              trailing: '查看',
-              onTap: () => state.snack('提醒状态已切换 · mock')),
+              subtitle: '提醒任务'),
       ])),
+    ]);
+  }
+}
+
+class FavoritesView extends StatelessWidget {
+  const FavoritesView({required this.state, super.key});
+  final JihengShellState state;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(children: [
+      PrototypeHeader(title: '我的收藏', onBack: () => state.go(PageKey.home)),
+      Expanded(
+        child: state.favorites.isEmpty
+            ? const Center(
+                child: Text('还没有收藏',
+                    style: TextStyle(color: C.muted, fontSize: 13.5)))
+            : ListView(children: [
+                for (final item in state.favorites)
+                  CardTile(
+                    title: item.split('\n').first,
+                    subtitle: '收藏的回答',
+                    trailing: '取消',
+                    onTrailingTap: () => state.toggleFavorite(item),
+                    onTap: () => state.setPrompt(item.split('\n').first, 'generic'),
+                  ),
+              ]),
+      ),
     ]);
   }
 }
@@ -3063,7 +3284,7 @@ class NotificationsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const remote = <Map<String, dynamic>>[];
+    final remote = state.apiNotifications;
     return Column(children: [
       PrototypeHeader(title: '通知中心', onBack: () => state.go(PageKey.home)),
       Padding(
@@ -3096,7 +3317,8 @@ class NotificationsView extends StatelessWidget {
                 for (final notification in remote)
                   CardTile(
                     title: asText(notification['title']),
-                    subtitle: asText(notification['subtitle']),
+                    subtitle:
+                        '${asText(notification['content'])} · ${asTime(notification['createdAt'])}',
                     trailing: '查看',
                     onTap: () async {
                       final id = notification['id'];
@@ -3129,14 +3351,18 @@ class ProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const p = <String, dynamic>{};
-    const stats = <String, dynamic>{};
+    final p = state.profile ?? const <String, dynamic>{};
+    final stats = p['stats'] is Map
+        ? Map<String, dynamic>.from(p['stats'] as Map)
+        : const <String, dynamic>{};
+    final name = asText(p['displayName'], '未设置昵称');
     final rows = [
-      ('账号与安全', '已绑定手机'),
-      ('订阅与积分', '机构版 · 8,420 分'),
-      ('数据权限', '行情 / 研报 / 财报'),
-      ('消息通知', '已开启'),
-      ('偏好设置', '简体中文'),
+      ('账号与安全', asText(p['phone'], '未绑定')),
+      ('订阅与积分',
+          '${planLabel(p['plan'])} · ${asText(p['points'], '0')} 分'),
+      ('数据权限', asText(p['dataScopes'], '未设置')),
+      ('消息通知', p['notifyOn'] == false ? '已关闭' : '已开启'),
+      ('偏好设置', asText(p['locale']) == 'zh_CN' ? '简体中文' : asText(p['locale'], '简体中文')),
       ('关于玑衡AI', 'v2.4.1'),
     ];
     return Column(children: [
@@ -3158,8 +3384,8 @@ class ProfileView extends StatelessWidget {
                     color: const Color(0xFF33393F),
                     border: Border.all(color: const Color(0xFF4A5157)),
                     shape: BoxShape.circle),
-                child: const Text('用',
-                    style: TextStyle(
+                child: Text(name.characters.first,
+                    style: const TextStyle(
                         fontFamily: 'Noto Serif SC',
                         fontSize: 17,
                         color: Color(0xFFD8B483))),
@@ -3169,7 +3395,7 @@ class ProfileView extends StatelessWidget {
                   child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                    Text(asText(p['displayName'], 'USER_6450'),
+                    Text(name,
                         style: const TextStyle(
                             fontFamily: 'Noto Serif SC',
                             fontSize: 16,
@@ -3177,7 +3403,7 @@ class ProfileView extends StatelessWidget {
                             color: Colors.white)),
                     const SizedBox(height: 3),
                     Text(
-                        '${asText(p['plan'], '机构版')} · ${asText(p['department'], '研究部')}',
+                        '${planLabel(p['plan'])} · ${asText(p['department'], '未设置部门')}',
                         style: const TextStyle(
                             fontSize: 12, color: Color(0xFF9AA4AC))),
                   ])),
@@ -3199,9 +3425,9 @@ class ProfileView extends StatelessWidget {
             const SizedBox(height: 15),
             Row(children: [
               for (final stat in [
-                (asText(stats['reportCount'], '24'), '生成报告'),
-                (asText(stats['skillCount'], '9'), '启用技能'),
-                (asText(stats['usageDays'], '146'), '使用天数'),
+                (asText(stats['reportCount'], '0'), '生成报告'),
+                (asText(stats['skillCount'], '0'), '启用技能'),
+                (asText(stats['usageDays'], '0'), '使用天数'),
               ])
                 Expanded(
                     child: Column(children: [
@@ -3226,9 +3452,9 @@ class ProfileView extends StatelessWidget {
         ),
         for (final row in rows)
           InkWell(
-            onTap: () => row.$1 == '消息通知'
-                ? state.go(PageKey.notifications)
-                : state.snack('${row.$1} · mock'),
+            onTap: row.$1 == '消息通知'
+                ? () => state.go(PageKey.notifications)
+                : null,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: const BoxDecoration(
@@ -3240,9 +3466,11 @@ class ProfileView extends StatelessWidget {
                 Text(row.$2,
                     style: const TextStyle(
                         fontSize: 12.5, color: Color(0xFF8B9299))),
-                const SizedBox(width: 12),
-                const Icon(Icons.chevron_right,
-                    size: 17, color: Color(0xFFC9CFD4)),
+                if (row.$1 == '消息通知') ...[
+                  const SizedBox(width: 12),
+                  const Icon(Icons.chevron_right,
+                      size: 17, color: Color(0xFFC9CFD4)),
+                ],
               ]),
             ),
           ),
@@ -3264,7 +3492,7 @@ class ProfileView extends StatelessWidget {
 
   Future<void> _editProfile(BuildContext context) async {
     final controller = TextEditingController(
-        text: asText(state.profile?['displayName'], 'USER_6450'));
+        text: asText(state.profile?['displayName']));
     final name = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -3308,6 +3536,7 @@ class DrawerOverlay extends StatelessWidget {
       ['我的报告', PageKey.reports, Icons.description_outlined],
       ['技能广场', PageKey.skills, Icons.auto_awesome],
       ['定时与提醒', PageKey.reminders, Icons.schedule],
+      ['我的收藏', PageKey.favorites, Icons.star_border],
     ];
     return Stack(children: [
       Positioned.fill(
@@ -3316,10 +3545,11 @@ class DrawerOverlay extends StatelessWidget {
               child: Container(color: const Color(0x55000000)))),
       Align(
         alignment: Alignment.centerLeft,
-        child: Container(
+        child: Material(
+          color: Colors.white,
+          child: Container(
           width: MediaQuery.of(context).size.width * .82,
           height: double.infinity,
-          color: Colors.white,
           padding: const EdgeInsets.fromLTRB(20, 54, 20, 18),
           child:
               Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -3342,26 +3572,37 @@ class DrawerOverlay extends StatelessWidget {
                   }),
             const Divider(),
             const Text('最近对话', style: TextStyle(color: C.muted)),
-            TextButton(
-                onPressed: () => state.go(PageKey.home),
-                child: const Text('金融AI助手自我介绍')),
-            TextButton(
-                onPressed: () {
-                  state.setPrompt('做一份宁德时代三季报前瞻', 'generic');
-                  state.go(PageKey.home);
-                },
-                child: const Text('做一份宁德时代三季报前瞻…')),
-            const Spacer(),
+            Expanded(
+              child: state.apiConversations.isEmpty
+                  ? const Padding(
+                      padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
+                      child: Text('还没有对话记录',
+                          style: TextStyle(color: C.muted, fontSize: 12.5)),
+                    )
+                  : ListView(padding: EdgeInsets.zero, children: [
+                      for (final conversation in state.apiConversations)
+                        ListTile(
+                          dense: true,
+                          title: Text(asText(conversation['title'], '未命名对话'),
+                              maxLines: 1, overflow: TextOverflow.ellipsis),
+                          subtitle: Text(asTime(conversation['updatedAt']),
+                              style: const TextStyle(fontSize: 11)),
+                          onTap: () => state.openConversation(
+                              asText(conversation['conversationId'])),
+                        ),
+                    ]),
+            ),
             ListTile(
               leading: const CircleAvatar(
                   backgroundColor: C.ink,
                   child: Text('用', style: TextStyle(color: Color(0xFFD8B483)))),
-              title: Text(asText(state.profile?['displayName'], 'USER_6450')),
+              title: Text(asText(state.profile?['displayName'], '未设置昵称')),
               subtitle: Text(
-                  '${asText(state.profile?['plan'], '机构版')} · ${asText(state.profile?['department'], '研究部')}'),
+                  '${planLabel(state.profile?['plan'])} · ${asText(state.profile?['department'], '未设置部门')}'),
               onTap: () => state.go(PageKey.profile),
             ),
           ]),
+          ),
         ),
       ),
     ]);
@@ -3448,7 +3689,6 @@ class ExpertSheet extends StatelessWidget {
                             state.expert = e[0];
                             state.selectedExpertId = e[3];
                             state.mode = '分析师';
-                            state.modeSelected = true;
                             state.expertSheet = false;
                           }),
                         ))
@@ -3471,7 +3711,7 @@ class ReportDetailPage extends StatelessWidget {
     final title = asText(report['title'], '报告详情');
     final content = asText(report['content']);
     final summary =
-        asText(report['summary'], '这是一份前端 mock 报告阅读页。后端返回正文后会展示真实 content 字段。');
+        asText(report['summary'], '报告正文生成中，请稍后刷新查看。');
     final refs = asText(report['refs'], '暂无完整引用列表');
     return Scaffold(
       backgroundColor: C.paper,
@@ -3682,7 +3922,7 @@ class CardTile extends StatelessWidget {
   const CardTile(
       {required this.title,
       required this.subtitle,
-      required this.trailing,
+      this.trailing = '',
       this.onTap,
       this.onTrailingTap,
       super.key});

@@ -3,6 +3,7 @@ package com.jiheng.controller.internal;
 import com.jiheng.dto.ApiResponse;
 import com.jiheng.entity.ExpertEntity;
 import com.jiheng.entity.SkillEntity;
+import com.jiheng.service.chat.ConversationService;
 import com.jiheng.service.expert.ExpertService;
 import com.jiheng.service.skill.SkillService;
 import com.jiheng.service.notify.NotifyService;
@@ -31,13 +32,15 @@ public class InternalController {
     private final SkillService skillService;
     private final ReportService reportService;
     private final NotifyService notifyService;
+    private final ConversationService conversationService;
 
     public InternalController(ExpertService expertService, SkillService skillService, ReportService reportService,
-                              NotifyService notifyService) {
+                              NotifyService notifyService, ConversationService conversationService) {
         this.expertService = expertService;
         this.skillService = skillService;
         this.reportService = reportService;
         this.notifyService = notifyService;
+        this.conversationService = conversationService;
     }
 
     @GetMapping("/config/experts")
@@ -58,6 +61,12 @@ public class InternalController {
     @PostMapping("/skills/{skillId}/run")
     public ApiResponse<Void> incrementSkillRun(@PathVariable Long skillId) {
         skillService.incrementRunCount(skillId);
+        return ApiResponse.ok(null);
+    }
+
+    @PostMapping("/conversations/turns")
+    public ApiResponse<Void> appendTurn(@RequestBody Map<String, Object> body) {
+        conversationService.appendTurn(body);
         return ApiResponse.ok(null);
     }
 

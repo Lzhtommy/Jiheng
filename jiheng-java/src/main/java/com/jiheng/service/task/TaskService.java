@@ -4,6 +4,7 @@ import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.jiheng.entity.ScheduledTaskEntity;
 import com.jiheng.exception.BizException;
 import com.jiheng.repository.TaskMapper;
+import org.springframework.scheduling.support.CronExpression;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -36,9 +37,19 @@ public class TaskService {
         task.setConditionExpr((String) data.get("condition"));
         task.setPayload(String.valueOf(data.getOrDefault("payload", "{}")));
         task.setStatus("active");
-        task.setNextRunAt("scheduled".equals(type) ? LocalDateTime.now().plusMinutes(1) : null);
+        task.setNextRunAt("scheduled".equals(type) ? nextRun(cron, LocalDateTime.now()) : null);
         taskMapper.insert(task);
         return task;
+    }
+
+    /** 前端传的是 5 段 cron（分 时 日 月 周），Spring 需要带秒的 6 段。 */
+    public static LocalDateTime nextRun(String cron, LocalDateTime from) {
+        String expression = cron.trim().split("\\s+").length == 5 ? "0 " + cron.trim() : cron.trim();
+        try {
+            return CronExpression.parse(expression).next(from);
+        } catch (IllegalArgumentException exception) {
+            throw new BizException("CRON_INVALID", "cron 表达式格式无效");
+        }
     }
 
     public List<ScheduledTaskEntity> list(Long userId, String type) {

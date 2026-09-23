@@ -301,20 +301,39 @@ class CollabPanel extends StatelessWidget {
         ],
         if (collab.phase == 'confirm') ...[
           const SizedBox(height: 12),
-          Row(children: [
-            OutlinedButton(
+          LayoutBuilder(builder: (context, constraints) {
+            final narrow = constraints.maxWidth < 460;
+            final edit = OutlinedButton(
                 onPressed: () => state.editCollabPlan(message),
-                child: const Text('编辑计划')),
-            const SizedBox(width: 8),
-            FilledButton(
+                child: const Text('编辑计划'));
+            final run = FilledButton(
                 style: FilledButton.styleFrom(backgroundColor: C.ink),
                 onPressed: () => state.runCollab(message),
-                child: const Text('按此计划执行')),
-            const Spacer(),
-            TextButton(
+                child: const Text('按此计划执行'));
+            final cancel = TextButton(
                 onPressed: () => state.cancelCollab(message),
-                child: const Text('取消')),
-          ]),
+                child: const Text('取消'));
+            if (!narrow) {
+              return Row(children: [
+                edit,
+                const SizedBox(width: 8),
+                run,
+                const Spacer(),
+                cancel,
+              ]);
+            }
+            return Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  run,
+                  const SizedBox(height: 8),
+                  Row(children: [
+                    Expanded(child: edit),
+                    const SizedBox(width: 8),
+                    Expanded(child: cancel),
+                  ]),
+                ]);
+          }),
         ],
         if (collab.messages.isNotEmpty) ...[
           const SizedBox(height: 10),
@@ -383,6 +402,13 @@ class CollabPanel extends StatelessWidget {
   }
 
   void _showNode(BuildContext context, CollabData collab, PlanNodeData node) {
+    final narrow = MediaQuery.sizeOf(context).width < 600;
+    if (narrow) {
+      Navigator.of(context).push(MaterialPageRoute<void>(
+        builder: (_) => NodeDetailPage(collab: collab, node: node),
+      ));
+      return;
+    }
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -461,6 +487,9 @@ class CollabGraph extends StatelessWidget {
 
   static const nodeWidth = 112.0;
   static const nodeHeight = 64.0;
+
+  static double nodeWidthFor(double available) =>
+      (available < 480 ? 96.0 : nodeWidth);
   static const gapX = 12.0;
   static const gapY = 34.0;
 
@@ -470,7 +499,7 @@ class CollabGraph extends StatelessWidget {
     if (root == null) return const SizedBox.shrink();
     final positions = <String, Offset>{};
     var cursor = 0.0;
-    void place(PlanNodeData node, int level) {
+    void place(PlanNodeData node, int level, double nodeWidth) {
       final kids = collab.children(node.id);
       final y = level * (nodeHeight + gapY);
       if (kids.isEmpty) {
@@ -479,20 +508,20 @@ class CollabGraph extends StatelessWidget {
         return;
       }
       for (final kid in kids) {
-        place(kid, level + 1);
+        place(kid, level + 1, nodeWidth);
       }
       final first = positions[kids.first.id]!.dx;
       final last = positions[kids.last.id]!.dx;
       positions[node.id] = Offset((first + last) / 2, y);
     }
 
-    place(root, 0);
-    final width = math.max(cursor - gapX, nodeWidth);
-    final height =
-        positions.values.map((p) => p.dy).reduce(math.max) + nodeHeight + 2;
-    final latest = collab.messages.isEmpty ? null : collab.messages.last;
-
     return LayoutBuilder(builder: (context, constraints) {
+      final nodeWidth = nodeWidthFor(constraints.maxWidth);
+      place(root, 0, nodeWidth);
+      final width = math.max(cursor - gapX, nodeWidth);
+      final height =
+          positions.values.map((p) => p.dy).reduce(math.max) + nodeHeight + 2;
+      final latest = collab.messages.isEmpty ? null : collab.messages.last;
       final canvasWidth = math.max(width, constraints.maxWidth);
       final offsetX = (canvasWidth - width) / 2;
       final shifted = {
@@ -511,7 +540,8 @@ class CollabGraph extends StatelessWidget {
                 tween: Tween(begin: 0, end: 1),
                 duration: const Duration(milliseconds: 900),
                 builder: (_, progress, __) => CustomPaint(
-                  painter: _EdgePainter(collab, shifted, latest, progress),
+                  painter: _EdgePainter(
+                      collab, shifted, latest, progress, nodeWidth),
                 ),
               ),
             ),
@@ -520,7 +550,10 @@ class CollabGraph extends StatelessWidget {
                 Positioned(
                   left: shifted[node.id]!.dx,
                   top: shifted[node.id]!.dy,
-                  child: _NodeBox(node: node, onTap: () => onTap(node)),
+                  child: _NodeBox(
+                      node: node,
+                      width: nodeWidth,
+                      onTap: () => onTap(node)),
                 ),
           ]),
         ),
@@ -530,18 +563,19 @@ class CollabGraph extends StatelessWidget {
 }
 
 class _EdgePainter extends CustomPainter {
-  _EdgePainter(this.collab, this.positions, this.latest, this.progress);
+  _EdgePainter(
+      this.collab, this.positions, this.latest, this.progress, this.nodeWidth);
   final CollabData collab;
   final Map<String, Offset> positions;
   final CollabMessage? latest;
   final double progress;
+  final double nodeWidth;
 
-  static const w = CollabGraph.nodeWidth;
   static const h = CollabGraph.nodeHeight;
 
   Path _edge(Offset parent, Offset child) {
-    final start = parent.translate(w / 2, h);
-    final end = child.translate(w / 2, 0);
+    final start = parent.translate(nodeWidth / 2, h);
+    final end = child.translate(nodeWidth / 2, 0);
     final midY = (start.dy + end.dy) / 2;
     return Path()
       ..moveTo(start.dx, start.dy)
@@ -595,8 +629,10 @@ class _EdgePainter extends CustomPainter {
 }
 
 class _NodeBox extends StatelessWidget {
-  const _NodeBox({required this.node, required this.onTap});
+  const _NodeBox(
+      {required this.node, required this.width, required this.onTap});
   final PlanNodeData node;
+  final double width;
   final VoidCallback onTap;
 
   @override
@@ -609,7 +645,7 @@ class _NodeBox extends StatelessWidget {
       borderRadius: BorderRadius.circular(9),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 300),
-        width: CollabGraph.nodeWidth,
+        width: width,
         height: CollabGraph.nodeHeight,
         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
@@ -659,15 +695,44 @@ class _NodeBox extends StatelessWidget {
   }
 }
 
+class NodeDetailPage extends StatelessWidget {
+  const NodeDetailPage({required this.collab, required this.node, super.key});
+  final CollabData collab;
+  final PlanNodeData node;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        title: ValueListenableBuilder(
+          valueListenable: collab.revision,
+          builder: (_, __, ___) => Text(node.role,
+              style: const TextStyle(fontSize: 16),
+              overflow: TextOverflow.ellipsis),
+        ),
+      ),
+      body: ValueListenableBuilder(
+        valueListenable: collab.revision,
+        builder: (_, __, ___) =>
+            NodeDetail(collab: collab, node: node, showHandle: false),
+      ),
+    );
+  }
+}
+
 class NodeDetail extends StatelessWidget {
   const NodeDetail(
       {required this.collab,
       required this.node,
-      required this.controller,
+      this.controller,
+      this.showHandle = true,
       super.key});
   final CollabData collab;
   final PlanNodeData node;
-  final ScrollController controller;
+  final ScrollController? controller;
+  final bool showHandle;
 
   @override
   Widget build(BuildContext context) {
@@ -679,14 +744,16 @@ class NodeDetail extends StatelessWidget {
       controller: controller,
       padding: const EdgeInsets.fromLTRB(18, 14, 18, 24),
       children: [
-        Center(
-          child: Container(
-              width: 36,
-              height: 4,
-              decoration: BoxDecoration(
-                  color: C.line, borderRadius: BorderRadius.circular(2))),
-        ),
-        const SizedBox(height: 12),
+        if (showHandle) ...[
+          Center(
+            child: Container(
+                width: 36,
+                height: 4,
+                decoration: BoxDecoration(
+                    color: C.line, borderRadius: BorderRadius.circular(2))),
+          ),
+          const SizedBox(height: 12),
+        ],
         Text(node.role, style: const TextStyle(color: C.muted, fontSize: 12)),
         Text(node.title,
             style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700)),
@@ -808,7 +875,9 @@ class _PlanEditorPageState extends State<PlanEditorPage> {
           TextButton(onPressed: _save, child: const Text('完成')),
         ],
       ),
-      body: ListView(
+      body: LayoutBuilder(builder: (context, constraints) {
+        final indent = constraints.maxWidth < 480 ? 10.0 : 18.0;
+        return ListView(
         padding: const EdgeInsets.all(14),
         children: [
           TextFormField(
@@ -822,19 +891,20 @@ class _PlanEditorPageState extends State<PlanEditorPage> {
               style: TextStyle(
                   fontSize: 12, color: full ? Colors.red.shade700 : C.muted)),
           const SizedBox(height: 8),
-          for (final node in draft.ordered()) _nodeCard(node, full),
+          for (final node in draft.ordered()) _nodeCard(node, full, indent),
         ],
-      ),
+        );
+      }),
     );
   }
 
-  Widget _nodeCard(PlanNodeData node, bool full) {
+  Widget _nodeCard(PlanNodeData node, bool full, double indent) {
     final depth = draft.depth(node);
     final isRoot = node.parent == null;
     final isLeaf = draft.children(node.id).isEmpty;
     return Container(
       key: ValueKey(node.id),
-      margin: EdgeInsets.only(left: (depth - 1) * 18.0, bottom: 10),
+      margin: EdgeInsets.only(left: (depth - 1) * indent, bottom: 10),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         color: Colors.white,

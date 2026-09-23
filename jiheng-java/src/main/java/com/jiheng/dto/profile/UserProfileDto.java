@@ -18,6 +18,7 @@ public class UserProfileDto {
     private String department;
     private Integer points;
     private Boolean phoneBound;
+    private String dataScopes;
     private String locale;
     private Boolean notifyOn;
     private UserStatsDto stats;

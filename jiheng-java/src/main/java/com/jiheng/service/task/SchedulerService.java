@@ -30,9 +30,17 @@ public class SchedulerService {
     }
 
     private void execute(ScheduledTaskEntity task) {
-        task.setLastTriggerAt(LocalDateTime.now());
-        task.setLastResult("accepted");
-        task.setNextRunAt(LocalDateTime.now().plusMinutes(1));
+        LocalDateTime now = LocalDateTime.now();
+        task.setLastTriggerAt(now);
+        try {
+            task.setNextRunAt(TaskService.nextRun(task.getCron(), now));
+            task.setLastResult("accepted");
+        } catch (RuntimeException exception) {
+            task.setStatus("paused");
+            task.setLastResult("cron_invalid");
+            taskMapper.updateById(task);
+            return;
+        }
         taskMapper.updateById(task);
         notifyService.create(Map.of("user_id", task.getUserId(), "type", "task_result",
                 "title", "定时任务已执行", "content", task.getTaskId(), "task_id", task.getTaskId()));

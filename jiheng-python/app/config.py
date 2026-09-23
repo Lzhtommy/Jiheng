@@ -18,14 +18,18 @@ class Settings(BaseSettings):
     deepseek_model_quick: str = "deepseek-flash"
     deepseek_model_deep: str = "deepseek-v4-pro"
     agent_runtime: str = "harness-sdk"
+    # 对话是用户盯着等的，Harness 每次冷启动 dsh 且整轮结束才出字，这里默认走可流式的 tool-calls
+    chat_runtime: str = "tool-calls"
     agent_allow_tool_calls_fallback: bool = False
     # Harness 跑完整轮才产出结果，工具调用多时会远超普通流式间隔
     agent_silent_timeout_seconds: float = 300
     deep_research_timeout_seconds: float = 1800
     multi_agent_leaf_model: str = ""
-    multi_agent_time_budget_seconds: float = 240
-    multi_agent_max_parallel: int = 4
+    multi_agent_time_budget_seconds: float = 120
+    multi_agent_max_parallel: int = 5
     multi_agent_max_nodes: int = 5
+    multi_agent_max_leaf_rounds: int = 3
+    multi_agent_max_revisions: int = 1
     app_root: str = str(Path(__file__).resolve().parents[1])
     dsh_home: str = "./data/dsh-home"
     dsh_workspace: str = "./data/dsh-workspace"

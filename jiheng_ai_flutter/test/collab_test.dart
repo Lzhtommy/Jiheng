@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:jiheng_ai_flutter/collab.dart';
+import 'package:jiheng_ai_flutter/main.dart';
 
 Map<String, dynamic> planResponse() => {
       'plan': {
@@ -66,5 +67,49 @@ void main() {
     expect(find.text('行情估值'), findsOneWidget);
     expect(find.text('汇总'), findsOneWidget);
     expect(find.text('执行中'), findsOneWidget);
+  });
+
+  testWidgets('narrow layout keeps node edges centered', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final collab = CollabData(question: 'q', history: [])
+      ..loadPlan(planResponse());
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(body: CollabGraph(collab: collab, onTap: (_) {})),
+    ));
+
+    final root = tester.getRect(find.byType(InkWell).at(0));
+    final left = tester.getRect(find.byType(InkWell).at(1));
+    final right = tester.getRect(find.byType(InkWell).at(2));
+    expect(root.center.dx, closeTo((left.center.dx + right.center.dx) / 2, 1));
+    expect(left.width, lessThan(100));
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('confirm actions stack on a phone width', (tester) async {
+    tester.view.physicalSize = const Size(390, 844);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.resetPhysicalSize);
+    addTearDown(tester.view.resetDevicePixelRatio);
+
+    final state = JihengShellState();
+    final collab = CollabData(question: 'q', history: [])
+      ..loadPlan(planResponse())
+      ..phase = 'confirm';
+    final message = ChatMsg.ai('generic')..collab = collab;
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(body: CollabPanel(message: message, state: state)),
+    ));
+    await tester.pump();
+
+    final run = tester.getRect(find.widgetWithText(FilledButton, '按此计划执行'));
+    final edit = tester.getRect(find.widgetWithText(OutlinedButton, '编辑计划'));
+    expect(run.bottom, lessThanOrEqualTo(edit.top));
+    expect(run.width, greaterThan(300));
+    expect(tester.takeException(), isNull);
   });
 }

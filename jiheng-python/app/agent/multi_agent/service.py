@@ -64,4 +64,6 @@ async def build_executor(req: MultiAgentRequest) -> GraphExecutor:
         execute_tool=execute,
         max_parallel=settings.multi_agent_max_parallel,
         time_budget=settings.multi_agent_time_budget_seconds,
+        max_leaf_rounds=settings.multi_agent_max_leaf_rounds,
+        max_revisions=settings.multi_agent_max_revisions,
     )

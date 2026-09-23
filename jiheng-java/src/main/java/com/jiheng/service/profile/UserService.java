@@ -49,6 +49,7 @@ public class UserService {
         dto.setDepartment(user.getDepartment());
         dto.setPoints(user.getPoints());
         dto.setPhoneBound(user.getPhoneBound());
+        dto.setDataScopes(user.getDataScopes());
         dto.setLocale(user.getLocale());
         dto.setNotifyOn(user.getNotifyOn());
         dto.setStats(getStats(user));

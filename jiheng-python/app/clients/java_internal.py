@@ -33,6 +33,11 @@ class JavaInternalClient:
         async with httpx.AsyncClient(timeout=settings.data_request_timeout_seconds) as client:
             await client.post(f"{self.base_url}/internal/skills/{skill_id}/run", headers=self.headers)
 
+    async def append_turn(self, turn: dict) -> None:
+        async with httpx.AsyncClient(timeout=settings.data_request_timeout_seconds) as client:
+            resp = await client.post(f"{self.base_url}/internal/conversations/turns", json=turn, headers=self.headers)
+            resp.raise_for_status()
+
     async def create_notification(self, notification_data: dict):
         async with httpx.AsyncClient(timeout=settings.data_request_timeout_seconds) as client:
             await client.post(f"{self.base_url}/internal/notifications", json=notification_data, headers=self.headers)

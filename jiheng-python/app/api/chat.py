@@ -1,4 +1,6 @@
 import asyncio
+import json
+import logging
 import time
 import uuid
 from collections.abc import AsyncGenerator, Awaitable, Callable
@@ -26,6 +28,7 @@ from app.models.sse_events import (
 from app.trace.recorder import TraceRecorder
 
 router = APIRouter()
+logger = logging.getLogger(__name__)
 
 FlowFactory = Callable[[str], Awaitable[AsyncGenerator[str, None]]]
 
@@ -56,9 +59,18 @@ async def chat_stream(request: Request, chat_req: ChatRequest, payload: dict = D
             )
         messages = [{"role": m.role, "content": m.content} for m in chat_req.messages]
         context = AgentRunContext(user_id=str(payload["sub"]), conversation_id=chat_req.conversation_id)
-        return as_sse(create_runtime().stream(messages, build_profile(routed_mode, expert), context), correlation_id)
+        runtime = create_runtime(settings.chat_runtime)
+        return as_sse(runtime.stream(messages, build_profile(routed_mode, expert), context), correlation_id)
 
-    return _stream_response(chat_req.conversation_id, chat_req.mode.value, chat_req.expert, make_flow)
+    question = next((m.content for m in reversed(chat_req.messages) if m.role == "user"), "")
+    return _stream_response(
+        chat_req.conversation_id,
+        chat_req.mode.value,
+        chat_req.expert,
+        make_flow,
+        user_id=str(payload["sub"]),
+        question=question,
+    )
 
 
 @router.post("/multi-agent/plan")
@@ -80,15 +92,32 @@ async def multi_agent_stream(run_req: MultiAgentRequest, payload: dict = Depends
         executor = await multi_agent.build_executor(run_req)
         return as_sse(executor.stream(), correlation_id)
 
-    return _stream_response(run_req.conversation_id, "multi_agent", run_req.expert, make_flow)
+    question = next((m.content for m in reversed(run_req.messages) if m.role == "user"), "")
+    return _stream_response(
+        run_req.conversation_id,
+        "multi_agent",
+        run_req.expert,
+        make_flow,
+        user_id=str(payload["sub"]),
+        question=question,
+    )
 
 
-def _stream_response(conversation_id: str, mode: str, expert: str | None, make_flow: FlowFactory) -> StreamingResponse:
+def _stream_response(
+    conversation_id: str,
+    mode: str,
+    expert: str | None,
+    make_flow: FlowFactory,
+    *,
+    user_id: str | None = None,
+    question: str = "",
+) -> StreamingResponse:
     correlation_id = str(uuid.uuid4())
 
     async def event_generator():
         recorder = TraceRecorder(correlation_id, conversation_id, mode)
         completed = True
+        answer: list[str] = []
         try:
             yield SseEmitter.start(
                 StartEvent(correlation_id=correlation_id, conversation_id=conversation_id, mode=mode, expert=expert)
@@ -116,16 +145,53 @@ def _stream_response(conversation_id: str, mode: str, expert: str | None, make_f
                     completed = False
                     break
                 recorder.record("sse", {"event": event.split("\n", 1)[0]})
+                answer.append(_answer_chunk(event))
                 yield event
 
             if completed:
+                await _archive_turn(user_id, conversation_id, mode, expert, question, "".join(answer))
                 yield SseEmitter.done(DoneEvent(correlation_id=correlation_id))
         except Exception as e:
-            yield SseEmitter.error(ErrorEvent(correlation_id=correlation_id, code="INTERNAL_ERROR", message=str(e)))
+            logger.warning("对话流异常", exc_info=True)
+            message = str(e) or f"服务内部错误（{type(e).__name__}），请稍后重试"
+            yield SseEmitter.error(ErrorEvent(correlation_id=correlation_id, code="INTERNAL_ERROR", message=message))
         finally:
             await recorder.save()
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
+
+
+def _answer_chunk(event: str) -> str:
+    """从 message_chunk 事件里取出回答文本，其他事件返回空串。"""
+    if not event.startswith("event: message_chunk"):
+        return ""
+    for line in event.splitlines():
+        if line.startswith("data:"):
+            try:
+                return json.loads(line[5:]).get("content") or ""
+            except json.JSONDecodeError:
+                return ""
+    return ""
+
+
+async def _archive_turn(
+    user_id: str | None, conversation_id: str, mode: str, expert: str | None, question: str, answer: str
+) -> None:
+    if not user_id or not question.strip() or not answer.strip():
+        return
+    try:
+        await JavaInternalClient().append_turn(
+            {
+                "user_id": user_id,
+                "conversation_id": conversation_id,
+                "question": question,
+                "answer": answer,
+                "mode": mode,
+                "expert": expert,
+            }
+        )
+    except Exception:
+        logger.warning("保存对话失败", exc_info=True)
 
 
 async def _enqueue_deep_research(request: Request, chat_req: ChatRequest, payload: dict) -> str:

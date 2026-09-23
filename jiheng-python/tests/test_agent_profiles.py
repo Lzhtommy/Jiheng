@@ -4,7 +4,7 @@ from app.agent.profiles import build_profile
 def test_quick_profile_has_bounded_tool_rounds():
     profile = build_profile("quick")
 
-    assert profile.max_tool_rounds == 2
+    assert profile.max_tool_rounds == 3
     assert "get_realtime_quote" in profile.tool_names
     assert "call_financial_mcp" in profile.tool_names
     assert "get_corporate_calendar" in profile.tool_names
@@ -13,8 +13,13 @@ def test_quick_profile_has_bounded_tool_rounds():
 def test_expert_profile_uses_deep_strategy():
     profile = build_profile("expert", {"name": "财报分析师", "systemPrompt": "关注财报质量"})
 
-    assert profile.max_tool_rounds == 6
+    assert profile.max_tool_rounds == 4
+    assert profile.reasoning_effort == "high"
     assert "财报分析师" in profile.system_prompt
+
+
+def test_deep_profile_keeps_longest_tool_budget():
+    assert build_profile("deep").max_tool_rounds == 6
 
 
 def test_expert_profile_falls_back_to_description():

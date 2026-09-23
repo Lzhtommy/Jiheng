@@ -67,6 +67,12 @@ class DeepSeekChat:
                 data = line[5:].strip()
                 if data == "[DONE]":
                     break
-                delta = json.loads(data)["choices"][0].get("delta") or {}
+                try:
+                    choices = json.loads(data).get("choices") or []
+                except json.JSONDecodeError:
+                    continue
+                if not choices:
+                    continue
+                delta = choices[0].get("delta") or {}
                 if delta.get("content"):
                     yield delta["content"]

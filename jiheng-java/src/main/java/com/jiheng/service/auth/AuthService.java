@@ -44,6 +44,8 @@ public class AuthService {
             user.setPhone(defaultPhone);
             user.setDisplayName("测试用户");
             user.setPlan("basic");
+            user.setDepartment("研究部");
+            user.setDataScopes("行情 / 财报 / 公告");
             user.setStatus("verified");
             userMapper.insert(user);
         }

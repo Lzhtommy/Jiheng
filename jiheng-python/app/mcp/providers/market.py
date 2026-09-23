@@ -7,6 +7,8 @@ from app.config import settings
 from app.mcp.models import DataResult, Source
 
 HEADERS = {"User-Agent": "Mozilla/5.0"}
+EASTMONEY_HEADERS = {"Referer": "https://quote.eastmoney.com/"}
+EASTMONEY_HOSTS = ("push2.eastmoney.com", "17.push2.eastmoney.com", "82.push2.eastmoney.com")
 
 
 class MarketProvider:
@@ -101,7 +103,6 @@ class MarketProvider:
 
     async def eastmoney_rank(self, fs: str, title: str, fid: str = "f3") -> DataResult:
         """Generic Eastmoney ranking endpoint for indices, sectors and capital-flow rankings."""
-        url = "https://push2.eastmoney.com/api/qt/clist/get"
         params = {
             "pn": 1,
             "pz": 100,
@@ -113,16 +114,24 @@ class MarketProvider:
             "fs": fs,
             "fields": "f12,f14,f2,f3,f4,f5,f6,f8,f20,f21,f62",
         }
-        try:
-            payload = (await self._get(url, params=params)).json()
-            rows = list((payload.get("data") or {}).get("diff") or [])
-            return DataResult(
-                provider="eastmoney",
-                data=rows,
-                sources=[self._source(title, "数据", str(httpx.URL(url, params=params)))],
-            )
-        except Exception as exc:
-            return DataResult.failure("eastmoney", str(exc))
+        errors = []
+        for host in EASTMONEY_HOSTS:
+            url = f"https://{host}/api/qt/clist/get"
+            try:
+                payload = (await self._get(url, params=params, headers=EASTMONEY_HEADERS)).json()
+                rows = list((payload.get("data") or {}).get("diff") or [])
+                return DataResult(
+                    provider="eastmoney",
+                    data=rows,
+                    sources=[self._source(title, "数据", str(httpx.URL(url, params=params)))],
+                )
+            except Exception as exc:
+                errors.append(f"{host}: {exc}")
+        return DataResult.failure(
+            "eastmoney",
+            f"东方财富{title}接口暂不可用（已重试 {len(EASTMONEY_HOSTS)} 个节点），"
+            "请在回答中说明该项数据缺失，不要编造。" + "；".join(errors)[:300],
+        )
 
     def _source(self, title: str, tag: str, url: object) -> Source:
         return Source(
