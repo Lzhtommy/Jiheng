@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
@@ -71,6 +72,70 @@ class ChatMsg {
   bool skill = false;
   final List<SectionData> sections = [];
   final List<List<String>> rows = [];
+  final List<ToolCallData> toolCalls = [];
+}
+
+class ToolCallData {
+  ToolCallData(this.id, this.name, this.input);
+  final String id;
+  final String name;
+  final String input;
+  String? result;
+  bool? success;
+
+  bool get running => success == null;
+}
+
+const toolLabels = {
+  'search_symbol': '证券代码检索',
+  'get_realtime_quote': '实时行情',
+  'get_kline': 'K线数据',
+  'get_minute_kline': '分钟K线',
+  'get_index_quote': '指数行情',
+  'get_sector_quote': '板块行情',
+  'get_fund_flow': '板块资金流',
+  'list_announcements': '公告检索',
+  'download_announcement': '公告下载',
+  'get_corporate_calendar': '交易日历',
+  'search_news': '财经新闻',
+  'get_official_policy': '政策资讯',
+  'call_financial_mcp': '财报数据',
+};
+
+final answerMarkdownStyle = MarkdownStyleSheet(
+  p: const TextStyle(fontSize: 14, height: 1.7, color: C.ink),
+  h1: const TextStyle(fontSize: 17, fontWeight: FontWeight.w700, color: C.ink),
+  h2: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: C.ink),
+  h3: const TextStyle(
+      fontSize: 14.5, fontWeight: FontWeight.w700, color: C.ink),
+  strong: const TextStyle(fontWeight: FontWeight.w700),
+  listBullet: const TextStyle(fontSize: 14, height: 1.7, color: C.ink),
+  blockSpacing: 10,
+  tableHead:
+      const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: C.ink),
+  tableBody: const TextStyle(fontSize: 13, height: 1.5, color: C.ink),
+  tableBorder: TableBorder.all(color: C.line),
+  tableCellsPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+  tableHeadCellsDecoration: const BoxDecoration(color: C.goldSoft),
+  tableColumnWidth: const IntrinsicColumnWidth(),
+  blockquoteDecoration: const BoxDecoration(
+    color: Color(0xFFF7F6F3),
+    border: Border(left: BorderSide(color: C.gold, width: 3)),
+  ),
+  code: const TextStyle(
+      fontFamily: 'monospace', fontSize: 12.5, backgroundColor: C.goldSoft),
+  horizontalRuleDecoration: const BoxDecoration(
+    border: Border(top: BorderSide(color: C.line)),
+  ),
+);
+
+String prettyJson(String? raw) {
+  if (raw == null || raw.isEmpty) return '';
+  try {
+    return const JsonEncoder.withIndent('  ').convert(jsonDecode(raw));
+  } catch (_) {
+    return raw;
+  }
 }
 
 class ApiClient {
@@ -251,123 +316,11 @@ class ApiClient {
   }
 }
 
-class Script {
-  const Script({
-    required this.tool,
-    required this.intro,
-    required this.sections,
-    required this.risk,
-    required this.ref,
-    required this.refCount,
-    this.skill = false,
-    this.rows = const [],
-  });
-
-  final String tool;
-  final String intro;
-  final List<SectionData> sections;
-  final String risk;
-  final String ref;
-  final int refCount;
-  final bool skill;
-  final List<List<String>> rows;
-}
-
 class SectionData {
   const SectionData(this.title, this.items);
   final String title;
   final List<String> items;
 }
-
-const scripts = <String, Script>{
-  'innovdrug': Script(
-    tool: '聚合搜索',
-    intro: '我来帮您分析创新药板块今日集体大幅上涨的核心驱动因素。',
-    sections: [
-      SectionData('一、政策端持续释放利好',
-          ['推进药品试验数据保护制度落地', '建立儿童药、罕见病药市场独占期', '培育3-5个国际竞争力生物医药产业集群']),
-      SectionData('二、产业基本面持续超预期兑现',
-          ['生物医药行业归母净利润同比增长 64.87%', 'License-out交易总额约1100亿美元，已达2025全年80%']),
-      SectionData('三、估值与资金面共振', ['指数PE处于历史低分位', '资金从AI板块高低切换，持续增配创新药']),
-    ],
-    rows: [
-      ['万得创新药主题指数', '+0.04%，报3789.87'],
-      ['领涨个股', '康希诺、百奥泰、奥赛康'],
-      ['港股创新药指数', '盘中涨幅超6%'],
-    ],
-    risk: '风险提示：政策仍存变数；板块短期快速上涨后需关注追高风险。',
-    ref: '创新药板块今日涨跌幅、领涨个股及板块表现',
-    refCount: 22,
-  ),
-  'midea': Script(
-    tool: '聚合搜索',
-    intro: '我来帮您分析美的集团近期股价走势与创8个月新高背后的原因。',
-    sections: [
-      SectionData('核心驱动因素',
-          ['海外OBM自主品牌收入占比持续提升', '楼宇科技、机器人与自动化业务减亏明显', '分红比例维持高位，股息率具备吸引力']),
-      SectionData('短期股价下跌原因', ['前期涨幅较大后获利盘兑现', '原材料价格阶段性上行压制毛利率预期']),
-    ],
-    rows: [
-      ['最新价', '较前高回落约3.2%'],
-      ['机构评级', '多数维持增持/买入'],
-    ],
-    risk: '风险提示：海外需求波动、原材料价格上行、行业竞争加剧。',
-    ref: '美的集团股价走势及机构评级跟踪',
-    refCount: 15,
-  ),
-  'nvidia': Script(
-    tool: '聚合搜索',
-    intro: '我来帮您梳理英伟达AI芯片需求最新变化及产业链影响。',
-    sections: [
-      SectionData('需求端持续超预期', ['下一代平台订单能见度已排至2027年', '云厂商资本开支指引持续上修']),
-      SectionData('产业链跟踪', ['先进封装产能持续满载', '国产算力链受益于自主可控与算力平权预期']),
-    ],
-    risk: '风险提示：AI资本开支不及预期、地缘政策限制。',
-    ref: '英伟达及AI算力产业链最新跟踪数据',
-    refCount: 18,
-  ),
-  'skill1': Script(
-    tool: '宏观数据解读',
-    skill: true,
-    intro: '已调用「宏观洞察」技能，对8000亿元新型政策性金融工具进行测算。',
-    sections: [
-      SectionData(
-          '工具定位与资金投向', ['重点投向重大项目资本金补充、设备更新与消费基础设施', '采用母子基金结构，撬动银行配套融资']),
-      SectionData('规模测算', ['预计带动配套融资1.5-2万亿元', '对四季度基建实物工作量形成支撑']),
-    ],
-    risk: '风险提示：政策落地节奏及具体投向细则仍需跟踪。',
-    ref: '新型政策性金融工具设立方案及规模测算',
-    refCount: 12,
-  ),
-  'skill2': Script(
-    tool: '贵金属板块深度透视',
-    skill: true,
-    intro: '已为您调用「贵金属板块深度透视」技能，结合历史分位与均值对伦敦金银比进行分析。',
-    sections: [
-      SectionData('金银比历史分位',
-          ['当前伦敦金银比处于近10年 78% 分位，显著高于长期均值', '历史上金银比高位回落阶段，白银相对黄金往往有超额表现']),
-      SectionData('机构核心观点', ['若实际利率见顶回落，白银在工业需求与金融属性双重驱动下，补涨弹性可能优于黄金']),
-    ],
-    rows: [
-      ['当前金银比', '约82.3'],
-      ['近10年均值', '约75.6'],
-      ['近10年分位', '78%'],
-    ],
-    risk: '风险提示：贵金属价格受美联储政策路径、地缘政治等多重因素影响，历史规律不代表未来走势。',
-    ref: '伦敦金银比历史分位与均值回归分析',
-    refCount: 9,
-  ),
-  'generic': Script(
-    tool: '聚合搜索',
-    intro: '收到，我正在为你查询相关信息，请稍候。',
-    sections: [
-      SectionData('分析结果', ['这是一个原型演示回复，真实应用中会返回结合实时行情与多源检索得到的结构化分析内容。'])
-    ],
-    risk: '内容由 AI 生成，请核查重要信息。',
-    ref: '示例数据来源',
-    refCount: 1,
-  ),
-};
 
 class JihengShell extends StatefulWidget {
   const JihengShell({super.key});
@@ -411,7 +364,6 @@ class JihengShellState extends State<JihengShell> {
   bool isLoggedIn = false;
   bool loadingData = false;
   bool sending = false;
-  bool get prototypeFirst => true;
   String? _chatSessionId;
 
   String get chatSessionId => _chatSessionId ??=
@@ -725,8 +677,7 @@ class JihengShellState extends State<JihengShell> {
       setState(() => expertSheet = true);
       return;
     }
-    final key = scripts.containsKey(flow) ? flow : 'generic';
-    final ai = ChatMsg.ai(key);
+    final ai = ChatMsg.ai(flow);
     setState(() {
       messages.add(ChatMsg.user(text));
       messages.add(ai);
@@ -736,77 +687,64 @@ class JihengShellState extends State<JihengShell> {
       sending = true;
     });
     _scrollDown();
-    if (isLoggedIn && !prototypeFirst) {
-      try {
-        if (mode == '深度研究') {
-          final data =
-              await api.agentPost('/chat/deep-research', _chatBody(text));
-          final taskId = data['task_id']?.toString() ??
-              'local-${DateTime.now().millisecondsSinceEpoch}';
-          setState(() {
-            ai.stage = Stage.done;
-            ai.tool = '深度研究';
-            ai.intro = '深度研究任务已转入后台执行。';
-            ai.sections.add(
-                SectionData('后台任务', ['任务 ID：$taskId', '完成后会在通知中心或我的报告中展示。']));
-            ai.risk = '内容由 AI 生成，请核查重要信息。';
-            localTasks.insert(0, {
-              'taskId': taskId,
-              'type': 'deep_research',
-              'status': 'running'
-            });
-            sending = false;
-          });
-          _scrollDown();
-          return;
-        }
-        await for (final event in api.streamChat(_chatBody(text))) {
-          if (!mounted) return;
-          _applySseEvent(ai, event);
-          _scrollDown();
-        }
-        if (!mounted) return;
-        setState(() {
-          if (ai.stage != Stage.done) {
-            ai.stage = Stage.done;
-            if (ai.intro.isEmpty) ai.intro = '已完成分析。';
-            if (ai.risk.isEmpty) ai.risk = '内容由 AI 生成，请核查重要信息。';
-          }
-          sending = false;
-        });
-        return;
-      } catch (e) {
-        if (!mounted) return;
-        if (!isLoggedIn) {
-          setState(() => sending = false);
-          return;
-        }
-        _rememberApiError(e);
-        // 真实登录会话出错时展示错误，演示模式（无令牌）才回落到本地示例
-        if (api.accessToken != null) {
-          setState(() {
-            ai.stage = Stage.done;
-            if (ai.intro.isEmpty) ai.intro = '请求失败，请稍后重试。';
-            ai.risk = e.toString();
-            sending = false;
-          });
-          return;
-        }
-      }
-    }
-    Timer(const Duration(milliseconds: 700), () {
-      if (!mounted) return;
-      setState(() => ai.stage = Stage.tool);
-      _scrollDown();
-    });
-    Timer(const Duration(milliseconds: 1700), () {
-      if (!mounted) return;
+    if (api.accessToken == null) {
       setState(() {
         ai.stage = Stage.done;
+        ai.intro = '当前为演示模式，未连接后端，请退出后使用默认账号登录。';
+        ai.risk = '内容由 AI 生成，请核查重要信息。';
         sending = false;
       });
-      _scrollDown();
-    });
+      return;
+    }
+    try {
+      if (mode == '深度研究') {
+        final data =
+            await api.agentPost('/chat/deep-research', _chatBody(text));
+        final taskId = data['task_id']?.toString() ??
+            'local-${DateTime.now().millisecondsSinceEpoch}';
+        setState(() {
+          ai.stage = Stage.done;
+          ai.tool = '深度研究';
+          ai.intro = '深度研究任务已转入后台执行。';
+          ai.sections.add(
+              SectionData('后台任务', ['任务 ID：$taskId', '完成后会在通知中心或我的报告中展示。']));
+          ai.risk = '内容由 AI 生成，请核查重要信息。';
+          localTasks.insert(0,
+              {'taskId': taskId, 'type': 'deep_research', 'status': 'running'});
+          sending = false;
+        });
+        _scrollDown();
+        return;
+      }
+      await for (final event in api.streamChat(_chatBody(text))) {
+        if (!mounted) return;
+        _applySseEvent(ai, event);
+        _scrollDown();
+      }
+      if (!mounted) return;
+      setState(() {
+        if (ai.stage != Stage.done) {
+          ai.stage = Stage.done;
+          if (ai.intro.isEmpty) ai.intro = '已完成分析。';
+          if (ai.risk.isEmpty) ai.risk = '内容由 AI 生成，请核查重要信息。';
+        }
+        sending = false;
+      });
+      return;
+    } catch (e) {
+      if (!mounted) return;
+      if (!isLoggedIn) {
+        setState(() => sending = false);
+        return;
+      }
+      _rememberApiError(e);
+      setState(() {
+        ai.stage = Stage.done;
+        if (ai.intro.isEmpty) ai.intro = '请求失败，请稍后重试。';
+        ai.risk = e.toString();
+        sending = false;
+      });
+    }
   }
 
   Map<String, dynamic> _chatBody(String text) {
@@ -838,7 +776,8 @@ class JihengShellState extends State<JihengShell> {
     for (final msg in previous) {
       final content = msg.isUser ? msg.text : msg.intro;
       if (content.trim().isEmpty) continue;
-      history.add({'role': msg.isUser ? 'user' : 'assistant', 'content': content});
+      history
+          .add({'role': msg.isUser ? 'user' : 'assistant', 'content': content});
     }
     return history.length > 10 ? history.sublist(history.length - 10) : history;
   }
@@ -860,6 +799,20 @@ class JihengShellState extends State<JihengShell> {
         ai.risk = event['message']?.toString() ?? '内容由 AI 生成，请核查重要信息。';
         sending = false;
         return;
+      }
+      final callId = event['call_id']?.toString();
+      if (name == 'tool_call' && callId != null) {
+        ai.toolCalls.add(ToolCallData(
+            callId,
+            event['tool_name']?.toString() ?? '',
+            event['tool_input']?.toString() ?? ''));
+      } else if (name == 'tool_result' && callId != null) {
+        for (final call in ai.toolCalls) {
+          if (call.id == callId) {
+            call.result = event['tool_result']?.toString() ?? '';
+            call.success = event['success'] != false;
+          }
+        }
       }
       if (name.contains('tool') || event['tool_name'] != null) {
         ai.stage = Stage.tool;
@@ -905,9 +858,10 @@ class JihengShellState extends State<JihengShell> {
         ai.refCount = int.tryParse(event['ref_count'].toString()) ?? 0;
       }
       if (event['refs'] is List && (event['refs'] as List).isNotEmpty) {
-        final first =
-            Map<String, dynamic>.from((event['refs'] as List).first as Map);
-        ai.ref = first['title']?.toString() ?? first.toString();
+        ai.ref = (event['refs'] as List).map((item) {
+          final source = item is Map ? item : {'title': item};
+          return '· ${source['title'] ?? ''}  ${source['url'] ?? ''}'.trim();
+        }).join('\n');
       }
       if (name.contains('done')) {
         ai.stage = Stage.done;
@@ -1235,8 +1189,7 @@ class _LoginViewState extends State<LoginView> {
                               width: 88,
                               height: 48,
                               child: OutlinedButton(
-                                onPressed: () =>
-                                    _loadCaptcha(clearInput: true),
+                                onPressed: () => _loadCaptcha(clearInput: true),
                                 style: OutlinedButton.styleFrom(
                                   foregroundColor: C.gold,
                                   padding:
@@ -1786,20 +1739,14 @@ class MessageBubble extends StatelessWidget {
         ),
       );
     }
-    final script = scripts[message.flow] ?? scripts['generic']!;
-    final remote = message.intro.isNotEmpty ||
-        message.sections.isNotEmpty ||
-        message.risk.isNotEmpty;
-    final tool = remote
-        ? (message.tool.isEmpty ? script.tool : message.tool)
-        : script.tool;
-    final intro = remote ? message.intro : script.intro;
-    final sections = remote ? message.sections : script.sections;
-    final rows = remote ? message.rows : script.rows;
-    final risk = remote ? message.risk : script.risk;
-    final ref = remote ? message.ref : script.ref;
-    final refCount = remote ? message.refCount : script.refCount;
-    final isSkill = remote ? message.skill : script.skill;
+    final tool = message.tool.isEmpty ? '数据检索' : message.tool;
+    final intro = message.intro;
+    final sections = message.sections;
+    final rows = message.rows;
+    final risk = message.risk;
+    final ref = message.ref;
+    final refCount = message.refCount;
+    final isSkill = message.skill;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 10, 16, 10),
       child: Row(crossAxisAlignment: CrossAxisAlignment.start, children: [
@@ -1813,43 +1760,56 @@ class MessageBubble extends StatelessWidget {
               if (message.stage == Stage.thinking)
                 const Text('正在检索……',
                     style: TextStyle(color: C.muted, fontSize: 13.5)),
+              if (message.toolCalls.isNotEmpty) ...[
+                for (final call in message.toolCalls)
+                  ToolCallTile(key: ValueKey(call.id), call: call),
+                const SizedBox(height: 4),
+              ],
               if (message.stage != Stage.thinking) ...[
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
-                  decoration: BoxDecoration(
-                    border: Border.all(color: Color(0xFFE7E5E0)),
-                    borderRadius: BorderRadius.circular(8),
+                if (message.toolCalls.isEmpty)
+                  Container(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Color(0xFFE7E5E0)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Row(children: [
+                      Text(isSkill ? '已调用技能 · $tool' : tool,
+                          style: const TextStyle(
+                              color: C.gold,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12.5)),
+                      const SizedBox(width: 8),
+                      Expanded(
+                          child: Text(
+                              message.stage == Stage.tool
+                                  ? '正在生成搜索问句…'
+                                  : '正在检索相关数据…',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  color: C.muted, fontSize: 12.5))),
+                      if (message.stage == Stage.tool)
+                        const SizedBox(
+                            width: 13,
+                            height: 13,
+                            child: CircularProgressIndicator(strokeWidth: 2))
+                      else
+                        const Text('✓',
+                            style: TextStyle(color: C.green, fontSize: 13)),
+                    ]),
                   ),
-                  child: Row(children: [
-                    Text(isSkill ? '已调用技能 · $tool' : tool,
-                        style: const TextStyle(
-                            color: C.gold,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 12.5)),
-                    const SizedBox(width: 8),
-                    Expanded(
-                        child: Text(
-                            message.stage == Stage.tool
-                                ? '正在生成搜索问句…'
-                                : '正在检索相关数据…',
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                            style: const TextStyle(
-                                color: C.muted, fontSize: 12.5))),
-                    if (message.stage == Stage.tool)
-                      const SizedBox(
-                          width: 13,
-                          height: 13,
-                          child: CircularProgressIndicator(strokeWidth: 2))
-                    else
-                      const Text('✓',
-                          style: TextStyle(color: C.green, fontSize: 13)),
-                  ]),
-                ),
                 const SizedBox(height: 10),
-                Text(intro.isEmpty ? '正在检索……' : intro,
-                    style: const TextStyle(fontSize: 14, height: 1.7)),
+                if (intro.isEmpty)
+                  const Text('正在检索……',
+                      style: TextStyle(fontSize: 14, height: 1.7))
+                else
+                  MarkdownBody(
+                    data: intro,
+                    selectable: true,
+                    styleSheet: answerMarkdownStyle,
+                  ),
               ],
               if (message.stage == Stage.done) ...[
                 const SizedBox(height: 12),
@@ -1875,7 +1835,7 @@ class MessageBubble extends StatelessWidget {
                 InkWell(
                   onTap: () =>
                       state.mutate(() => message.refOpen = !message.refOpen),
-                  child: Text('引用 ${refCount == 0 ? 1 : refCount} 条 · 点击查看来源',
+                  child: Text('引用 $refCount 条 · 点击查看来源',
                       style: const TextStyle(color: C.gold, fontSize: 12.5)),
                 ),
                 if (message.refOpen)
@@ -1886,8 +1846,7 @@ class MessageBubble extends StatelessWidget {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: C.line)),
-                    child: Text(
-                        '${ref.isEmpty ? '示例数据来源' : ref}\n数据 · 2026-09-22',
+                    child: Text(ref.isEmpty ? '本次回答未调用带来源的数据工具' : ref,
                         style: const TextStyle(fontSize: 12, height: 1.55)),
                   ),
                 const SizedBox(height: 8),
@@ -3263,6 +3222,99 @@ class Label extends StatelessWidget {
           style: const TextStyle(
               fontSize: 11, color: C.gold, fontWeight: FontWeight.w600)),
     );
+  }
+}
+
+class ToolCallTile extends StatefulWidget {
+  const ToolCallTile({required this.call, super.key});
+  final ToolCallData call;
+
+  @override
+  State<ToolCallTile> createState() => _ToolCallTileState();
+}
+
+class _ToolCallTileState extends State<ToolCallTile> {
+  bool? userOpen;
+
+  @override
+  Widget build(BuildContext context) {
+    final call = widget.call;
+    final open = userOpen ?? call.running;
+    final label = toolLabels[call.name] ?? call.name;
+    final Widget status = call.running
+        ? const SizedBox(
+            width: 12,
+            height: 12,
+            child: CircularProgressIndicator(strokeWidth: 1.8))
+        : Text(call.success! ? '成功' : '失败',
+            style: TextStyle(
+                color: call.success! ? C.green : Colors.red.shade700,
+                fontSize: 12));
+    return Container(
+      margin: const EdgeInsets.only(bottom: 6),
+      decoration: BoxDecoration(
+        border: Border.all(color: const Color(0xFFE7E5E0)),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+        InkWell(
+          onTap: () => setState(() => userOpen = !open),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+            child: Row(children: [
+              const Icon(Icons.build_outlined, size: 14, color: C.gold),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                    label == call.name ? label : '$label · ${call.name}',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                        color: C.gold,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 12.5)),
+              ),
+              status,
+              const SizedBox(width: 4),
+              Icon(open ? Icons.expand_less : Icons.expand_more,
+                  size: 16, color: C.muted),
+            ]),
+          ),
+        ),
+        if (open)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(11, 0, 11, 10),
+            child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _block('入参', prettyJson(call.input)),
+                  if (!call.running) ...[
+                    const SizedBox(height: 8),
+                    _block('出参', prettyJson(call.result)),
+                  ],
+                ]),
+          ),
+      ]),
+    );
+  }
+
+  Widget _block(String title, String body) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
+      Text(title, style: const TextStyle(color: C.muted, fontSize: 11.5)),
+      const SizedBox(height: 4),
+      Container(
+        constraints: const BoxConstraints(maxHeight: 220),
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+            color: const Color(0xFFF7F6F3),
+            borderRadius: BorderRadius.circular(6)),
+        child: SingleChildScrollView(
+          child: SelectableText(body.isEmpty ? '（空）' : body,
+              style: const TextStyle(
+                  fontFamily: 'monospace', fontSize: 11.5, height: 1.45)),
+        ),
+      ),
+    ]);
   }
 }
 

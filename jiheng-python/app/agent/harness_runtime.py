@@ -1,4 +1,5 @@
 import asyncio
+import json
 import os
 import shutil
 import sys
@@ -42,6 +43,15 @@ class DeepSeekHarnessRuntime:
         profile_dir.mkdir(parents=True, exist_ok=True)
         shutil.copyfile(patch, profile_dir / "cordis.patch.yml")
 
+        loop = asyncio.get_running_loop()
+        queue: asyncio.Queue = asyncio.Queue()
+
+        def on_notification(notification) -> None:
+            if notification.method == "session.event":
+                event = notification.payload.get("event")
+                if isinstance(event, dict):
+                    loop.call_soon_threadsafe(queue.put_nowait, event)
+
         def run() -> str:
             kwargs = {
                 "dsh_bin": dsh_bin,
@@ -66,10 +76,77 @@ class DeepSeekHarnessRuntime:
             ) as harness:
                 # 每次请求都会新起 dsh 进程，而 SDK 无法续接已落盘的会话，复用 id 会报 already exists
                 session_id = f"{context.session_key()}-{uuid.uuid4().hex[:8]}"
-                return harness.run(prompt, session_id=session_id).final_response
+                return harness.run(prompt, session_id=session_id, on_notification=on_notification).final_response
 
-        yield AgentEvent("text", {"content": await asyncio.to_thread(run)})
-        yield AgentEvent("refs", {"refs": []})
+        task = asyncio.create_task(asyncio.to_thread(run))
+        task.add_done_callback(lambda _: loop.call_soon_threadsafe(queue.put_nowait, None))
+        tool_names: dict[str, str] = {}
+        refs: dict[str, dict] = {}
+        try:
+            while (event := await queue.get()) is not None:
+                for agent_event in _translate(event, tool_names, refs):
+                    yield agent_event
+            final = await task
+        finally:
+            if not task.done():
+                task.cancel()
+        yield AgentEvent("text", {"content": final})
+        yield AgentEvent("refs", {"refs": list(refs.values())})
+
+
+TOOL_PREFIX = "mcp__jiheng_data__"
+MAX_TOOL_RESULT_CHARS = 4000
+
+
+def _translate(event: dict, tool_names: dict[str, str], refs: dict[str, dict]) -> list[AgentEvent]:
+    data = event.get("data") or {}
+    if event.get("type") == "tool/call":
+        call_id = str(data.get("callId", ""))
+        name = str(data.get("name", "")).removeprefix(TOOL_PREFIX)
+        tool_names[call_id] = name
+        return [AgentEvent("tool_call", {"id": call_id, "name": name, "arguments": _parse_json(data.get("arguments"))})]
+    if event.get("type") == "tool/result":
+        events = []
+        for block in (data.get("message") or {}).get("content") or []:
+            if not isinstance(block, dict) or block.get("type") != "tool-result":
+                continue
+            call_id = str(block.get("toolCallId", ""))
+            text = "".join(str(part.get("text", "")) for part in block.get("content") or [] if isinstance(part, dict))
+            _collect_refs(text, refs)
+            success = not block.get("isError")
+            payload = text if len(text) <= MAX_TOOL_RESULT_CHARS else text[:MAX_TOOL_RESULT_CHARS] + "\n…（已截断）"
+            events.append(
+                AgentEvent(
+                    "tool_result",
+                    {
+                        "id": call_id,
+                        "name": tool_names.get(call_id, ""),
+                        "success": success,
+                        "result": payload,
+                        "error": payload,
+                    },
+                )
+            )
+        return events
+    return []
+
+
+def _parse_json(value: object) -> object:
+    if not isinstance(value, str):
+        return value
+    try:
+        return json.loads(value)
+    except json.JSONDecodeError:
+        return value
+
+
+def _collect_refs(text: str, refs: dict[str, dict]) -> None:
+    result = _parse_json(text)
+    if not isinstance(result, dict):
+        return
+    for source in result.get("sources") or []:
+        if isinstance(source, dict) and source.get("url"):
+            refs.setdefault(str(source["url"]), source)
 
 
 MAX_HISTORY_MESSAGES = 10
