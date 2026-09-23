@@ -10,7 +10,13 @@ CHECKLISTS = {
         "风险",
     ],
     "expert_industry_research": ["行业概况与景气", "主要公司对比", "产业链上下游", "政策", "板块行情与资金面", "风险"],
-    "expert_research_report": ["核心标的或行业的最新数据", "公告与财报要点", "新闻与政策", "观点与风险框架"],
+    "expert_research_report": [
+        "报告期与口径",
+        "核心财务指标（营收、利润、现金流）",
+        "盈利质量与结构",
+        "公告与业绩相关事件",
+        "风险",
+    ],
 }
 DEFAULT_CHECKLIST = ["行情数据", "公告与财报", "新闻与政策", "风险"]
 
@@ -22,7 +28,9 @@ BASE_RULES = (
 def planner_prompt(expert_name: str, expert_id: str, tools_desc: str, max_nodes: int) -> str:
     checklist = CHECKLISTS.get(expert_id, DEFAULT_CHECKLIST)
     extra = (
-        "\n- 当前没有券商研报数据源，计划里不要安排“检索研报”类任务。" if expert_id == "expert_research_report" else ""
+        "\n- 以定期报告全文为主数据源；没有券商研报库，计划里不要安排“检索研报/评级/目标价”类任务。"
+        if expert_id == "expert_research_report"
+        else ""
     )
     return f"""你是{expert_name}的研究规划负责人。任务：把用户问题一次性拆成完整的多智能体任务树。
 执行阶段将严格按此树运行、不再调整方向，所以计划必须一次做完整。

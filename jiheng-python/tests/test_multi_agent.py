@@ -124,7 +124,7 @@ def test_executor_runs_tree_with_revision():
     executor = GraphExecutor(
         plan=make_plan(),
         question="茅台和五粮液谁更好？",
-        expert_name="个股研究专家",
+        expert_name="个股分析师",
         llm=FakeChat(),
         leaf_model="flash",
         lead_model="pro",
@@ -159,7 +159,7 @@ def test_executor_marks_failed_leaf_without_crashing():
     executor = GraphExecutor(
         plan=make_plan(),
         question="q",
-        expert_name="专家",
+        expert_name="分析师",
         llm=Broken(),
         leaf_model="flash",
         lead_model="pro",
@@ -200,7 +200,7 @@ def test_planner_retries_until_plan_is_valid():
             model="pro",
             question="对比茅台与五粮液",
             history=[],
-            expert_name="个股研究专家",
+            expert_name="个股分析师",
             expert_id="expert_stock_research",
             tool_specs=SPECS,
             execute_tool=fake_tool,

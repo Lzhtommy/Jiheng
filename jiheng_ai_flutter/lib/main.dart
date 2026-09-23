@@ -1,4 +1,4 @@
-import 'dart:async';
+﻿import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -713,7 +713,7 @@ class JihengShellState extends State<JihengShell> {
       });
       return;
     }
-    if (mode == '金融专家团' && collabMode) {
+    if (mode == '分析师' && collabMode) {
       await _planCollab(ai, text);
       return;
     }
@@ -864,10 +864,10 @@ class JihengShellState extends State<JihengShell> {
     return {
       'mode': mode == '深度研究'
           ? 'deep'
-          : mode == '金融专家团'
+          : mode == '分析师'
               ? 'expert'
               : 'quick',
-      'expert': mode == '金融专家团' ? selectedExpertId : null,
+      'expert': mode == '分析师' ? selectedExpertId : null,
       'conversation_id': chatSessionId,
       'messages': [
         ..._chatHistory(),
@@ -1851,21 +1851,21 @@ class HomeSection extends StatelessWidget {
 
 const expertOptions = [
   [
-    '个股研究专家',
+    '个股分析师',
     'assets/prototype/expert-stock.png',
     '面向二级市场的个股研究搭档，围绕公司基本面、财报与事件、估…',
     'expert_stock_research'
   ],
   [
-    '行业研究专家',
+    '行业分析师',
     'assets/prototype/expert-industry.png',
     '面向股票投研团队的行业研究搭档，围绕行业、子行业、产业链环…',
     'expert_industry_research'
   ],
   [
-    '研报专家',
+    '财报分析师',
     'assets/prototype/expert-report.png',
-    '7×24小时追踪全市场研报，提炼核心观点、评级变化与目标价调整…',
+    '解读上市公司定期报告，提炼营收利润、现金流、毛利率与同比变化…',
     'expert_research_report'
   ],
 ];
@@ -1908,7 +1908,7 @@ class ExpertGrid extends StatelessWidget {
           onTap: () => state.mutate(() {
             state.expert = name;
             state.selectedExpertId = expertId;
-            state.mode = '金融专家团';
+            state.mode = '分析师';
             state.modeSelected = true;
           }),
           borderRadius: BorderRadius.circular(12),
@@ -2201,7 +2201,7 @@ class Composer extends StatelessWidget {
             child: Row(children: [
               ModeChip(state: state, label: '快速问答'),
               ModeChip(state: state, label: '深度研究'),
-              ModeChip(state: state, label: '金融专家团', expert: true),
+              ModeChip(state: state, label: '分析师', expert: true),
             ]),
           )
         else
@@ -2212,7 +2212,7 @@ class Composer extends StatelessWidget {
                       ? state.mode
                       : '${state.mode} · ${state.expert}'),
             ),
-            if (state.mode == '金融专家团') ...[
+            if (state.mode == '分析师') ...[
               const SizedBox(width: 8),
               FilterChip(
                 label: const Text('深度协作', style: TextStyle(fontSize: 12)),
@@ -2241,7 +2241,7 @@ class Composer extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: state.mode == '深度研究'
                     ? '对复杂问题进行多轮检索与推理，产出深度研究报告'
-                    : state.mode == '金融专家团' && state.collabMode
+                    : state.mode == '分析师' && state.collabMode
                         ? '先生成多智能体研究计划，确认后协作执行'
                         : '针对各类信息查询和简单问题，提供快速回答与响应',
                 filled: true,
@@ -3442,7 +3442,7 @@ class ExpertSheet extends StatelessWidget {
                           onTap: () => state.mutate(() {
                             state.expert = e[0];
                             state.selectedExpertId = e[3];
-                            state.mode = '金融专家团';
+                            state.mode = '分析师';
                             state.modeSelected = true;
                             state.expertSheet = false;
                           }),

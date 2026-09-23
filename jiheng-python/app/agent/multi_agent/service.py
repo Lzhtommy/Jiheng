@@ -8,9 +8,9 @@ from app.config import settings
 from app.models.chat import MultiAgentRequest, PlanRequest
 
 EXPERT_NAMES = {
-    "expert_stock_research": "个股研究专家",
-    "expert_industry_research": "行业研究专家",
-    "expert_research_report": "研报专家",
+    "expert_stock_research": "个股分析师",
+    "expert_industry_research": "行业分析师",
+    "expert_research_report": "财报分析师",
 }
 
 

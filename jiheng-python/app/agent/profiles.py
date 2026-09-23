@@ -25,8 +25,10 @@ DEFAULT_TOOLS = (
     "get_sector_quote",
     "get_fund_flow",
     "list_announcements",
+    "get_corporate_calendar",
     "search_news",
     "get_official_policy",
+    "call_financial_mcp",
 )
 
 
