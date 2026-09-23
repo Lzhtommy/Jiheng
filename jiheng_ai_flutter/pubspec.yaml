@@ -11,6 +11,7 @@ dependencies:
     sdk: flutter
   flutter_secure_storage: ^9.2.2
   http: ^1.2.2
+  webview_flutter: ^4.8.0
 
 dev_dependencies:
   flutter_test:
@@ -19,6 +20,9 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/world/index.html
+    - assets/world/assets/
   fonts:
     - family: Noto Serif SC
       fonts:

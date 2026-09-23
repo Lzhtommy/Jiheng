@@ -114,3 +114,13 @@ uvicorn app.main:app --reload --port 8000
 - SSE 事件契约：[docs/api/sse_event_contract.md](docs/api/sse_event_contract.md)
 - 错误码契约：[docs/api/error_code_contract.md](docs/api/error_code_contract.md)
 - 行业研究院设计文档：[industry_research_institute/DESIGN.md](industry_research_institute/DESIGN.md)
+
+## 玑衡 World · 沉浸式产业链走访
+
+`/procurement-explore` 是独立的网页体验：玩家以采购负责人的第一视角走访盐湖矿区、材料工坊、电芯城、车企港和储能灯塔，与 NPC 谈条件、收集卷轴，并从地图进入下一场景。可在仓库根目录安装 `requirements.txt` 后运行 `uvicorn app.main:app`，打开 <http://127.0.0.1:8000/procurement-explore>。
+
+同一剧情也作为离线资源打包进 `jiheng_ai_flutter`，从 App 首页或侧边栏进入竖屏游戏页，不依赖手机访问电脑的 `127.0.0.1`。App 内默认使用编排好的剧情对话，进度保存在设备上；网页端在配置 `JIHENG_NPC_API_URL`、`JIHENG_NPC_API_KEY` 和 `JIHENG_NPC_MODEL` 后，可让兼容 Chat Completions 的模型改写 NPC 台词。模型不决定剧情状态。修改网页剧情或素材后，运行 `scripts/sync_world_assets.ps1` 同步到 Flutter 资源目录。
+
+World 的人物、合同及数字均为虚构演示，不代表真实企业披露或投资建议。
+
+从仓库根目录运行 `python -m pytest` 会执行 World 的测试；`jiheng-python` 是独立的 Python 包，应在其目录内运行自己的测试。Flutter 部分在安装 Flutter SDK 后于 `jiheng_ai_flutter` 目录运行 `flutter pub get` 和 `flutter test`。

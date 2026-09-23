@@ -6,6 +6,8 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
 
+import 'world_view.dart';
+
 void main() => runApp(const JihengApp());
 
 class JihengApp extends StatelessWidget {
@@ -43,7 +45,7 @@ class C {
   static const green = Color(0xFF12805C);
 }
 
-enum PageKey { home, reports, profile, skills, reminders, notifications }
+enum PageKey { home, world, reports, profile, skills, reminders, notifications }
 
 enum Stage { thinking, tool, done }
 
@@ -886,6 +888,8 @@ class JihengShellState extends State<JihengShell> {
     switch (page) {
       case PageKey.home:
         return HomeView(state: this);
+      case PageKey.world:
+        return WorldView(onExit: () => go(PageKey.home), userId: api.userId);
       case PageKey.reports:
         return ReportsView(state: this);
       case PageKey.profile:
@@ -1342,6 +1346,7 @@ class HomeView extends StatelessWidget {
                           TextStyle(color: Colors.red.shade400, fontSize: 12)),
                 ),
               const AiGreeting(),
+              WorldEntryCard(onTap: () => state.go(PageKey.world)),
               if (state.messages.isEmpty) ...[
                 HomeSection(
                   title: '金融专家',
@@ -1395,6 +1400,53 @@ class HomeHeader extends StatelessWidget {
                     fontSize: 11, color: Color(0xFF8B9299), letterSpacing: 1)),
           ]),
         ],
+      ),
+    );
+  }
+}
+
+class WorldEntryCard extends StatelessWidget {
+  const WorldEntryCard({required this.onTap, super.key});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
+      child: Material(
+        color: const Color(0xFF10212B),
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(children: [
+              const Icon(Icons.explore_outlined,
+                  color: Color(0xFFF3C884), size: 29),
+              const SizedBox(width: 13),
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('玑衡 World · 产业链走访',
+                        style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 15)),
+                    SizedBox(height: 5),
+                    Text('成为采购负责人，走进产业链与 NPC 谈条件',
+                        style: TextStyle(
+                            color: Color(0xFFBDCFCC), fontSize: 11)),
+                  ],
+                ),
+              ),
+              const Icon(Icons.arrow_forward_ios_rounded,
+                  color: Color(0xFFF3C884), size: 16),
+            ]),
+          ),
+        ),
       ),
     );
   }
@@ -2882,6 +2934,7 @@ class DrawerOverlay extends StatelessWidget {
   Widget build(BuildContext context) {
     final items = [
       ['新建对话', PageKey.home, Icons.chat_bubble_outline],
+      ['玑衡 World', PageKey.world, Icons.explore_outlined],
       ['我的报告', PageKey.reports, Icons.description_outlined],
       ['技能广场', PageKey.skills, Icons.auto_awesome],
       ['定时与提醒', PageKey.reminders, Icons.schedule],
