@@ -61,40 +61,19 @@ textarea{font-family:inherit;}
           <div style="padding:20px 16px 4px;">
             <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
               <div style="display:flex;align-items:baseline;gap:8px;">
-                <h3 style="font-family:'Noto Serif SC',serif;font-size:15px;margin:0;font-weight:600;color:#1b1f24;">今日热搜</h3>
+                <h3 style="font-family:'Noto Serif SC',serif;font-size:15px;margin:0;font-weight:600;color:#1b1f24;">金融专家</h3>
                 <span style="width:14px;height:1px;background:#c8a173;display:inline-block;"></span>
               </div>
-              <span style="color:#9aa1a8;font-size:13px;">→</span>
+              <span onClick="{{ openExpertSheet }}" style="color:#9c6b3c;font-size:12.5px;cursor:pointer;">全部专家</span>
             </div>
-            <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;">
-              <sc-for list="{{ hotCards }}" as="c" hint-placeholder-count="3">
-                <div onClick="{{ c.onClick }}" style="flex:0 0 196px;background:#faf9f6;border:1px solid #edeae3;border-radius:12px;padding:14px;cursor:pointer;">
-                  <div style="font-size:14.5px;font-weight:600;color:#1b1f24;margin-bottom:6px;font-family:'Noto Serif SC',serif;">{{ c.t }}</div>
-                  <div style="font-size:12px;color:#767e86;line-height:1.6;">{{ c.d }}</div>
-                </div>
-              </sc-for>
-            </div>
-          </div>
-
-          <div style="padding:18px 16px 4px;">
-            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
-              <div style="display:flex;align-items:baseline;gap:8px;">
-                <h3 style="font-family:'Noto Serif SC',serif;font-size:15px;margin:0;font-weight:600;color:#1b1f24;">精选案例</h3>
-                <span style="width:14px;height:1px;background:#c8a173;display:inline-block;"></span>
-              </div>
-              <span style="color:#9aa1a8;font-size:13px;">⟳</span>
-            </div>
-            <div style="display:flex;gap:10px;overflow-x:auto;padding-bottom:4px;">
-              <sc-for list="{{ caseCards }}" as="c" hint-placeholder-count="2">
-                <div onClick="{{ c.onClick }}" style="flex:0 0 244px;background:#fff;border:1px solid #e7e5e0;border-radius:12px;padding:14px;cursor:pointer;">
-                  <div style="display:inline-flex;align-items:center;gap:5px;background:#f3ede4;color:#9c6b3c;font-size:10.5px;letter-spacing:.04em;padding:4px 9px;border-radius:3px;margin-bottom:10px;">使用技能 · 案例</div>
-                  <div style="font-size:14.5px;font-weight:600;margin-bottom:6px;color:#1b1f24;font-family:'Noto Serif SC',serif;">{{ c.t }}</div>
-                  <div style="font-size:12px;color:#767e86;line-height:1.6;margin-bottom:10px;">{{ c.d }}</div>
-                  <div style="display:flex;gap:6px;flex-wrap:wrap;">
-                    <sc-for list="{{ c.tags }}" as="g" hint-placeholder-count="2">
-                      <span style="background:#f6f4f0;font-size:11px;color:#767e86;padding:3px 9px;border-radius:3px;">{{ g.t }}</span>
-                    </sc-for>
-                  </div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;">
+              <sc-for list="{{ expertOptions }}" as="e" hint-placeholder-count="6">
+                <div onClick="{{ e.onClick }}" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:14px 8px 12px;background:{{ e.cardBg }};border:1px solid {{ e.cardBd }};border-radius:12px;cursor:pointer;">
+                  <div style="width:38px;height:38px;border-radius:50%;background:{{ e.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:16px;">{{ e.initial }}</div>
+                  <div style="font-family:'Noto Serif SC',serif;font-size:13px;font-weight:600;color:#1b1f24;line-height:1.35;">{{ e.name }}</div>
+                  <sc-if value="{{ e.picked }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:10.5px;color:#9c6b3c;">已选择</span>
+                  </sc-if>
                 </div>
               </sc-for>
             </div>
@@ -665,16 +644,6 @@ class Component extends DCLogic {
       : st.skillTab==='官方技能' ? official
       : all.filter(r=> !st.skillOff[r.t]);
 
-    const hot = [
-      ['创新药','创新药板块集体大幅上涨的核心驱动因素是什么','创新药板块集体大幅上涨的核心驱动因素是什么','innovdrug'],
-      ['美的集团','美的集团股价下跌且创8个月新高，该如何看待','美的集团股价下跌且创8个月新高，该如何看待？','midea'],
-      ['英伟达','AI芯片需求持续超预期，产业链如何演绎','英伟达AI芯片需求最新变化解读','nvidia']
-    ];
-    const cases = [
-      ['新型政策性金融工具…','通过宏观数据解读技能分析9月落地的8000亿元新型…',['宏观洞察','规模测算'],'帮我用宏观数据解读技能，分析9月落地的8000亿元新型政策性金融工具的规模测算','skill1'],
-      ['伦敦金银比分析','利用贵金属板块深度透视分析，结合历史分位、均值…',['市场分析','宏观洞察'],'用贵金属板块深度透视技能，结合历史分位、均值分析伦敦金银比','skill2']
-    ];
-
     return {
       clock: st.clock,
       isHome: st.page==='home', isSkills: st.page==='skills',
@@ -682,10 +651,13 @@ class Component extends DCLogic {
       isReminders: st.page==='reminders', isNotifications: st.page==='notifications',
       goProfile: ()=> this.go('profile'),
       expertSheet: st.expertSheet,
+      openExpertSheet: ()=> this.setState({expertSheet:true}),
       closeExpertSheet: ()=> this.setState({expertSheet:false}),
       expertOptions: EXPERT_OPTIONS.map(e=>({
         key:e.name, name:e.name, initial:e.initial, avatarBg:e.avatarBg, desc:e.desc,
         picked: st.expert===e.name,
+        cardBg: st.expert===e.name ? '#faf6ee' : '#faf9f6',
+        cardBd: st.expert===e.name ? '#e4d7c4' : '#edeae3',
         onClick: ()=> this.setState({expertSheet:false, expert:e.name, mode:'expert', modeSelected:true})
       })),
       reportTabs: ['全部','深度研究','公司研究','晨报'].map(t=>({
@@ -717,9 +689,6 @@ class Component extends DCLogic {
       goNotifications: ()=> this.go('notifications'),
       newChat: ()=> this.go('home'),
       chatScrollRef: (el)=>{ this.scrollEl = el; },
-
-      hotCards: hot.map(h=>({key:h[0], t:h[0], d:h[1], onClick: ()=> this.setState({input:h[2], flow:h[3]})})),
-      caseCards: cases.map(c=>({key:c[0], t:c[0], d:c[1], tags:c[2].map(t=>({key:t,t})), onClick: ()=> this.setState({input:c[3], flow:c[4]})})),
 
       msgs,
       modes, modeSelected: st.modeSelected, showModeRow: !st.modeSelected,
