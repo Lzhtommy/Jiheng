@@ -1599,19 +1599,19 @@ const expertOptions = [
     '个股研究专家',
     'assets/prototype/expert-stock.png',
     '面向二级市场的个股研究搭档，围绕公司基本面、财报与事件、估…',
-    'stock'
+    'expert_stock_research'
   ],
   [
     '行业研究专家',
     'assets/prototype/expert-industry.png',
     '面向股票投研团队的行业研究搭档，围绕行业、子行业、产业链环…',
-    'industry'
+    'expert_industry_research'
   ],
   [
     '研报专家',
     'assets/prototype/expert-report.png',
     '7×24小时追踪全市场研报，提炼核心观点、评级变化与目标价调整…',
-    'report'
+    'expert_research_report'
   ],
 ];
 

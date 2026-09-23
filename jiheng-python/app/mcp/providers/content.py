@@ -18,7 +18,7 @@ class ContentProvider:
                 title = link.get_text(" ", strip=True)
                 href = link["href"]
                 if title and "content_" in href:
-                    rows.append({"title": title, "url": httpx.URL(url).join(href).human_repr()})
+                    rows.append({"title": title, "url": str(httpx.URL(url).join(href))})
                 if len(rows) >= limit:
                     break
             return DataResult(provider="gov_cn", data=rows, sources=[self._source("中国政府网政策", "政策", url)])

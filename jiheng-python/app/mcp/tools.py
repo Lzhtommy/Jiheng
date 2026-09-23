@@ -23,7 +23,7 @@ async def invoke(tool: str, **params: Any) -> dict:
         ),
         "get_index_quote": lambda: market.eastmoney_rank("m:1 s:2,m:0 s:2", "东方财富指数行情"),
         "get_sector_quote": lambda: market.eastmoney_rank("m:90 t:2", "东方财富行业板块行情"),
-        "get_fund_flow": lambda: market.eastmoney_rank("m:90 t:2", "东方财富板块资金流"),
+        "get_fund_flow": lambda: market.eastmoney_rank("m:90 t:2", "东方财富板块资金流", fid="f62"),
         "list_announcements": lambda: cninfo.list_announcements(**params),
         "download_announcement": lambda: cninfo.download(params["url"], params["cache_key"]),
         "get_corporate_calendar": lambda: cninfo.company_events(params.get("limit", 20)),

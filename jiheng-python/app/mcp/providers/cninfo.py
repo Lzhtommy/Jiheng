@@ -7,6 +7,7 @@ from app.config import settings
 from app.mcp.models import DataResult, Source
 
 QUERY_URL = "https://www.cninfo.com.cn/new/hisAnnouncement/query"
+TOP_SEARCH_URL = "https://www.cninfo.com.cn/new/information/topSearch/query"
 STATIC_BASE = "https://static.cninfo.com.cn/"
 HEADERS = {"User-Agent": "Mozilla/5.0", "Referer": "https://www.cninfo.com.cn/"}
 
@@ -54,10 +55,14 @@ class CninfoProvider:
             "sortType": "",
             "isHLtitle": "true",
         }
-        if stock_code:
-            params["stock"] = f"{stock_code.zfill(6)},"
         try:
             async with httpx.AsyncClient(timeout=settings.data_request_timeout_seconds, headers=HEADERS) as client:
+                if stock_code:
+                    code = stock_code.zfill(6)
+                    org_id = await self._org_id(client, code)
+                    if not org_id:
+                        return DataResult.failure("cninfo", f"未找到证券代码 {code}")
+                    params["stock"] = f"{code},{org_id}"
                 response = await client.post(
                     QUERY_URL,
                     content=urlencode(params),
@@ -92,6 +97,12 @@ class CninfoProvider:
             )
         except Exception as exc:
             return DataResult.failure("cninfo", str(exc))
+
+    async def _org_id(self, client: httpx.AsyncClient, code: str) -> str:
+        """CNINFO only filters by stock when given "code,orgId"; resolve orgId via its search API."""
+        response = await client.post(TOP_SEARCH_URL, data={"keyWord": code, "maxNum": 10})
+        response.raise_for_status()
+        return next((row.get("orgId", "") for row in response.json() or [] if row.get("code") == code), "")
 
     async def download(self, url: str, cache_key: str) -> DataResult:
         try:

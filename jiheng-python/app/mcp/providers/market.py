@@ -13,7 +13,9 @@ class MarketProvider:
     """Public Tencent/Sina/Eastmoney adapters. Responses are normalized before use."""
 
     async def _get(self, url: str, **kwargs) -> httpx.Response:
-        async with httpx.AsyncClient(timeout=settings.data_request_timeout_seconds, headers=HEADERS) as client:
+        async with httpx.AsyncClient(
+            timeout=settings.data_request_timeout_seconds, headers=HEADERS, follow_redirects=True
+        ) as client:
             response = await client.get(url, **kwargs)
             response.raise_for_status()
             return response
@@ -97,7 +99,7 @@ class MarketProvider:
         except Exception as exc:
             return DataResult.failure("tencent", str(exc))
 
-    async def eastmoney_rank(self, fs: str, title: str) -> DataResult:
+    async def eastmoney_rank(self, fs: str, title: str, fid: str = "f3") -> DataResult:
         """Generic Eastmoney ranking endpoint for indices, sectors and capital-flow rankings."""
         url = "https://push2.eastmoney.com/api/qt/clist/get"
         params = {
@@ -107,7 +109,7 @@ class MarketProvider:
             "np": 1,
             "fltt": 2,
             "invt": 2,
-            "fid": "f3",
+            "fid": fid,
             "fs": fs,
             "fields": "f12,f14,f2,f3,f4,f5,f6,f8,f20,f21,f62",
         }
