@@ -1040,6 +1040,7 @@ class _LoginViewState extends State<LoginView> {
       await widget.state
           .sendSms(phone.text.trim(), captcha.text.trim(), captchaId);
       sms.text = '000000';
+      await _loadCaptcha(clearInput: true);
       if (mounted) widget.state.snack('已填入默认短信验证码 000000');
     } catch (e) {
       if (mounted) setState(() => error = '短信发送失败：$e');
@@ -1110,7 +1111,10 @@ class _LoginViewState extends State<LoginView> {
                         )
                       ],
                     ),
-                    child: Image.asset('logo.png', fit: BoxFit.contain),
+                    child: Transform.scale(
+                      scale: 1.72,
+                      child: Image.asset('logo.png', fit: BoxFit.cover),
+                    ),
                   ),
                 ),
                 SizedBox(height: compact ? 14 : 18),
@@ -1673,7 +1677,10 @@ class ExpertGrid extends StatelessWidget {
                     shape: BoxShape.circle,
                     border: Border.all(color: C.line),
                   ),
-                  child: Image.asset(image, fit: BoxFit.cover),
+                  child: Transform.scale(
+                    scale: 1.28,
+                    child: Image.asset(image, fit: BoxFit.cover),
+                  ),
                 ),
                 const SizedBox(height: 8),
                 Text(name,
@@ -3140,7 +3147,10 @@ class ExpertSheet extends StatelessWidget {
                               shape: BoxShape.circle,
                               border: Border.all(color: C.line),
                             ),
-                            child: Image.asset(e[1], fit: BoxFit.cover),
+                            child: Transform.scale(
+                              scale: 1.28,
+                              child: Image.asset(e[1], fit: BoxFit.cover),
+                            ),
                           ),
                           title: Text(e[0]),
                           subtitle: Text(e[2]),
@@ -3231,7 +3241,10 @@ class BrandAvatar extends StatelessWidget {
       height: size,
       clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(shape: BoxShape.circle, color: C.ink),
-      child: Image.asset('logo.png', fit: BoxFit.contain),
+      child: Transform.scale(
+        scale: 1.72,
+        child: Image.asset('logo.png', fit: BoxFit.cover),
+      ),
     );
   }
 }
