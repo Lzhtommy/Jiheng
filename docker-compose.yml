@@ -3,20 +3,39 @@ services:
     image: redis:7-alpine
     ports:
       - "6379:6379"
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: ${VR_PG_USER:-postgres}
+      POSTGRES_PASSWORD: ${VR_PG_PASSWORD:-postgres}
+      POSTGRES_DB: ${VR_PG_DATABASE:-thronepath_pg}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${VR_PG_USER:-postgres}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
   java:
     build: ./jiheng-java
     environment:
       REDIS_HOST: redis
-      VR_PG_HOST: ${VR_PG_HOST:?set VR_PG_HOST}
+      # 留空则连本服务自带的 postgres；填了就连你自己的实例（比如团队共享库）
+      VR_PG_HOST: ${VR_PG_HOST:-postgres}
       VR_PG_PORT: ${VR_PG_PORT:-5432}
-      VR_PG_DATABASE: ${VR_PG_DATABASE:?set VR_PG_DATABASE}
-      VR_PG_USER: ${VR_PG_USER:?set VR_PG_USER}
-      VR_PG_PASSWORD: ${VR_PG_PASSWORD:?set VR_PG_PASSWORD}
+      VR_PG_DATABASE: ${VR_PG_DATABASE:-thronepath_pg}
+      VR_PG_USER: ${VR_PG_USER:-postgres}
+      VR_PG_PASSWORD: ${VR_PG_PASSWORD:-postgres}
       JIHENG_PG_SCHEMA: ${JIHENG_PG_SCHEMA:-jiheng}
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
       SERVICE_TOKEN: ${SERVICE_TOKEN:?set SERVICE_TOKEN}
     depends_on:
-      - redis
+      redis:
+        condition: service_started
+      postgres:
+        condition: service_healthy
   python:
     build: ./jiheng-python
     environment:
@@ -38,3 +57,6 @@ services:
     depends_on:
       - java
       - python
+
+volumes:
+  pgdata:

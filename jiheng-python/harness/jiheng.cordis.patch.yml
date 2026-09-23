@@ -32,6 +32,10 @@
       name: '@deepseek-ai/dsh-session'
     - id: session-title
       name: '@deepseek-ai/dsh-session-title'
+      config:
+        fallbackMaxWords: 5
+        fallbackMaxBytes: 40
+        maxTitleBytes: 80
     - id: system-prompt
       name: '@deepseek-ai/dsh-system-prompt'
       config:
