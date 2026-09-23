@@ -497,68 +497,134 @@ class CollabGraph extends StatelessWidget {
   Widget build(BuildContext context) {
     final root = collab.root;
     if (root == null) return const SizedBox.shrink();
+    final latest = collab.messages.isEmpty ? null : collab.messages.last;
+
+    return LayoutBuilder(builder: (context, constraints) {
+      final availableWidth = constraints.maxWidth.isFinite
+          ? constraints.maxWidth
+          : MediaQuery.sizeOf(context).width;
+      final nodeWidth = nodeWidthFor(availableWidth);
+      final layout =
+          _GraphLayout.forWidth(collab, root, availableWidth, nodeWidth);
+      final graph = SizedBox(
+        width: layout.width,
+        height: layout.height,
+        child: Stack(children: [
+          Positioned.fill(
+            child: TweenAnimationBuilder<double>(
+              key: ValueKey(latest?.id ?? 0),
+              tween: Tween(begin: 0, end: 1),
+              duration: const Duration(milliseconds: 900),
+              builder: (_, progress, __) => CustomPaint(
+                painter: _EdgePainter(
+                    collab, layout.positions, latest, progress, nodeWidth),
+              ),
+            ),
+          ),
+          for (final node in collab.nodes)
+            if (layout.positions[node.id] != null)
+              Positioned(
+                left: layout.positions[node.id]!.dx,
+                top: layout.positions[node.id]!.dy,
+                child: _NodeBox(
+                    node: node, width: nodeWidth, onTap: () => onTap(node)),
+              ),
+        ]),
+      );
+      return SizedBox(
+        width: double.infinity,
+        height: layout.height,
+        child: Align(alignment: Alignment.topCenter, child: graph),
+      );
+    });
+  }
+}
+
+class _GraphLayout {
+  const _GraphLayout(this.positions, this.width, this.height, this.nodeWidth);
+  final Map<String, Offset> positions;
+  final double width;
+  final double height;
+  final double nodeWidth;
+
+  static const _nodeHeight = CollabGraph.nodeHeight;
+  static const _gapX = CollabGraph.gapX;
+  static const _gapY = CollabGraph.gapY;
+
+  factory _GraphLayout.forWidth(CollabData collab, PlanNodeData root,
+      double availableWidth, double nodeWidth) {
+    final natural = _natural(collab, root, nodeWidth);
+    if (natural.width <= availableWidth) return natural;
+
+    final rootChildren = collab.children(root.id);
+    final directOnly = collab.nodes
+        .every((node) => node.id == root.id || node.parent == root.id);
+    if (!directOnly || rootChildren.length < 3) return natural;
+
+    return _wrappedRoot(root, rootChildren, availableWidth, nodeWidth);
+  }
+
+  static _GraphLayout _natural(
+      CollabData collab, PlanNodeData root, double nodeWidth) {
     final positions = <String, Offset>{};
     var cursor = 0.0;
-    void place(PlanNodeData node, int level, double nodeWidth) {
+
+    void place(PlanNodeData node, int level) {
       final kids = collab.children(node.id);
-      final y = level * (nodeHeight + gapY);
+      final y = level * (_nodeHeight + _gapY);
       if (kids.isEmpty) {
         positions[node.id] = Offset(cursor, y);
-        cursor += nodeWidth + gapX;
+        cursor += nodeWidth + _gapX;
         return;
       }
       for (final kid in kids) {
-        place(kid, level + 1, nodeWidth);
+        place(kid, level + 1);
       }
       final first = positions[kids.first.id]!.dx;
       final last = positions[kids.last.id]!.dx;
       positions[node.id] = Offset((first + last) / 2, y);
     }
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final nodeWidth = nodeWidthFor(constraints.maxWidth);
-      place(root, 0, nodeWidth);
-      final width = math.max(cursor - gapX, nodeWidth);
-      final height =
-          positions.values.map((p) => p.dy).reduce(math.max) + nodeHeight + 2;
-      final latest = collab.messages.isEmpty ? null : collab.messages.last;
-      final canvasWidth = math.max(width, constraints.maxWidth);
-      final offsetX = (canvasWidth - width) / 2;
-      final shifted = {
-        for (final entry in positions.entries)
-          entry.key: entry.value.translate(offsetX, 0)
-      };
-      return SingleChildScrollView(
-        scrollDirection: Axis.horizontal,
-        child: SizedBox(
-          width: canvasWidth,
-          height: height,
-          child: Stack(children: [
-            Positioned.fill(
-              child: TweenAnimationBuilder<double>(
-                key: ValueKey(latest?.id ?? 0),
-                tween: Tween(begin: 0, end: 1),
-                duration: const Duration(milliseconds: 900),
-                builder: (_, progress, __) => CustomPaint(
-                  painter: _EdgePainter(
-                      collab, shifted, latest, progress, nodeWidth),
-                ),
-              ),
-            ),
-            for (final node in collab.nodes)
-              if (shifted[node.id] != null)
-                Positioned(
-                  left: shifted[node.id]!.dx,
-                  top: shifted[node.id]!.dy,
-                  child: _NodeBox(
-                      node: node,
-                      width: nodeWidth,
-                      onTap: () => onTap(node)),
-                ),
-          ]),
-        ),
+    place(root, 0);
+    final width = math.max(cursor - _gapX, nodeWidth);
+    final height =
+        positions.values.map((p) => p.dy).reduce(math.max) + _nodeHeight + 2;
+    return _GraphLayout(positions, width, height, nodeWidth);
+  }
+
+  static _GraphLayout _wrappedRoot(PlanNodeData root,
+      List<PlanNodeData> children, double availableWidth, double nodeWidth) {
+    final maxColumns =
+        math.max(1, ((availableWidth + _gapX) / (nodeWidth + _gapX)).floor());
+    final columns =
+        children.length <= 3 ? math.min(children.length, maxColumns) : 2;
+    final safeColumns = math.max(1, columns);
+    final rowWidth = safeColumns * nodeWidth + (safeColumns - 1) * _gapX;
+    final width = math.max(rowWidth, nodeWidth);
+    final positions = <String, Offset>{
+      root.id: Offset((width - nodeWidth) / 2, 0),
+    };
+
+    for (var i = 0; i < children.length; i += 1) {
+      final row = i ~/ safeColumns;
+      final col = i % safeColumns;
+      final rowCount =
+          math.min(safeColumns, children.length - row * safeColumns);
+      final currentRowWidth = rowCount * nodeWidth + (rowCount - 1) * _gapX;
+      final rowOffset = (width - currentRowWidth) / 2;
+      positions[children[i].id] = Offset(
+        rowOffset + col * (nodeWidth + _gapX),
+        _nodeHeight + _gapY + row * (_nodeHeight + _gapY * .55),
       );
-    });
+    }
+
+    final rows = ((children.length + safeColumns - 1) / safeColumns).ceil();
+    final height = _nodeHeight +
+        _gapY +
+        rows * _nodeHeight +
+        math.max(0, rows - 1) * _gapY * .55 +
+        2;
+    return _GraphLayout(positions, width, height, nodeWidth);
   }
 }
 
@@ -878,21 +944,21 @@ class _PlanEditorPageState extends State<PlanEditorPage> {
       body: LayoutBuilder(builder: (context, constraints) {
         final indent = constraints.maxWidth < 480 ? 10.0 : 18.0;
         return ListView(
-        padding: const EdgeInsets.all(14),
-        children: [
-          TextFormField(
-            initialValue: draft.goal,
-            maxLines: null,
-            decoration: _input('研究目标'),
-            onChanged: (v) => draft.goal = v,
-          ),
-          const SizedBox(height: 8),
-          Text('节点 ${draft.nodes.length} / ${draft.maxNodes}（含首席分析师）',
-              style: TextStyle(
-                  fontSize: 12, color: full ? Colors.red.shade700 : C.muted)),
-          const SizedBox(height: 8),
-          for (final node in draft.ordered()) _nodeCard(node, full, indent),
-        ],
+          padding: const EdgeInsets.all(14),
+          children: [
+            TextFormField(
+              initialValue: draft.goal,
+              maxLines: null,
+              decoration: _input('研究目标'),
+              onChanged: (v) => draft.goal = v,
+            ),
+            const SizedBox(height: 8),
+            Text('节点 ${draft.nodes.length} / ${draft.maxNodes}（含首席分析师）',
+                style: TextStyle(
+                    fontSize: 12, color: full ? Colors.red.shade700 : C.muted)),
+            const SizedBox(height: 8),
+            for (final node in draft.ordered()) _nodeCard(node, full, indent),
+          ],
         );
       }),
     );

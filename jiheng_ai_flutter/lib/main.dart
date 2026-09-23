@@ -366,6 +366,7 @@ class JihengShellState extends State<JihengShell> {
   final api = ApiClient();
   PageKey page = PageKey.home;
   final input = TextEditingController();
+  final drawerSearch = TextEditingController();
   final scroll = ScrollController();
   final List<ChatMsg> messages = [];
   final Set<String> disabledSkills = {};
@@ -403,6 +404,9 @@ class JihengShellState extends State<JihengShell> {
 
   String get chatSessionId => _chatSessionId ??=
       'mobile-${api.userId ?? 'guest'}-${DateTime.now().microsecondsSinceEpoch}';
+  String get activeExpertId =>
+      selectedExpertId.isNotEmpty ? selectedExpertId : 'expert_stock_research';
+  String get activeExpertName => expert.isNotEmpty ? expert : '个股研究专家';
 
   @override
   void initState() {
@@ -439,6 +443,7 @@ class JihengShellState extends State<JihengShell> {
   @override
   void dispose() {
     input.dispose();
+    drawerSearch.dispose();
     scroll.dispose();
     super.dispose();
   }
@@ -898,7 +903,7 @@ class JihengShellState extends State<JihengShell> {
   }
 
   Map<String, dynamic> _collabBody(CollabData collab) => {
-        'expert': selectedExpertId,
+        'expert': activeExpertId,
         'conversation_id': chatSessionId,
         'messages': [
           ...collab.history,
@@ -1039,22 +1044,28 @@ class JihengShellState extends State<JihengShell> {
       case 'agent_message':
         collab.messages.add(CollabMessage(
           int.tryParse('${event['id']}') ?? collab.messages.length + 1,
-          event['from']?.toString() ?? '',
-          event['to']?.toString(),
-          event['kind']?.toString() ?? '',
-          event['summary']?.toString() ?? '',
+          (event['from'] ?? event['from_node'])?.toString() ?? '',
+          (event['to'] ?? event['to_node'])?.toString(),
+          (event['kind'] ?? event['message_type'])?.toString() ?? '',
+          (event['summary'] ?? event['content'])?.toString() ?? '',
         ));
       case 'agent_output':
-        node?.output = event['output']?.toString() ?? '';
+        node?.output = (event['output'] ?? event['summary'] ?? event['content'])
+                ?.toString() ??
+            '';
       case 'tool_call' when node != null:
+        final rawInput = event['tool_input'] ?? event['arguments'] ?? '';
         node.toolCalls.add(ToolCallData(
-            event['call_id']?.toString() ?? '',
-            event['tool_name']?.toString() ?? '',
-            event['tool_input']?.toString() ?? ''));
+            (event['call_id'] ?? event['id'])?.toString() ?? '',
+            (event['tool_name'] ?? event['name'])?.toString() ?? '',
+            rawInput is String ? rawInput : jsonEncode(rawInput)));
       case 'tool_result' when node != null:
         for (final call in node.toolCalls) {
-          if (call.id == event['call_id']?.toString()) {
-            call.result = event['tool_result']?.toString() ?? '';
+          if (call.id == (event['call_id'] ?? event['id'])?.toString()) {
+            final rawResult =
+                event['tool_result'] ?? event['result'] ?? event['error'] ?? '';
+            call.result =
+                rawResult is String ? rawResult : jsonEncode(rawResult);
             call.success = event['success'] != false;
           }
         }
@@ -1744,8 +1755,7 @@ class HomeHeader extends StatelessWidget {
           Container(
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color:
-                  world ? const Color(0xFF20324D) : const Color(0xFFF1EFEB),
+              color: world ? const Color(0xFF20324D) : const Color(0xFFF1EFEB),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Row(mainAxisSize: MainAxisSize.min, children: [
@@ -2336,11 +2346,10 @@ class MessageBubble extends StatelessWidget {
                       },
                       child: const Text('复制')),
                   TextButton(
-                      onPressed: () => state.toggleFavorite(
-                          intro.isEmpty ? message.flow : intro),
-                      child: Text(state.favorites.contains(intro)
-                          ? '取消收藏'
-                          : '收藏')),
+                      onPressed: () => state
+                          .toggleFavorite(intro.isEmpty ? message.flow : intro),
+                      child: Text(
+                          state.favorites.contains(intro) ? '取消收藏' : '收藏')),
                   TextButton(
                       onPressed: () => state.shareAnswer('$intro\n$risk'),
                       child: const Text('分享')),
@@ -2385,7 +2394,13 @@ class Composer extends StatelessWidget {
                 showCheckmark: false,
                 visualDensity: VisualDensity.compact,
                 selectedColor: C.goldSoft,
-                onSelected: (on) => state.mutate(() => state.collabMode = on),
+                onSelected: (on) => state.mutate(() {
+                  state.collabMode = on;
+                  if (on && state.selectedExpertId.isEmpty) {
+                    state.expert = state.activeExpertName;
+                    state.selectedExpertId = state.activeExpertId;
+                  }
+                }),
               ),
           ]),
         ),
@@ -2567,7 +2582,8 @@ class ReportsView extends StatelessWidget {
                     style: TextStyle(color: C.muted, fontSize: 13.5)))
             : ListView(children: [
                 for (final group in ['本周', '更早'])
-                  if (reports.any((r) => asText(r['group'], '本周') == group)) ...[
+                  if (reports
+                      .any((r) => asText(r['group'], '本周') == group)) ...[
                     Padding(
                       padding: const EdgeInsets.fromLTRB(16, 10, 16, 2),
                       child: Text(group,
@@ -2589,10 +2605,7 @@ class ReportsView extends StatelessWidget {
 
 class ReportTile extends StatelessWidget {
   const ReportTile(
-      {required this.report,
-      required this.onOpen,
-      this.onExport,
-      super.key});
+      {required this.report, required this.onOpen, this.onExport, super.key});
   final Map<String, dynamic> report;
   final VoidCallback onOpen;
   final VoidCallback? onExport;
@@ -3186,8 +3199,7 @@ class RemindersView extends StatelessWidget {
           ),
         for (final task in tasks)
           CardTile(
-            title: asText(
-                task['title'] ?? _taskTitle(task), '自动化任务'),
+            title: asText(task['title'] ?? _taskTitle(task), '自动化任务'),
             subtitle:
                 '${asText(task['type'], 'reminder')} · ${asText(task['status'], 'enabled')}'
                 '${asText(task['cron']).isEmpty ? '' : ' · ${task['cron']}'}',
@@ -3242,9 +3254,7 @@ class RemindersView extends StatelessWidget {
             ]),
           ),
         for (final reminder in state.reminders)
-          CardTile(
-              title: reminder,
-              subtitle: '提醒任务'),
+          CardTile(title: reminder, subtitle: '提醒任务'),
       ])),
     ]);
   }
@@ -3270,7 +3280,8 @@ class FavoritesView extends StatelessWidget {
                     subtitle: '收藏的回答',
                     trailing: '取消',
                     onTrailingTap: () => state.toggleFavorite(item),
-                    onTap: () => state.setPrompt(item.split('\n').first, 'generic'),
+                    onTap: () =>
+                        state.setPrompt(item.split('\n').first, 'generic'),
                   ),
               ]),
       ),
@@ -3358,11 +3369,13 @@ class ProfileView extends StatelessWidget {
     final name = asText(p['displayName'], '未设置昵称');
     final rows = [
       ('账号与安全', asText(p['phone'], '未绑定')),
-      ('订阅与积分',
-          '${planLabel(p['plan'])} · ${asText(p['points'], '0')} 分'),
+      ('订阅与积分', '${planLabel(p['plan'])} · ${asText(p['points'], '0')} 分'),
       ('数据权限', asText(p['dataScopes'], '未设置')),
       ('消息通知', p['notifyOn'] == false ? '已关闭' : '已开启'),
-      ('偏好设置', asText(p['locale']) == 'zh_CN' ? '简体中文' : asText(p['locale'], '简体中文')),
+      (
+        '偏好设置',
+        asText(p['locale']) == 'zh_CN' ? '简体中文' : asText(p['locale'], '简体中文')
+      ),
       ('关于玑衡AI', 'v2.4.1'),
     ];
     return Column(children: [
@@ -3452,9 +3465,8 @@ class ProfileView extends StatelessWidget {
         ),
         for (final row in rows)
           InkWell(
-            onTap: row.$1 == '消息通知'
-                ? () => state.go(PageKey.notifications)
-                : null,
+            onTap:
+                row.$1 == '消息通知' ? () => state.go(PageKey.notifications) : null,
             child: Container(
               padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
               decoration: const BoxDecoration(
@@ -3491,8 +3503,8 @@ class ProfileView extends StatelessWidget {
   }
 
   Future<void> _editProfile(BuildContext context) async {
-    final controller = TextEditingController(
-        text: asText(state.profile?['displayName']));
+    final controller =
+        TextEditingController(text: asText(state.profile?['displayName']));
     final name = await showDialog<String>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -3531,6 +3543,7 @@ class DrawerOverlay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final query = state.drawerSearch.text.trim().toLowerCase();
     final items = [
       ['新建对话', PageKey.home, Icons.chat_bubble_outline],
       ['我的报告', PageKey.reports, Icons.description_outlined],
@@ -3538,6 +3551,40 @@ class DrawerOverlay extends StatelessWidget {
       ['定时与提醒', PageKey.reminders, Icons.schedule],
       ['我的收藏', PageKey.favorites, Icons.star_border],
     ];
+    final prototypeHistory = <({String day, String text, VoidCallback onTap})>[
+      (day: '今天', text: '金融AI助手自我介绍', onTap: () => state.go(PageKey.home)),
+      (
+        day: '昨天',
+        text: '做一份宁德时代（300750.SZ）三季报前瞻…',
+        onTap: () {
+          state.setPrompt('做一份宁德时代（300750.SZ）三季报前瞻', 'generic');
+          state.go(PageKey.home);
+        }
+      ),
+    ];
+    final apiHistory = [
+      for (final conversation in state.apiConversations)
+        (
+          day: '最近',
+          text: asText(conversation['title'], '未命名对话'),
+          onTap: () =>
+              state.openConversation(asText(conversation['conversationId']))
+        ),
+    ];
+    final history = apiHistory.isEmpty ? prototypeHistory : apiHistory;
+    final filteredHistory = query.isEmpty
+        ? history
+        : history
+            .where((item) => item.text.toLowerCase().contains(query))
+            .toList();
+    final historyDays = [
+      for (final item in filteredHistory)
+        if (!filteredHistory
+            .take(filteredHistory.indexOf(item))
+            .any((previous) => previous.day == item.day))
+          item.day,
+    ];
+
     return Stack(children: [
       Positioned.fill(
           child: GestureDetector(
@@ -3548,64 +3595,212 @@ class DrawerOverlay extends StatelessWidget {
         child: Material(
           color: Colors.white,
           child: Container(
-          width: MediaQuery.of(context).size.width * .82,
-          height: double.infinity,
-          padding: const EdgeInsets.fromLTRB(20, 54, 20, 18),
-          child:
-              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-            const Text('玑衡AI',
-                style: TextStyle(
-                    fontFamily: 'serif',
-                    fontWeight: FontWeight.w700,
-                    fontSize: 22)),
-            const SizedBox(height: 24),
-            for (final item in items)
-              ListTile(
-                  leading: Icon(item[2] as IconData),
-                  title: Text(item[0] as String),
-                  onTap: () {
-                    if (item[0] == '新建对话') {
-                      state.newChat();
-                    } else {
-                      state.go(item[1] as PageKey);
-                    }
-                  }),
-            const Divider(),
-            const Text('最近对话', style: TextStyle(color: C.muted)),
-            Expanded(
-              child: state.apiConversations.isEmpty
-                  ? const Padding(
-                      padding: EdgeInsets.fromLTRB(16, 10, 16, 0),
-                      child: Text('还没有对话记录',
-                          style: TextStyle(color: C.muted, fontSize: 12.5)),
-                    )
-                  : ListView(padding: EdgeInsets.zero, children: [
-                      for (final conversation in state.apiConversations)
-                        ListTile(
-                          dense: true,
-                          title: Text(asText(conversation['title'], '未命名对话'),
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
-                          subtitle: Text(asTime(conversation['updatedAt']),
-                              style: const TextStyle(fontSize: 11)),
-                          onTap: () => state.openConversation(
-                              asText(conversation['conversationId'])),
-                        ),
+            width: MediaQuery.of(context).size.width * .82,
+            height: double.infinity,
+            color: Colors.white,
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Expanded(
+                child: ListView(
+                  padding: const EdgeInsets.fromLTRB(20, 52, 20, 18),
+                  children: [
+                    const Row(children: [
+                      BrandAvatar(size: 28),
+                      SizedBox(width: 9),
+                      Text('玑衡AI',
+                          style: TextStyle(
+                              fontFamily: 'Noto Serif SC',
+                              fontWeight: FontWeight.w600,
+                              fontSize: 15,
+                              color: C.text)),
                     ]),
-            ),
-            ListTile(
-              leading: const CircleAvatar(
-                  backgroundColor: C.ink,
-                  child: Text('用', style: TextStyle(color: Color(0xFFD8B483)))),
-              title: Text(asText(state.profile?['displayName'], '未设置昵称')),
-              subtitle: Text(
-                  '${planLabel(state.profile?['plan'])} · ${asText(state.profile?['department'], '未设置部门')}'),
-              onTap: () => state.go(PageKey.profile),
-            ),
-          ]),
+                    const SizedBox(height: 25),
+                    for (final item in items)
+                      _DrawerMenuRow(
+                        icon: item[2] as IconData,
+                        text: item[0] as String,
+                        onTap: () {
+                          if (item[0] == '新建对话') {
+                            state.newChat();
+                          } else {
+                            state.go(item[1] as PageKey);
+                          }
+                        },
+                      ),
+                    const SizedBox(height: 14),
+                    SizedBox(
+                      height: 39,
+                      child: TextField(
+                        controller: state.drawerSearch,
+                        cursorColor: C.gold,
+                        onChanged: (_) => state.mutate(() {}),
+                        style: const TextStyle(
+                            color: Color(0xFF3D454C), fontSize: 12.5),
+                        decoration: InputDecoration(
+                          isDense: true,
+                          hintText: '搜索历史对话',
+                          hintStyle: const TextStyle(
+                              color: Color(0xFF8B9299), fontSize: 12.5),
+                          prefixIcon: const Icon(Icons.search_rounded,
+                              size: 16, color: Color(0xFF8B9299)),
+                          prefixIconConstraints:
+                              const BoxConstraints(minWidth: 34),
+                          contentPadding:
+                              const EdgeInsets.symmetric(vertical: 10),
+                          filled: true,
+                          fillColor: const Color(0xFFF6F4F0),
+                          enabledBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFEDEAE3)),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(8),
+                            borderSide:
+                                const BorderSide(color: Color(0xFFE4D7C4)),
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    for (final day in historyDays) ...[
+                      _DrawerDayLabel(day),
+                      for (final item
+                          in filteredHistory.where((item) => item.day == day))
+                        _DrawerHistoryItem(text: item.text, onTap: item.onTap),
+                    ],
+                    if (filteredHistory.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.only(top: 10),
+                        child: Text('没有匹配的历史对话',
+                            style: TextStyle(
+                                color: Color(0xFFA3AAB0), fontSize: 12.5)),
+                      ),
+                  ],
+                ),
+              ),
+              InkWell(
+                onTap: () => state.go(PageKey.profile),
+                child: Container(
+                  height: 63,
+                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 10),
+                  decoration: const BoxDecoration(
+                      border: Border(top: BorderSide(color: C.line))),
+                  child: Row(children: [
+                    const CircleAvatar(
+                      radius: 16,
+                      backgroundColor: Color(0xFFFFF8EA),
+                      child: Text('用',
+                          style: TextStyle(
+                              fontFamily: 'Noto Serif SC',
+                              fontWeight: FontWeight.w700,
+                              color: C.gold,
+                              fontSize: 13)),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                              asText(
+                                  state.profile?['displayName'], 'USER_6450'),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  fontSize: 13.5,
+                                  color: C.text,
+                                  fontWeight: FontWeight.w400)),
+                          const SizedBox(height: 2),
+                          Text(
+                              '${asText(state.profile?['plan'], '机构版')} · ${asText(state.profile?['department'], '研究部')}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                  color: Color(0xFFA3AAB0), fontSize: 11.5)),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.chevron_right_rounded,
+                        size: 18, color: Color(0xFFC6CCD2)),
+                  ]),
+                ),
+              ),
+            ]),
           ),
         ),
       ),
     ]);
+  }
+}
+
+class _DrawerMenuRow extends StatelessWidget {
+  const _DrawerMenuRow({
+    required this.icon,
+    required this.text,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String text;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(8),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 11),
+        child: Row(children: [
+          Icon(icon, size: 17, color: const Color(0xFF7D8790)),
+          const SizedBox(width: 13),
+          Text(text,
+              style: const TextStyle(
+                  color: C.text, fontWeight: FontWeight.w500, fontSize: 14.5)),
+        ]),
+      ),
+    );
+  }
+}
+
+class _DrawerDayLabel extends StatelessWidget {
+  const _DrawerDayLabel(this.text);
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(top: 10, bottom: 4),
+      child: Text(text,
+          style: const TextStyle(
+              color: Color(0xFFA3AAB0),
+              fontSize: 11.5,
+              letterSpacing: .6,
+              fontWeight: FontWeight.w400)),
+    );
+  }
+}
+
+class _DrawerHistoryItem extends StatelessWidget {
+  const _DrawerHistoryItem({required this.text, required this.onTap});
+  final String text;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 7),
+        child: Text(text,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+            style: const TextStyle(
+                color: Color(0xFF3D454C), fontSize: 13.5, height: 1.35)),
+      ),
+    );
   }
 }
 
@@ -3710,8 +3905,7 @@ class ReportDetailPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final title = asText(report['title'], '报告详情');
     final content = asText(report['content']);
-    final summary =
-        asText(report['summary'], '报告正文生成中，请稍后刷新查看。');
+    final summary = asText(report['summary'], '报告正文生成中，请稍后刷新查看。');
     final refs = asText(report['refs'], '暂无完整引用列表');
     return Scaffold(
       backgroundColor: C.paper,
