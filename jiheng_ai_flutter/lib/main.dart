@@ -6,6 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:webview_flutter/webview_flutter.dart';
 
 void main() => runApp(const JihengApp());
 
@@ -360,6 +361,7 @@ class JihengShellState extends State<JihengShell> {
   bool drawerOpen = false;
   bool expertSheet = false;
   bool modeSelected = false;
+  bool worldOpen = false;
   bool authReady = false;
   bool isLoggedIn = false;
   bool loadingData = false;
@@ -395,6 +397,7 @@ class JihengShellState extends State<JihengShell> {
       messages.clear();
       _chatSessionId = null;
       sending = false;
+      worldOpen = false;
     });
     go(PageKey.home);
   }
@@ -1385,6 +1388,14 @@ class HomeView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (state.worldOpen) {
+      return Column(
+        children: [
+          HomeHeader(state: state),
+          const Expanded(child: JihengWorldView()),
+        ],
+      );
+    }
     return Column(
       children: [
         HomeHeader(state: state),
@@ -1419,53 +1430,45 @@ class HomeHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
+    final world = state.worldOpen;
+    return Container(
+      color: world ? const Color(0xFF0E1D31) : C.paper,
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
       child: Stack(
         alignment: Alignment.center,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              IconButton(
-                  onPressed: () => state.mutate(() => state.drawerOpen = true),
-                  icon: const Icon(Icons.menu_rounded)),
-              IconButton(
-                  onPressed: () => state.go(PageKey.notifications),
-                  icon: const Icon(Icons.notifications_none_rounded)),
-            ],
-          ),
+          if (!world)
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                IconButton(
+                    onPressed: () =>
+                        state.mutate(() => state.drawerOpen = true),
+                    icon: const Icon(Icons.menu_rounded)),
+                IconButton(
+                    onPressed: () => state.go(PageKey.notifications),
+                    icon: const Icon(Icons.notifications_none_rounded)),
+              ],
+            ),
           Container(
             padding: const EdgeInsets.all(3),
             decoration: BoxDecoration(
-              color: const Color(0xFFF1EFEB),
-              borderRadius: BorderRadius.circular(10),
+              color:
+                  world ? const Color(0xFF20324D) : const Color(0xFFF1EFEB),
+              borderRadius: BorderRadius.circular(12),
             ),
             child: Row(mainAxisSize: MainAxisSize.min, children: [
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(8),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Color(0x14000000),
-                        blurRadius: 3,
-                        offset: Offset(0, 1))
-                  ],
-                ),
-                child: const Text('玑衡AI',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              HomeTabButton(
+                label: '玑衡AI',
+                selected: !world,
+                dark: world,
+                onTap: () => state.mutate(() => state.worldOpen = false),
               ),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                child: Text('玑衡World',
-                    style: TextStyle(
-                        color: Color(0xFF9AA1A8),
-                        fontWeight: FontWeight.w500,
-                        fontSize: 14)),
+              HomeTabButton(
+                label: '玑衡World',
+                selected: world,
+                dark: world,
+                onTap: () => state.mutate(() => state.worldOpen = true),
               ),
             ]),
           ),
@@ -1473,6 +1476,152 @@ class HomeHeader extends StatelessWidget {
       ),
     );
   }
+}
+
+class HomeTabButton extends StatelessWidget {
+  const HomeTabButton({
+    required this.label,
+    required this.selected,
+    required this.dark,
+    required this.onTap,
+    super.key,
+  });
+
+  final String label;
+  final bool selected;
+  final bool dark;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final color = selected
+        ? Colors.white
+        : dark
+            ? const Color(0xFF8FA0B7)
+            : const Color(0xFF9AA1A8);
+    final textColor = selected
+        ? C.text
+        : dark
+            ? const Color(0xFF9BA9BE)
+            : const Color(0xFF6F7780);
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+        decoration: BoxDecoration(
+          color: selected ? color : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          boxShadow: selected
+              ? const [
+                  BoxShadow(
+                      color: Color(0x16000000),
+                      blurRadius: 4,
+                      offset: Offset(0, 1))
+                ]
+              : null,
+        ),
+        child: Text(label,
+            style: TextStyle(
+                color: textColor, fontWeight: FontWeight.w700, fontSize: 15)),
+      ),
+    );
+  }
+}
+
+class JihengWorldView extends StatefulWidget {
+  const JihengWorldView({super.key});
+
+  @override
+  State<JihengWorldView> createState() => _JihengWorldViewState();
+}
+
+class _JihengWorldViewState extends State<JihengWorldView> {
+  late final WebViewController controller;
+  bool loading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    controller = WebViewController()
+      ..setJavaScriptMode(JavaScriptMode.unrestricted)
+      ..setBackgroundColor(const Color(0xFF0E1D31))
+      ..setNavigationDelegate(NavigationDelegate(
+        onPageFinished: (_) {
+          if (mounted) setState(() => loading = false);
+        },
+      ))
+      ..loadFlutterAsset('assets/game/procurement-journey.html');
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      color: const Color(0xFF0E1D31),
+      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
+      child: CustomPaint(
+        painter: const DashedFramePainter(),
+        child: Padding(
+          padding: const EdgeInsets.all(2),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: SizedBox.expand(
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: WebViewWidget(controller: controller),
+                  ),
+                  if (loading)
+                    const Positioned.fill(
+                      child: ColoredBox(
+                        color: Color(0xFF0E1D31),
+                        child: Center(
+                          child: CircularProgressIndicator(
+                            color: Color(0xFFD8B483),
+                            strokeWidth: 2,
+                          ),
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class DashedFramePainter extends CustomPainter {
+  const DashedFramePainter();
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final rrect = RRect.fromRectAndRadius(
+      rect.deflate(1),
+      const Radius.circular(24),
+    );
+    final paint = Paint()
+      ..color = const Color(0xFF988A70)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.2;
+    final path = Path()..addRRect(rrect);
+    for (final metric in path.computeMetrics()) {
+      var distance = 0.0;
+      const dash = 6.0;
+      const gap = 6.0;
+      while (distance < metric.length) {
+        final next = distance + dash;
+        canvas.drawPath(metric.extractPath(distance, next), paint);
+        distance = next + gap;
+      }
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
 class AiGreeting extends StatelessWidget {

@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>玑衡 World · 产业链走访</title>
+<style>
+  :root{color-scheme:dark;--ink:#f7f1e5;--muted:#b8c7c6;--soft:#809393;--gold:#f3c884;--teal:#9dd8d0;--line:rgba(255,240,211,.23);--dark:#09131b;--card:rgba(10,23,30,.88)}
+  *{box-sizing:border-box}
+  html,body{margin:0;min-height:100%;font-family:Inter,"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:var(--dark);color:var(--ink)}
+  button,input{font:inherit} button{cursor:pointer} button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
+  .hidden{display:none!important}
+  .world{position:relative;height:100dvh;min-height:600px;overflow:hidden;isolation:isolate;background:#101b20}
+  .scene-bg{position:absolute;inset:-2%;background-position:center;background-size:cover;transition:transform .75s ease,filter .75s ease;transform:scale(1.04);z-index:-3}
+  .scene-bg.crop{background-position:right center;background-size:135% auto}
+  .scene-bg.storage{background-position:78% 38%;background-size:160% auto;filter:hue-rotate(22deg) saturate(.75) brightness(.8)}
+  .scene-shade{position:absolute;inset:0;z-index:-2;background:linear-gradient(90deg,rgba(3,11,16,.75),rgba(3,11,16,.22) 42%,rgba(4,11,14,.04) 72%),linear-gradient(0deg,rgba(3,11,16,.8),rgba(3,11,16,.10) 58%,rgba(3,11,16,.43));pointer-events:none}
+  .world.entering .scene-bg{animation:scene-in .82s cubic-bezier(.15,.68,.28,1) both}
+  .world.entering .scene-shade{animation:shade-in .82s ease both}
+  @keyframes scene-in{from{opacity:.3;transform:translateX(7%) scale(1.12);filter:blur(6px)}to{opacity:1;transform:translateX(0) scale(1.04);filter:blur(0)}}
+  @keyframes shade-in{from{opacity:.1}to{opacity:1}}
+  .topbar{position:absolute;z-index:5;left:0;right:0;top:0;display:flex;align-items:center;gap:16px;padding:18px clamp(20px,3.4vw,52px);background:linear-gradient(180deg,rgba(5,14,19,.75),transparent)}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:900;letter-spacing:.08em;white-space:nowrap;font-size:18px;text-shadow:0 2px 15px #000}
+  .brand-mark{position:relative;display:block;flex:none;width:42px;height:42px;overflow:hidden;border-radius:50%;border:1px solid rgba(255,211,120,.8);background:#082047;box-shadow:0 0 17px rgba(236,177,75,.28)}
+  .brand-mark img{position:absolute;max-width:none;width:147%;height:147%;left:-24%;top:-18%}
+  .brand small{display:block;font-size:10px;font-weight:700;letter-spacing:.22em;color:var(--gold);line-height:1.15}
+  .case{margin-left:20px;padding-left:20px;border-left:1px solid var(--line);font-size:12px;color:#d9e2df;line-height:1.5}
+  .case b{display:block;font-size:13px;color:#fff;letter-spacing:.05em}
+  .spacer{flex:1}
+  .top-note{padding:7px 11px;background:rgba(8,24,29,.56);border:1px solid var(--line);border-radius:999px;color:#f1dbc0;font-size:11px;white-space:nowrap;backdrop-filter:blur(8px)}
+  .top-action{border:1px solid var(--line);background:rgba(8,23,29,.65);color:var(--ink);border-radius:12px;padding:8px 13px;font-size:12px;font-weight:800;backdrop-filter:blur(10px)}
+  .top-action:hover,.tool:hover{background:rgba(22,52,57,.9);border-color:var(--gold)}
+  .scene-copy{position:absolute;left:clamp(24px,5vw,82px);top:clamp(105px,14vh,170px);max-width:min(520px,52vw);text-shadow:0 3px 22px rgba(0,0,0,.75);pointer-events:none}
+  .eyebrow{color:var(--gold);font-size:12px;font-weight:850;letter-spacing:.22em;text-transform:uppercase}
+  .scene-copy h1{font-family:"Songti SC","Noto Serif CJK SC",serif;font-size:clamp(36px,5.5vw,76px);line-height:1.1;margin:12px 0 13px;letter-spacing:.03em}
+  .scene-copy p{margin:0;max-width:440px;color:#e5e9e4;font-size:clamp(13px,1.15vw,16px);line-height:1.75}
+  .ambient-line{display:inline-flex;gap:7px;align-items:center;color:#c8d7d2;margin-top:22px;font-size:11px;letter-spacing:.1em}
+  .ambient-line:before{content:"";display:block;width:26px;border-top:1px solid var(--gold)}
+  .npc-portrait{position:absolute;right:7vw;bottom:19vh;height:75vh;max-height:850px;width:min(42vw,600px);object-fit:contain;object-position:bottom center;mix-blend-mode:screen;filter:drop-shadow(0 20px 40px rgba(0,0,0,.75));mask-image:linear-gradient(90deg,transparent 0%,#000 18%,#000 82%,transparent 100%);pointer-events:none}
+  .npc-presence{position:absolute;right:clamp(35px,7vw,110px);top:24vh;width:210px;padding:12px 16px;border:1px solid rgba(255,230,185,.45);border-radius:13px;background:rgba(5,17,23,.55);box-shadow:0 18px 40px #0005;backdrop-filter:blur(9px);text-align:center}
+  .npc-presence .pulse{height:9px;width:9px;margin:0 auto 10px;background:var(--teal);border-radius:50%;box-shadow:0 0 0 7px rgba(157,216,208,.15),0 0 24px var(--teal)}
+  .npc-presence b{display:block;font-size:18px;letter-spacing:.12em}.npc-presence span{font-size:11px;color:var(--muted)}
+  .toolbelt{position:absolute;z-index:7;left:clamp(15px,3vw,42px);bottom:calc(min(350px,45dvh) + 32px);display:flex;gap:9px}
+  .tool{min-width:70px;border:1px solid rgba(246,224,183,.4);border-radius:14px;background:rgba(8,23,29,.73);color:var(--ink);padding:7px 11px;text-align:center;box-shadow:0 12px 25px #0006;backdrop-filter:blur(12px)}
+  .tool .ico{display:block;font-size:21px;line-height:1.15}.tool span:last-child{display:block;font-size:10px;font-weight:700;letter-spacing:.13em}
+  .tool .count{position:absolute;margin:-42px 0 0 51px;background:#c7844b;color:#160f0a;border-radius:50%;font-size:9px;line-height:17px;width:17px;height:17px}
+  .dialogue{position:absolute;z-index:6;left:clamp(15px,3vw,42px);right:clamp(15px,3vw,42px);bottom:18px;height:min(350px,45dvh);border:1px solid rgba(247,221,180,.45);border-radius:20px 20px 13px 13px;background:linear-gradient(120deg,rgba(8,25,32,.95),rgba(11,27,34,.9));box-shadow:0 22px 70px rgba(0,0,0,.58),inset 0 1px 0 rgba(255,255,255,.12);backdrop-filter:blur(20px);display:flex;flex-direction:column;overflow:hidden}
+  .dialogue:before{content:"";position:absolute;left:26px;right:26px;top:0;border-top:2px solid rgba(243,200,132,.54)}
+  .dialogue-head{display:flex;align-items:center;gap:12px;padding:13px 22px 8px;min-height:60px;border-bottom:1px solid rgba(255,255,255,.09)}
+  .speaker-icon{height:37px;width:37px;border:1px solid var(--gold);border-radius:12px;display:grid;place-items:center;color:var(--gold);font-family:serif;font-size:21px;background:rgba(243,200,132,.1)}
+  .speaker b{display:block;font-size:15px;letter-spacing:.06em}.speaker small{display:block;font-size:10px;letter-spacing:.09em;color:var(--muted)}
+  .mood{margin-left:auto;color:var(--teal);font-size:11px;white-space:nowrap}.mood:before{content:"●";padding-right:6px;font-size:8px}
+  .head-btn{border:0;background:transparent;color:var(--muted);font-size:11px;text-decoration:underline;text-underline-offset:4px;padding:6px}
+  .dialogue-main{display:grid;grid-template-columns:160px 1fr;gap:18px;min-height:0;flex:1;padding:14px 22px 5px}
+  .speaker-side{font-size:11px;line-height:1.7;color:var(--muted);padding:4px 12px 0 0;border-right:1px solid var(--line)}
+  .speaker-side b{display:block;color:var(--gold);font-size:10px;letter-spacing:.16em;margin-bottom:8px}
+  .speech-area{overflow:auto;scrollbar-width:thin;display:flex;flex-direction:column;gap:7px;padding-right:8px}
+  .speech-area .said-by-you{font-size:11px;color:var(--teal);letter-spacing:.03em}
+  .speech-area .npc-line{font-family:"Songti SC","Noto Serif CJK SC",serif;font-size:clamp(18px,2vw,26px);line-height:1.55;color:#fffaf0;letter-spacing:.018em;animation:line-in .32s ease both}
+  @keyframes line-in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+  .speech-area .travel-hint{display:inline-flex;align-items:center;gap:7px;width:max-content;margin-top:2px;color:var(--gold);font-size:11px;font-family:Inter,"Microsoft YaHei",sans-serif}
+  .prompt-row{display:flex;align-items:center;gap:7px;overflow-x:auto;padding:4px 22px 9px 200px;scrollbar-width:none;min-height:46px}.prompt-row::-webkit-scrollbar{display:none}
+  .prompt{flex:none;border:1px solid rgba(157,216,208,.35);border-radius:100px;background:rgba(157,216,208,.08);color:#e1f5ef;font-size:12px;padding:6px 11px;white-space:nowrap;transition:.15s}
+  .prompt:hover{border-color:var(--teal);transform:translateY(-2px);background:rgba(157,216,208,.17)}
+  .input-row{display:flex;align-items:center;gap:9px;margin:0 22px 15px 200px;padding:5px;border:1px solid rgba(255,255,255,.23);border-radius:10px;background:rgba(1,10,16,.47)}
+  .input-row:focus-within{border-color:var(--gold)}
+  .input-row input{min-width:0;flex:1;border:0;outline:0;background:transparent;color:#fff;padding:7px 8px;font-size:13px}
+  .input-row input::placeholder{color:#98aaa9}
+  .send{border:0;border-radius:7px;background:var(--gold);color:#23190e;font-weight:850;padding:8px 13px;white-space:nowrap;font-size:12px}
+  .send:hover{filter:brightness(1.12)}.send:disabled{opacity:.45;cursor:wait}
+  .travel{position:absolute;z-index:7;right:clamp(20px,4vw,55px);bottom:calc(min(350px,45dvh) + 39px);padding:10px 15px;border:1px solid var(--gold);border-radius:10px;background:linear-gradient(110deg,#f4cd8f,#daaa64);color:#24160b;font-size:12px;font-weight:900;box-shadow:0 12px 35px #0008}
+  .travel:hover{transform:translateY(-2px);filter:brightness(1.06)}
+  .toast{position:absolute;z-index:15;top:85px;left:50%;transform:translateX(-50%);border:1px solid #f4d49c;border-radius:9px;padding:9px 15px;background:#15282b;color:#fbe4bd;box-shadow:0 15px 40px #0008;font-size:12px;max-width:90vw;text-align:center}
+  .cover{position:absolute;z-index:20;inset:0;background:rgba(4,11,17,.72);backdrop-filter:blur(12px);display:grid;place-items:center;padding:18px;overflow:auto}
+  .sheet{position:relative;width:min(820px,100%);max-height:min(89dvh,860px);overflow:auto;background:#e9d9b6;color:#28322d;border:1px solid #c3a975;border-radius:13px;box-shadow:0 26px 80px #000b,0 0 0 7px rgba(238,216,173,.08);padding:clamp(22px,4vw,46px)}
+  .sheet:before{content:"";position:absolute;inset:9px;border:1px solid #baa474;border-radius:6px;pointer-events:none}
+  .sheet h2{margin:5px 0 7px;font-family:"Songti SC",serif;font-size:clamp(27px,4vw,42px)}
+  .sheet p{line-height:1.75;margin:0 0 22px;color:#4d5b52;font-size:13px}
+  .sheet-kicker{font-weight:850;letter-spacing:.21em;color:#8c6531;font-size:11px}
+  .close{position:absolute;right:22px;top:18px;z-index:2;border:1px solid #aa9873;border-radius:8px;background:rgba(255,255,255,.2);color:#3b4037;font-size:19px;width:32px;height:32px;line-height:1}
+  .route{display:flex;gap:9px;align-items:stretch;margin:25px 0 10px}
+  .route-node{flex:1;min-width:0;min-height:145px;border:1px solid #a99467;background:rgba(255,255,255,.15);border-radius:9px;padding:15px 11px;text-align:left;color:#27372f;transition:.15s}
+  .route-node:hover:not(:disabled){background:#f7e7c4;transform:translateY(-3px)}
+  .route-node.current{outline:3px solid #8e5b25;background:#f5e3bc}.route-node.fog{border-style:dashed;opacity:.5;cursor:not-allowed}
+  .route-node small{display:block;letter-spacing:.15em;font-size:9px;font-weight:800;color:#86653c}
+  .route-node strong{display:block;font-family:"Songti SC",serif;font-size:17px;margin:10px 0 4px}
+  .route-node span{display:block;font-size:10px;line-height:1.55;color:#6a725f}
+  .sheet-foot{margin-top:24px;padding-top:15px;border-top:1px dashed #a58f67;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;font-size:11px;color:#6b6e5e}
+  .sheet-foot button,.scroll button,.epilogue-action{border:1px solid #7b683f;border-radius:7px;background:#eedab1;color:#3b2b19;padding:7px 11px;font-size:11px;font-weight:800}
+  .sheet-foot button:hover,.scroll button:hover,.epilogue-action:hover{background:#f8eacb}
+  .scroll-list{display:grid;gap:12px}.scroll{background:#f6e8c7;border:1px solid #bea879;border-left:5px solid #9e763c;border-radius:5px;padding:14px 17px}
+  .scroll small{display:block;color:#8e6e39;font-size:10px;font-weight:850;letter-spacing:.1em}.scroll strong{display:block;font-family:"Songti SC",serif;font-size:18px;margin:5px 0}.scroll p{margin:0;color:#475146}.scroll .actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px;font-size:10px;color:#7e7867}
+  .log-entry{border-bottom:1px dashed #b9a87f;padding:10px 0}.log-entry b{font-size:11px;color:#8a6028}.log-entry p{margin:2px 0 0;font-size:13px;color:#303d34}
+  .wipe{position:absolute;z-index:30;inset:0;display:grid;place-items:center;background:#101d22;overflow:hidden}
+  .wipe:before{content:"";position:absolute;width:150vw;height:150vw;border:1px solid rgba(243,200,132,.18);border-radius:50%;box-shadow:0 0 0 12vw rgba(243,200,132,.025),0 0 0 24vw rgba(243,200,132,.02);animation:ripple 1s ease both}
+  @keyframes ripple{from{transform:scale(.35);opacity:0}to{transform:scale(1);opacity:1}}
+  .wipe-card{position:relative;text-align:center;color:var(--gold);animation:line-in .5s both}.wipe-card small{display:block;letter-spacing:.26em;font-size:11px}.wipe-card strong{display:block;font:42px "Songti SC",serif;margin:14px}.wipe-card span{font-size:12px;color:#dce9e3}
+  .epilogue{height:100dvh;overflow:auto;padding:70px 20px;background:radial-gradient(circle at 80% 10%,#284147,#0b171d 60%);display:grid;place-items:center}
+  .epilogue-card{width:min(780px,100%);padding:clamp(26px,5vw,58px);border:1px solid rgba(243,200,132,.5);border-radius:17px;background:#10242acc;box-shadow:0 25px 80px #0008}
+  .epilogue-card h1{font:clamp(32px,4.8vw,54px) "Songti SC",serif;margin:10px 0}.epilogue-card p{color:var(--muted);line-height:1.8}
+  .epilogue-row{border-top:1px solid var(--line);padding:12px 0}.epilogue-row b{display:block;color:var(--gold);font-size:12px}.epilogue-row span{font-size:13px;line-height:1.6;color:#e3eee7}
+  .epilogue-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.epilogue-action{font-size:13px;padding:11px 14px}
+  @media(max-width:760px){
+    .world{min-height:540px}.topbar{padding:12px 15px;gap:7px}.brand{font-size:14px;gap:7px}.brand .brand-mark{width:34px;height:34px}.case,.top-note{display:none}.top-action{font-size:10px;padding:7px 9px}
+    .scene-bg.crop{background-size:auto 110%;background-position:right center}.scene-bg.storage{background-size:auto 135%}
+    .scene-copy{left:19px;top:77px;max-width:78vw}.scene-copy h1{font-size:39px;margin:6px 0}.scene-copy p{font-size:12px;max-width:290px}.ambient-line{margin-top:11px}
+    .npc-portrait{height:48vh;max-height:420px;right:-10vw;bottom:33vh;width:74vw;opacity:.87}.npc-presence{top:27vh;right:12px;width:125px;padding:8px}.npc-presence b{font-size:14px}.npc-presence span{font-size:9px}
+    .dialogue{left:0;right:0;bottom:0;border-radius:17px 17px 0 0;height:min(390px,55dvh)}.dialogue-head{padding:9px 15px 6px;min-height:48px}.speaker-icon{height:31px;width:31px;font-size:17px}.speaker b{font-size:13px}.speaker small{font-size:9px}.mood{font-size:9px}.head-btn{font-size:10px}
+    .dialogue-main{display:block;padding:8px 15px 3px}.speaker-side{display:none}.speech-area .npc-line{font-size:19px;line-height:1.5}.prompt-row{padding:3px 15px 8px;min-height:43px}.input-row{margin:0 15px 12px}.input-row input{font-size:12px}.send{font-size:11px}
+    .toolbelt{left:11px;bottom:calc(min(390px,55dvh) + 12px)}.tool{min-width:57px;padding:5px 7px}.tool .ico{font-size:18px}.tool span:last-child{font-size:9px}.tool .count{margin:-37px 0 0 41px}
+    .travel{right:11px;bottom:calc(min(390px,55dvh) + 15px);max-width:46vw;font-size:10px;padding:8px 10px}
+    .sheet{max-height:94dvh}.route{display:grid;grid-template-columns:repeat(2,1fr)}.route-node{min-height:108px}.route-node strong{font-size:15px}
+  }
+  @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+<script>
+const SCENES = [
+  {
+    id:"salt", place:"盐湖矿区", region:"01 / 上游资源", npc:"岚", role:"盐湖现货负责人",
+    bg:"assets/salt-lake-mine-v1.png", crop:true, atmosphere:"风从盐田吹过，报价牌在你身旁亮着。",
+    arrival:"你刚到矿区，岚已经在等。你不是来听行情故事的：半年后的电芯能不能按时交，得从这里开始问。",
+    opening:"你就是栖岸储能的采购负责人？今天矿区的现货不等人。你是想先定量，还是先跟我谈价格？",
+    generic:"岚敲了敲报价牌：我能谈供货，也能谈价格基准。你得告诉我，你最担心哪一件。",
+    topics:[
+      {id:"claim",label:"问涨价",prompt:"听说一周涨了三成，这个价怎么来的？",keys:["涨价","涨幅","三成","30%","价格","现货","行情"],reply:"岚看了一眼牌子：上面只有一根往上的线。三成是市场上在传的说法，我现在能报今天的价；你若要锁半年，我得先知道你要锁多少量。",repeat:"我说的是现货气氛，不是一份带日期和指数的报告。你要可核对的报价，就得把基准写出来。",scroll:{id:"salt-rumor",title:"矿区的涨价说法",body:"岚口头提到“涨了三成”，现场看板没有指数名称和日期。",kind:"口头说法"}},
+      {id:"proof",label:"问价格依据",prompt:"交货日价格按哪个指数和日期算？",keys:["依据","指数","日期","合同","样张","凭证","基准","条款"],reply:"他把一张合同样张推到你面前：只写着“以交货日行情为准”，没写指数、取价日，也没有上限。岚抬眼看你：你要补哪一条？",repeat:"那张样张仍在桌上。指数、取价日和上限，现在一个都没写。",scroll:{id:"salt-contract",title:"现货合同样张",body:"本局模拟样张仅写“价格以交货日行情为准”，未指定指数、取价日或上限。",kind:"剧情单据"}},
+      {id:"risk",label:"问交货风险",prompt:"如果我现在锁量，交期能保证吗？",keys:["交期","交货","供货","保供","锁量","数量","货源"],reply:"岚收起笑：数量可以排，价格却要按交货日算。我现在答应你有货，不等于答应你半年后的成本不变。你们能承受多大的波动？",repeat:"供货量和价格边界是两件事。你要我承诺，就把这两件事分开写。"}
+    ],
+    offerPrompt:"我愿意报采购量，但基准价和季度复核要写清楚。",
+    early:"岚把笔放下：我们才说了两句。你还没问清怎么算价，怎么知道自己开的条件值不值？",
+    offerStrong:"岚把样张上的“随行就市”圈了起来：行，数量先报；指数、取价日和季度复核写成待确认条款。今天我给你的只是口头条件，正式合同还得双方核对。",
+    offerWeak:"岚点头：数量可以先排，我按今天的现货报价给你留位置。至于交货时的价格，我们还没划清上限。",
+    termsStrong:"先报量；价格指数、取价日和季度复核写入待确认条款。",
+    termsWeak:"先排供货量；交货日价格仍未设上限。",
+    risk:"涨价幅度和合同基准尚未从外部来源核实。",
+    lead:"岚朝山下的厂房指了指：矿盐往下走，先到材料工坊。那位坊主岑比我更会算成本。你把这张样张带去，他就没法只说“都涨了”。",
+    next:"材料工坊", cross:{}
+  },
+  {
+    id:"materials", place:"材料工坊", region:"02 / 中游材料", npc:"岑", role:"正极材料坊主",
+    bg:"assets/materials-workshop-v1.png", portrait:"assets/cen-workshop-owner-v1.png", atmosphere:"机器还热着，岑把账本按在工作台上。",
+    arrival:"矿区的口头报价到了这里，已经变成材料供应商递来的涨价函。工坊主岑看着你手里的地图。",
+    opening:"你从盐湖来？那你应该知道原料有多紧。我这批材料要稳定交付，价格就得跟着涨。你今天能给我什么承诺？",
+    generic:"岑用指节敲了敲账本：我有库存、有长协，也有排产。你问哪个，我就从哪个跟你谈。",
+    topics:[
+      {id:"claim",label:"问成本",prompt:"你说必须涨价，库存和成本发生了什么？",keys:["成本","库存","涨价","材料","报价","用完","批次"],reply:"岑掀开台账的一角：我说库存紧，并不等于所有旧批次都用完。旧料、现货料混在一起，成本得按批次看。你要锁量，我得知道你能不能稳定下单。",repeat:"库存是分批次的。我可以解释成本，但不能把一句“都涨了”当明细给你。",scroll:{id:"materials-stock",title:"材料库存口头说明",body:"岑承认旧料与现货料混用，具体批次成本仍需台账支持。",kind:"口头说法"}},
+      {id:"proof",label:"问长协条款",prompt:"你和上游的长协是按天调价，还是按季度？",keys:["长协","合同","季度","调价","条款","台账","凭证","进货价"],reply:"岑停了一秒，把复印件翻到背面：调价周期写的是季度。我刚才说得太快了。要谈全额传导，先把各批次进货价摆出来。",repeat:"复印件上的调价周期是季度。至于每一批成本，还要看完整台账。",scroll:{id:"materials-contract",title:"材料长协复印件",body:"本局模拟复印件写着“按季度调价”；库存批次与进货价尚未出示。",kind:"剧情单据"}},
+      {id:"risk",label:"问排产",prompt:"如果不接受全额涨价，这批材料会不会断供？",keys:["交期","断供","供货","排产","稳定","产能","交付"],reply:"岑看向机器：排产可以先留位置，但不能无限留。你若能给一个滚动的采购计划，我就能把交付风险和价格谈判分开。",repeat:"先给滚动计划，我才能谈排产。价格和交付可以分别约束。"}
+    ],
+    offerPrompt:"先按季度复核，库存批次和成本凭证补齐后再谈涨幅。",
+    early:"岑摇头：你连我的长协怎么调价都没问，就要我先按你的条件签？再谈谈。",
+    offerStrong:"岑把报价函往回抽了一寸：可以，先按季度复核。库存批次和进货价我补给你，幅度等你看完再议。今天只能算口头框架。",
+    offerWeak:"岑说：我先留排产，但按今天这份报价推进。你没看到批次成本，后面的幅度还得重新谈。",
+    termsStrong:"季度复核；供应方补库存批次和进货成本后再议涨幅。",
+    termsWeak:"先留排产；报价幅度和成本依据仍待补充。",
+    risk:"材料库存与进货成本只存在于本局剧情，真实使用需核对原始台账。",
+    lead:"岑把一张名片塞给你：材料往下是电芯。去电芯城找墨。你问她报价怎么拆，别只听她说“综合价”。",
+    next:"电芯城",
+    cross:{"salt-contract":"岑看了你的盐湖样张：上游连指数和取价日都没写，我更不能把“涨了三成”原样转嫁给你。把它当成谈判起点，别当成本凭证。"}
+  },
+  {
+    id:"cell", place:"电芯城", region:"03 / 核心制造", npc:"墨", role:"电芯商务负责人",
+    bg:"assets/battery-cell-hall-v1.png", crop:true, atmosphere:"产线在你身后持续运转，墨把一页报价推到桌边。",
+    arrival:"材料工坊的报价变成了电芯厂的综合价。你要找出原料波动究竟落在了哪一项。",
+    opening:"栖岸要半年稳定供货，我可以安排优先级。不过你别拿一条锂价曲线，要求我承担所有波动。我们先聊量，还是聊报价？",
+    generic:"墨把笔尖停在报价单上：价格、产线、交期都能谈。但你要先说，哪一项会影响你的采购决定。",
+    topics:[
+      {id:"claim",label:"拆综合报价",prompt:"综合报价里，锂价、加工费和交付溢价各占多少？",keys:["综合价","报价","锂价","加工费","价格","成本","溢价"],reply:"墨把报价单转向你：目前只有总价，我还没有给你分项。你若把所有波动压在一条原料曲线上，我也没法给你半年承诺。",repeat:"要比较方案，先拆出锂价、加工费和交付安排；总价一个数字不够。",scroll:{id:"cell-quote",title:"电芯综合报价",body:"本局模拟报价只列总价，没有锂价、加工费与交付溢价明细。",kind:"剧情单据"}},
+      {id:"proof",label:"问交付规则",prompt:"交付优先级到底按什么排序？",keys:["优先级","交付","合同","签约","排序","凭证","依据","规则"],reply:"墨翻到备忘录：这里写的是按签约顺序，不是“只给长期客户”。我可以把你的交期写入框架，但要同时写清检修影响。",repeat:"备忘录写的是签约顺序。优先交付要落成条款，不能靠我一句口头保证。",scroll:{id:"cell-priority",title:"交付优先级备忘录",body:"本局模拟备忘录写“按签约顺序”，没有写“只给长期客户”。",kind:"剧情单据"}},
+      {id:"risk",label:"问检修与产能",prompt:"产线检修会影响这半年的交期吗？",keys:["检修","产线","产能","排产","良率","交期","延期"],reply:"墨看了眼车间白板：三号线本月要检修。交付会留缓冲，但你得告诉我，三天波动对你们的客户意味着什么。",repeat:"检修会改变交期。你若在客户合同里承诺死日期，就要把这个风险带过去。"}
+    ],
+    offerPrompt:"先锁数量，价格按原料区间季度复核，检修影响单列交期。",
+    early:"墨没有马上接话：你连报价拆分和交期规则都没看，先谈联动会把风险藏起来。",
+    offerStrong:"墨把笔在桌上转了一圈：这个框架我能往内推。数量先锁，价格按约定原料区间季度复核；检修影响另写交期。分项报价和产能计划我后补。",
+    offerWeak:"墨说：我能先留你的排产位。价格还是按当前综合价谈，拆分明细和检修计划没定下来。",
+    termsStrong:"锁数量；价格区间季度复核；检修影响单列交期。",
+    termsWeak:"先留排产位；综合报价拆分与检修计划待补。",
+    risk:"分项报价与真实产能计划缺失，本局检修白板仅为剧情材料。",
+    lead:"墨看向窗外的货车：我这边能让多少，最后还要看你的客户肯不肯接。去车企港找澈，问问他的调价周期。",
+    next:"车企港",
+    cross:{"materials-contract":"墨接过材料长协：上游按季度调价，我可以考虑季度联动。但这份复印件还不能替代我们自己的分项报价。"}
+  },
+  {
+    id:"port", place:"车企港", region:"04 / 下游客户", npc:"澈", role:"车企采购代表",
+    bg:"assets/downstream-port-v1.png", crop:true, atmosphere:"装车区的灯亮了，澈握着你刚发来的调价函。",
+    arrival:"前面每一站都想把成本推给下一站。到了客户面前，这条链终于要回答谁来承受。",
+    opening:"你要调价，我当然得问：凭什么不换一家？我们只接受按季度调整。你先告诉我，上游这次到底让了多少？",
+    generic:"澈把调价函放下：你有交付承诺、替代方案，还是只有一句“上游涨了”？拿得出什么，我们就谈什么。",
+    topics:[
+      {id:"claim",label:"问客户条款",prompt:"你们为什么只接受季度调价？",keys:["季度","调价","价格","合同","采购清单","为什么"],reply:"澈指着清单：我的下游也按季度给我调。你若按天向我涨，我就只能自己吞。你说，要我把这笔差额放在哪？",repeat:"季度是我们的合同节奏。你若要改，得先替我解决下游的承受问题。",scroll:{id:"port-quarter",title:"客户调价周期",body:"本局模拟采购清单写“按季度调价”；真实条款仍需原始合同核对。",kind:"剧情单据"}},
+      {id:"proof",label:"问替代供应商",prompt:"你说能换供应商，他们现在能按时交货吗？",keys:["替代","竞争","供应商","名单","交期","换一家","凭证"],reply:"澈把名单扣回桌上：有两家在谈，其中一家交期还没确认。所以我不会今天就换掉你，但你也别把这当成我的软肋。",repeat:"替代供应商确实存在，交期尚有一家待确认。别把“名单上有”当成“明天就能交”。",scroll:{id:"port-rivals",title:"替代供应商名单",body:"本局模拟名单有两家供应商，其中一家交期待确认。",kind:"剧情单据"}},
+      {id:"risk",label:"问延误代价",prompt:"如果我们延误三天，你们会怎么处理？",keys:["延误","迟交","扣款","验收","装车","交付","风险"],reply:"澈看向装车队列：晚三天，我也要向下一家解释。别只跟我谈价格上限，交付优先级和延期处理也得写进去。",repeat:"我承受的是整条交付链。价格可以谈，延期处理不能留白。"}
+    ],
+    offerPrompt:"我按季度联动，把原料凭证和交付优先级都写进合同。",
+    early:"澈摇头：你给我的是一句调价请求。先说清楚你能保证什么、还有没有替代供应。",
+    offerStrong:"澈低头在函上写了两行：季度联动可以谈；涨幅依据双方核对的原料凭证，交付优先级和延期处理一起写。今天只算原则同意。",
+    offerWeak:"澈说：季度节奏不变。你先把交期和原料依据补齐，我不会现在接受全额传导。",
+    termsStrong:"季度联动；涨幅依据原料凭证；交付优先级与延期处理待写合同。",
+    termsWeak:"客户维持季度调价；全额成本传导尚未获接受。",
+    risk:"客户合同与替代供应商交期均为剧情设定，真实条款和可用交期未核。",
+    lead:"澈看见你的地图上还有一盏灯塔：你若担心动力业务吃不下量，去看看储能。不过先别把订单当回款。",
+    next:"储能灯塔",
+    cross:{"cell-quote":"澈看完综合报价：这里连锂价和加工费都没拆，我怎么替你向我的客户解释全额涨价？先把依据补齐。","cell-priority":"澈指着备忘录：按签约顺序不等于保交付。你要我的调价承诺，得给我一条可写进合同的交期。"}
+  },
+  {
+    id:"storage", place:"储能灯塔", region:"05 / 第二需求", npc:"澈", role:"储能项目对接人",
+    bg:"assets/downstream-port-v1.png", crop:true, storage:true, atmosphere:"天色暗下去，灯塔下的储能柜正在并网。",
+    arrival:"你跟着澈来到灯塔。第二条需求曲线看起来很美，账期和并网进度却写在另一页。",
+    opening:"你从港口走到这里，大概是想问储能能不能吃下长期量。可以聊，但先别把订单册当回款记录。你最想看哪一项？",
+    generic:"澈把订单册合上：订单、并网、回款，是三张不同的表。你想先看哪张？",
+    topics:[
+      {id:"claim",label:"问订单质量",prompt:"订单增长了，单价和实际并网怎么样？",keys:["订单","增长","单价","销量","并网","需求"],reply:"澈翻出订单册：数量在涨，单价却往下。签了订单也不等于已经并网。你若按订单总量锁全年采购，会先把现金压在仓库里。",repeat:"订单只是需求意向。并网进度和回款速度，决定它能不能支撑采购承诺。",scroll:{id:"storage-orders",title:"储能订单册",body:"本局模拟订单数量上升、单价下降；订单不等于已并网或已回款。",kind:"剧情单据"}},
+      {id:"proof",label:"问回款账期",prompt:"储能项目实际多久回款？和动力业务一样吗？",keys:["回款","账期","现金","应收","财务","周期","凭证"],reply:"澈指给你看两列：这份剧情台账里，储能平均一百二十天，动力平均六十天。差一倍。公司整体现金流好不好，回答不了这个分部的问题。",repeat:"分部账期和公司整体现金流是两回事。这份台账仍需真实来源核对。",scroll:{id:"storage-payment",title:"储能回款台账",body:"本局模拟台账写储能平均 120 天、动力平均 60 天；并非真实公司披露。",kind:"剧情单据"}},
+      {id:"risk",label:"问可用率",prompt:"设备并网后，可用率达标了吗？",keys:["可用率","验收","运行","设备","故障","达标"],reply:"澈皱眉：验收报告里，首年可用率低于承诺值。你不能只看订单量，还得看设备能不能稳定运行。",repeat:"订单、并网和运行质量都要看。少一项，全年采购量都不稳。"}
+    ],
+    offerPrompt:"采购量按实际并网和回款季度滚动，不先锁全年。",
+    early:"澈把订单册收起来：你连回款和并网都还没问，就要定全年量？先把两张表看完。",
+    offerStrong:"澈点了点头：按实际并网和回款季度滚动。先把可用率和分部回款来源补齐，再谈全年框架。你这趟至少没有把订单当成现金。",
+    offerWeak:"澈说：那就先别锁全年。你只有订单册，回款和并网还没看明白，今天先记成待谈。",
+    termsStrong:"按实际并网和回款季度滚动采购量；全年框架待分部材料核对。",
+    termsWeak:"不锁全年采购量；回款与并网来源待补。",
+    risk:"储能账期、订单和可用率均来自虚构情景，真实判断须查分部披露与验收材料。",
+    lead:"澈合上册子：你已经沿着原料、材料、电芯和客户走了一圈。回办公室吧。真正要写进采购方案的，是这些人愿意承担什么，以及谁还没有给你证明。",
+    next:"回办公室",
+    cross:{"port-quarter":"澈看着你在港口记下的季度条款：客户只愿按季度调价，你若现在把储能采购量锁死一年，现金会先替你受罪。"}
+  }
+];
+const ALL_SCROLLS = new Map(SCENES.flatMap(scene => scene.topics.filter(topic => topic.scroll).map(topic => [topic.scroll.id,Object.assign({from:scene.place},topic.scroll)])));
+const API_BASE = window.JIHENG_GAME_API_BASE || "http://192.168.184.207:18000";
+const STORAGE_KEY = "jiheng-procurement-journey-v1";
+function freshState(){ return {version:1,current:0,unlocked:0,scenes:{},scrolls:[],finished:false,report:false}; }
+function loadState(){
+  try{
+    const candidate=JSON.parse(localStorage.getItem(STORAGE_KEY)||"null");
+    if(candidate && candidate.version===1 && Number.isInteger(candidate.current) && candidate.current>=0 && candidate.current<SCENES.length &&
+      Number.isInteger(candidate.unlocked) && candidate.unlocked>=candidate.current && candidate.unlocked<SCENES.length &&
+      candidate.scenes && typeof candidate.scenes==="object" && Array.isArray(candidate.scrolls)) return candidate;
+  }catch(_error){}
+  return freshState();
+}
+let S=loadState();
+let overlay=null, busy=false, transitioning=false, toastText="", npcModel=false, toastTimer=null;
+const app=document.getElementById("app");
+function saveState(){ try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(S)); }catch(_error){} }
+function sceneAt(index){ return SCENES[index]; }
+function currentScene(){ return sceneAt(S.current); }
+function progress(scene){
+  if(!S.scenes[scene.id] || !Array.isArray(S.scenes[scene.id].history)){
+    S.scenes[scene.id]={seen:[],presented:[],history:[{speaker:"npc",text:scene.opening}],deal:null,leadHeard:false};
+    saveState();
+  }
+  return S.scenes[scene.id];
+}
+function esc(value){
+  return String(value==null?"":value).replace(/[&<>"']/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c];
+  });
+}
+function seenCount(p){ return p.seen.filter(id=>["claim","proof","risk"].includes(id)).length; }
+function relevantPresentations(scene,p){ return p.presented.filter(id=>Object.prototype.hasOwnProperty.call(scene.cross,id)).length; }
+function conversationDepth(scene,p){ return seenCount(p)+Math.min(1,relevantPresentations(scene,p)); }
+function canRevealLead(scene,p){ return conversationDepth(scene,p)>=2 || !!p.deal; }
+function appendHistory(p,speaker,text){
+  p.history.push({speaker:speaker,text:String(text).slice(0,550)});
+  if(p.history.length>80) p.history.splice(0,p.history.length-80);
+}
+function addScroll(item){
+  if(!item || S.scrolls.includes(item.id)) return;
+  S.scrolls.push(item.id);
+  toastText="卷轴入包 · "+item.title;
+  clearTimeout(toastTimer);
+  toastTimer=setTimeout(function(){toastText=""; const node=document.getElementById("toast"); if(node) node.remove();},3300);
+}
+function unlockAfter(scene){
+  const index=SCENES.findIndex(x=>x.id===scene.id);
+  if(index===SCENES.length-1) S.finished=true;
+  else S.unlocked=Math.max(S.unlocked,index+1);
+}
+function classify(scene,text){
+  if(/下一站|下一家|下一步|往哪|去哪里|找谁|带路|离开|告辞|回办公室|继续走|接下来找/.test(text)) return "lead";
+  if(/我愿意|我们可以|我建议|我提议|我接受|先锁|锁半年|成交|谈条件|签约|我想采购|能不能降|给我优惠|重新报价|可以.*季度联动|能否.*联动/.test(text)) return "offer";
+  if(/依据|凭证|指数|日期|合同|条款|台账|长协|规则|名单|回款|账期/.test(text)) return "proof";
+  let best=null,score=0;
+  scene.topics.forEach(function(topic){
+    let points=0;
+    topic.keys.forEach(function(key){if(text.includes(key)) points+=key.length>=3?3:2;});
+    if(points>score){best=topic.id;score=points;}
+  });
+  if(best) return best;
+  if(/让步|谈谈|合作|条件|怎么办/.test(text)) return "offer";
+  if(/谁|哪里|哪个环节/.test(text)) return "lead";
+  return "other";
+}
+function resolveTurn(scene,p,text,forced,itemId){
+  const intent=forced||classify(scene,text);
+  if(intent==="present"){
+    const item=ALL_SCROLLS.get(itemId);
+    if(!item || !S.scrolls.includes(itemId)) return scene.generic;
+    if(scene.cross[itemId]){
+      if(!p.presented.includes(itemId)) p.presented.push(itemId);
+      return scene.cross[itemId]+(p.deal && p.deal.kind==="weak"?" 你现在有新筹码，可以再提一次条件。":"");
+    }
+    if(item.from===scene.place) return scene.npc+"把卷轴看了一眼：这就是我们刚才谈过的东西。你可以问我它的来源，也可以说你想怎么写进条款。";
+    return scene.npc+"看完卷轴：这是"+item.from+"的材料。它能帮你追问，却不能直接证明我这里的库存、报价或交期。你想拿它问我什么？";
+  }
+  if(intent==="lead"){
+    if(!canRevealLead(scene,p)) return scene.npc+"按住地图：先弄清我这里的价格依据或交付条件。你至少得带着一个问题去下一站。";
+    p.leadHeard=true;
+    unlockAfter(scene);
+    return scene.lead;
+  }
+  if(intent==="offer"){
+    if(conversationDepth(scene,p)<2) return scene.early;
+    const strong=p.seen.includes("proof") || relevantPresentations(scene,p)>0;
+    p.deal={kind:strong?"strong":"weak",terms:strong?scene.termsStrong:scene.termsWeak,risk:scene.risk};
+    p.leadHeard=true;
+    unlockAfter(scene);
+    return (strong?scene.offerStrong:scene.offerWeak)+" "+scene.lead;
+  }
+  const topic=scene.topics.find(x=>x.id===intent);
+  if(topic){
+    if(p.seen.includes(topic.id)) return topic.repeat;
+    p.seen.push(topic.id);
+    if(topic.scroll) addScroll(topic.scroll);
+    return topic.reply;
+  }
+  const last=p.history.filter(x=>x.speaker==="npc").slice(-1)[0];
+  if(last && p.seen.length>=2) return scene.generic+" 你也可以直接提出你的采购条件，我会回应。";
+  return scene.generic;
+}
+async function npcReply(scene,playerMessage,fallback,history){
+  if(!npcModel) return fallback;
+  try{
+    const controller=new AbortController();
+    const timer=setTimeout(function(){controller.abort();},7500);
+    let response;
+    try{
+      response=await fetch(API_BASE+"/api/procurement/npc",{
+        method:"POST",headers:{"Content-Type":"application/json"},
+        body:JSON.stringify({
+          scene_id:scene.id,player_message:playerMessage.slice(0,240),fallback_reply:fallback,
+          history:history.slice(-8),known_scrolls:S.scrolls.slice(0,20)
+        }),signal:controller.signal
+      });
+    }finally{clearTimeout(timer);}
+    if(!response.ok) return fallback;
+    const result=await response.json();
+    return result.mode==="model" && typeof result.reply==="string" && result.reply.trim()?result.reply.slice(0,450):fallback;
+  }catch(_error){return fallback;}
+}
+async function checkNpcMode(){
+  if(!location.protocol.startsWith("http")) return;
+  try{
+    const response=await fetch(API_BASE+"/api/procurement/npc/status",{cache:"no-store"});
+    if(response.ok){
+      const data=await response.json();
+      npcModel=!!data.enabled;
+      const badge=document.getElementById("npcMode");
+      if(badge) badge.textContent=currentScene().role+" · "+(npcModel?"模型对话":"离线剧情对话");
+    }
+  }catch(_error){}
+}
+async function speak(text,forced,itemId){
+  const message=String(text||"").trim().slice(0,240);
+  if(!message || busy || transitioning || S.report) return;
+  busy=true;
+  overlay=null;
+  const scene=currentScene(),p=progress(scene);
+  appendHistory(p,"you",message);
+  const fallback=resolveTurn(scene,p,message,forced,itemId);
+  saveState();
+  render();
+  const answer=await npcReply(scene,message,fallback,p.history);
+  appendHistory(p,"npc",answer);
+  busy=false;
+  saveState();
+  render();
+  const input=document.getElementById("playerInput");
+  if(input) input.focus({preventScroll:true});
+}
+function topicPrompts(scene,p){
+  const unseen=scene.topics.filter(x=>!p.seen.includes(x.id));
+  const prompts=unseen.slice(0,3).map(x=>({label:x.label,text:x.prompt,intent:x.id}));
+  prompts.push({label:p.deal?"再谈条件":"提出条件",text:scene.offerPrompt,intent:"offer"});
+  if(canRevealLead(scene,p)) prompts.push({label:"问下一站",text:"这条链下一站该去哪里？",intent:"lead"});
+  return prompts;
+}
+function overlayFrame(title,kicker,body,footer){
+  return '<div class="cover" role="dialog" aria-modal="true" aria-label="'+esc(title)+'"><div class="sheet">' +
+    '<button class="close" data-act="close" aria-label="关闭">×</button>' +
+    '<div class="sheet-kicker">'+esc(kicker)+'</div><h2>'+esc(title)+'</h2>' +
+    body+'<div class="sheet-foot">'+footer+'</div></div></div>';
+}
+function renderMap(){
+  let nodes="";
+  SCENES.forEach(function(scene,index){
+    const known=index<=S.unlocked,here=index===S.current;
+    const p=S.scenes[scene.id],state=!known?"尚未发现":(p&&p.deal?"已谈过条件":(p&&p.leadHeard?"已走访":"可走访"));
+    nodes+='<button class="route-node '+(here?"current ":"")+(known?"":"fog")+'" data-act="map-node" data-index="'+index+'" '+(known?"":"disabled")+'>'+
+      '<small>CHAPTER '+String(index+1).padStart(2,"0")+'</small><strong>'+esc(known?scene.place:"未探明")+'</strong>'+
+      '<span>'+esc(here?"你正在这里":state)+'</span></button>';
+  });
+  const body='<p>你亲手走过的地方才会在地图上亮起。下一站的名字，要从眼前这个人嘴里问出来。</p>'+
+    '<div class="route">'+nodes+'</div>';
+  const footer='<span>已发现 '+(S.unlocked+1)+' / '+SCENES.length+' 个地点 · 本局进度保存在浏览器</span>'+
+    '<button data-act="reset">重新开始这一趟</button>';
+  return overlayFrame("手里的产业链地图","THE ROUTE · 栖岸储能",body,footer);
+}
+function renderBag(){
+  const list=S.scrolls.map(function(id){
+    const item=ALL_SCROLLS.get(id);
+    if(!item) return "";
+    return '<article class="scroll"><small>'+esc(item.kind)+' · '+esc(item.from)+'</small>'+
+      '<strong>'+esc(item.title)+'</strong><p>'+esc(item.body)+'</p>'+
+      '<div class="actions"><span>本局情景材料 · 尚需真实来源核对</span>'+
+      '<button data-act="present" data-scroll="'+esc(id)+'">出示给'+esc(currentScene().npc)+'</button></div></article>';
+  }).join("");
+  const body='<p>和人物交谈时得到的说法与单据会放在这里。出示卷轴，对方会按自己的立场回应。</p>'+
+    '<div class="scroll-list">'+(list||'<div class="scroll"><strong>背包还是空的</strong><p>先回去和眼前的人谈谈价格、条款或交付。</p></div>')+'</div>';
+  return overlayFrame("走访卷轴","SATCHEL · "+S.scrolls.length+" 份",body,'<span>卷轴记录的是游戏内情景，不代表真实企业文件。</span><button data-act="close">回到对话</button>');
+}
+function renderHistory(){
+  const scene=currentScene(),p=progress(scene);
+  const list=p.history.map(function(turn){
+    return '<div class="log-entry"><b>'+esc(turn.speaker==="you"?"你":scene.npc)+'</b><p>'+esc(turn.text)+'</p></div>';
+  }).join("");
+  const body='<p>这一站的交谈。你可以回看刚才答应了什么，也可以回到画面继续追问。</p>'+
+    '<div style="max-height:55dvh;overflow:auto">'+list+'</div>';
+  return overlayFrame("与"+scene.npc+"的对话","CONVERSATION LOG · "+scene.place,body,'<span>同一站的对话会一直保留。</span><button data-act="close">继续交谈</button>');
+}
+function renderReport(){
+  const rows=SCENES.map(function(scene){
+    const p=S.scenes[scene.id],deal=p&&p.deal;
+    return '<div class="epilogue-row"><b>'+esc(scene.region)+' · '+esc(scene.place)+'</b>'+
+      '<span>'+esc(deal?deal.terms:"你已到访；这一站尚未形成口头条件。")+'</span></div>';
+  }).join("");
+  app.innerHTML='<section class="epilogue"><div class="epilogue-card">'+
+    '<div class="eyebrow">采购走访结束 · 情景推演</div><h1>你把地图走成了一份谈判记录</h1>'+
+    '<p>从盐湖到客户，再到第二条需求线，你听到了不同环节想承担与想转嫁的风险。下一步不是选一个标准答案，而是核对原始合同、报价明细、交付计划和分部回款来源。</p>'+
+    rows+'<p>本局人物、合同和数字均为虚构场景；口头回应不是正式合同。你在背包里收集了 '+S.scrolls.length+' 份剧情卷轴。</p>'+
+    '<div class="epilogue-actions"><button class="epilogue-action" data-act="back-scene">回到最后一站</button>'+
+    '<button class="epilogue-action" data-act="open-map">展开走访地图</button>'+
+    '<button class="epilogue-action" data-act="reset">重新走访</button></div></div></section>'+
+    (overlay?renderOverlay():"");
+}
+function renderOverlay(){
+  if(overlay==="map") return renderMap();
+  if(overlay==="bag") return renderBag();
+  if(overlay==="history") return renderHistory();
+  return "";
+}
+function renderScene(){
+  const scene=currentScene(),p=progress(scene);
+  const lastNpc=p.history.filter(x=>x.speaker==="npc").slice(-1)[0]||{text:scene.opening};
+  const lastYou=p.history.filter(x=>x.speaker==="you").slice(-1)[0];
+  const reveal=S.current<SCENES.length-1?S.unlocked>S.current:S.finished;
+  const nextLabel=S.current<SCENES.length-1?"翻地图 · 前往"+SCENES[S.current+1].place:"结束走访 · 回办公室";
+  const mood=p.deal?"已经谈过条件":(seenCount(p)>=2?"开始认真谈":"正在观察你");
+  const prompts=topicPrompts(scene,p).map(function(x){
+    return '<button class="prompt" data-act="prompt" data-intent="'+esc(x.intent)+'" data-text="'+esc(x.text)+'">'+esc(x.label)+'</button>';
+  }).join("");
+  app.innerHTML='<section class="world" id="world">'+
+    '<div class="scene-bg '+(scene.crop?"crop ":"")+(scene.storage?"storage":"")+'" style="background-image:url(&quot;'+esc(scene.bg)+'&quot;)"></div>'+
+    '<div class="scene-shade"></div>'+
+    '<header class="topbar"><div class="brand"><span class="brand-mark"><img src="assets/jiheng-world-logo.png" alt="" aria-hidden="true"></span><span>玑衡 <small>WORLD · 走访</small></span></div>'+
+    '<div class="case"><b>栖岸储能 · 半年采购方案</b><span>你是采购负责人，正沿产业链找人谈条件</span></div>'+
+    '<div class="spacer"></div><span class="top-note">情景模拟 · 人物与条款为虚构</span>'+
+    '<button class="top-action" data-act="open-map">地图 '+(S.current+1)+' / '+SCENES.length+'</button></header>'+
+    '<div class="scene-copy"><div class="eyebrow">'+esc(scene.region)+'</div><h1>'+esc(scene.place)+'</h1>'+
+    '<p>'+esc(scene.arrival)+'</p><div class="ambient-line">'+esc(scene.atmosphere)+'</div></div>'+
+    (scene.portrait?'<img class="npc-portrait" src="'+esc(scene.portrait)+'" alt="'+esc(scene.npc)+'的角色立绘">':"")+
+    '<nav class="toolbelt" aria-label="走访工具"><button class="tool" data-act="open-map" aria-label="展开地图"><span class="ico">▤</span><span>地图</span></button>'+
+    '<button class="tool" data-act="open-bag" aria-label="打开卷轴背包"><span class="ico">▣</span><span>背包</span>'+(S.scrolls.length?'<span class="count">'+S.scrolls.length+'</span>':"")+'</button></nav>'+
+    (reveal?'<button class="travel" data-act="travel">'+esc(nextLabel)+' →</button>':"")+
+    '<section class="dialogue" aria-label="与'+esc(scene.npc)+'交谈"><div class="dialogue-head">'+
+    '<span class="speaker-icon">'+esc(scene.npc.slice(0,1))+'</span><div class="speaker"><b>'+esc(scene.npc)+'</b>'+
+    '<small id="npcMode">'+esc(scene.role)+' · '+(npcModel?"模型对话":"离线剧情对话")+'</small></div><span class="mood">'+esc(mood)+'</span>'+
+    '<button class="head-btn" data-act="open-history">回看对话</button></div>'+
+    '<div class="dialogue-main"><div class="speaker-side"><b>此行目的</b>为栖岸储能谈半年采购。听他说，也告诉他你的条件。<br><br>你可以打字、追问，或出示背包里的卷轴。</div>'+
+    '<div class="speech-area" aria-live="polite">'+(lastYou?'<div class="said-by-you">你刚才说：'+esc(lastYou.text)+'</div>':"")+
+    '<div class="npc-line">'+esc(busy?"（"+scene.npc+"正在想你提出的条件……）":lastNpc.text)+'</div>'+
+    (reveal?'<div class="travel-hint">地图上亮起了下一段路 →</div>':"")+'</div></div>'+
+    '<div class="prompt-row">'+prompts+'<button class="prompt" data-act="open-bag">出示卷轴</button></div>'+
+    '<form class="input-row" id="speakForm"><input id="playerInput" maxlength="240" autocomplete="off" aria-label="对'+esc(scene.npc)+'说话" placeholder="直接对'+esc(scene.npc)+'说话，例如：这个价格依据是什么？" '+(busy?"disabled":"")+'>'+
+    '<button class="send" type="submit" '+(busy?"disabled":"")+'>'+ (busy?"回应中":"发送 ↗")+'</button></form></section>'+
+    (toastText?'<div class="toast" id="toast" role="status">'+esc(toastText)+'</div>':"")+
+    (overlay?renderOverlay():"")+'</section>';
+}
+function render(){ if(S.report) renderReport(); else renderScene(); }
+function transitionTo(index){
+  if(transitioning || busy || index<0 || index>S.unlocked || index>=SCENES.length) return;
+  overlay=null;
+  if(index===S.current){render();return;}
+  transitioning=true;
+  const target=SCENES[index];
+  app.insertAdjacentHTML("beforeend",'<div class="wipe" aria-live="polite"><div class="wipe-card"><small>展开手中的地图 · '+esc(target.region)+'</small><strong>'+esc(target.place)+'</strong><span>下一段产业链正在你面前展开</span></div></div>');
+  setTimeout(function(){
+    S.current=index;
+    progress(target);
+    saveState();
+    transitioning=false;
+    render();
+    const world=document.getElementById("world");
+    if(world){world.classList.add("entering");setTimeout(function(){world.classList.remove("entering");},1000);}
+  },850);
+}
+function finishJourney(){
+  if(!S.finished || busy || transitioning) return;
+  transitioning=true;
+  app.insertAdjacentHTML("beforeend",'<div class="wipe"><div class="wipe-card"><small>走访结束 · 返回办公室</small><strong>摊开你的卷轴</strong><span>写下每一站口头谈成的条件</span></div></div>');
+  setTimeout(function(){S.report=true;saveState();transitioning=false;overlay=null;render();},850);
+}
+app.addEventListener("click",function(event){
+  const button=event.target.closest("[data-act]");
+  if(!button || transitioning) return;
+  const act=button.dataset.act;
+  if(act==="close"){overlay=null;render();return;}
+  if(act==="open-map"){overlay="map";render();return;}
+  if(act==="open-bag"){if(S.report){S.report=false;} overlay="bag";render();return;}
+  if(act==="open-history"){overlay="history";render();return;}
+  if(act==="prompt"){speak(button.dataset.text,button.dataset.intent);return;}
+  if(act==="present"){
+    const item=ALL_SCROLLS.get(button.dataset.scroll);
+    if(item) speak("我把「"+item.title+"」拿给你看。","present",item.id);
+    return;
+  }
+  if(act==="map-node"){
+    const index=Number(button.dataset.index);
+    if(Number.isInteger(index) && index<=S.unlocked){
+      if(S.report){S.report=false;saveState();}
+      transitionTo(index);
+    }
+    return;
+  }
+  if(act==="travel"){
+    if(S.current===SCENES.length-1){finishJourney();return;}
+    if(S.unlocked>S.current) transitionTo(S.current+1);
+    return;
+  }
+  if(act==="back-scene"){S.report=false;overlay=null;saveState();render();return;}
+  if(act==="reset"){
+    if(confirm("重新开始会清空这一趟走访的对话和卷轴。确定重新开始吗？")){
+      try{localStorage.removeItem(STORAGE_KEY);}catch(_error){}
+      S=freshState();overlay=null;toastText="";busy=false;transitioning=false;render();
+    }
+  }
+});
+app.addEventListener("submit",function(event){
+  if(event.target.id!=="speakForm") return;
+  event.preventDefault();
+  const input=document.getElementById("playerInput");
+  if(input) speak(input.value);
+});
+document.addEventListener("keydown",function(event){
+  if(event.key==="Escape" && overlay){overlay=null;render();}
+});
+progress(currentScene());
+render();
+checkNpcMode();
+</script>
+</body>
+</html>

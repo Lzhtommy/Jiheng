@@ -12,6 +12,7 @@ dependencies:
   flutter_markdown_plus: ^1.0.12
   flutter_secure_storage: ^9.2.2
   http: ^1.2.2
+  webview_flutter: ^4.14.1
 
 dev_dependencies:
   flutter_test:
@@ -23,6 +24,8 @@ flutter:
   assets:
     - logo.png
     - assets/prototype/
+    - assets/game/
+    - assets/game/assets/
   fonts:
     - family: Noto Serif SC
       fonts:
