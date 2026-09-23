@@ -23,6 +23,7 @@ flutter:
   assets:
     - assets/world/index.html
     - assets/world/assets/
+    - assets/world/static/
   fonts:
     - family: Noto Serif SC
       fonts:

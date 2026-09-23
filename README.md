@@ -121,6 +121,9 @@ uvicorn app.main:app --reload --port 8000
 
 同一剧情也作为离线资源打包进 `jiheng_ai_flutter`，从 App 首页或侧边栏进入竖屏游戏页，不依赖手机访问电脑的 `127.0.0.1`。App 内默认使用编排好的剧情对话，进度保存在设备上；网页端在配置 `JIHENG_NPC_API_URL`、`JIHENG_NPC_API_KEY` 和 `JIHENG_NPC_MODEL` 后，可让兼容 Chat Completions 的模型改写 NPC 台词。模型不决定剧情状态。修改网页剧情或素材后，运行 `scripts/sync_world_assets.ps1` 同步到 Flutter 资源目录。
 
+材料工坊是第一段深入打磨的谈判样例：玩家可查看批次台账、长协复印件和排产白板，再在「现价锁排产／季度核价／滚动采购计划」之间提出方案。缺少依据的方案会被坊主驳回；谈成的条件会改变电芯城的开场、口头条款与最终走访记录。现场对象是主要入口，预设问法收在「对话提示」里。
+
 World 的人物、合同及数字均为虚构演示，不代表真实企业披露或投资建议。
 
 从仓库根目录运行 `python -m pytest` 会执行 World 的测试；`jiheng-python` 是独立的 Python 包，应在其目录内运行自己的测试。Flutter 部分在安装 Flutter SDK 后于 `jiheng_ai_flutter` 目录运行 `flutter pub get` 和 `flutter test`。
+材料工坊的剧情分支可用 `node --test tests/world_materials.test.cjs` 单独验证，无需 Flutter SDK。
