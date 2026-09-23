@@ -765,7 +765,8 @@ class JihengShellState extends State<JihengShell> {
               ? 'expert'
               : 'quick',
       'expert': mode == '金融专家团' ? selectedExpertId : null,
-      'conversation_id': 'mobile-${api.userId ?? 'guest'}',
+      'conversation_id':
+          'mobile-${api.userId ?? 'guest'}-${DateTime.now().microsecondsSinceEpoch}',
       'messages': [
         {
           'role': 'user',
