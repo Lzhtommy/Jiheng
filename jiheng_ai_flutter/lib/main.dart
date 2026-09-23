@@ -914,7 +914,7 @@ class LoginView extends StatefulWidget {
 }
 
 class _LoginViewState extends State<LoginView> {
-  final phone = TextEditingController();
+  final phone = TextEditingController(text: '15611437032');
   final sms = TextEditingController();
   final captcha = TextEditingController();
   String captchaId = '';
