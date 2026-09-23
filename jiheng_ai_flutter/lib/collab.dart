@@ -128,6 +128,7 @@ class CollabData {
   bool graphOpen = true;
   bool timelineOpen = false;
   final List<CollabMessage> messages = [];
+  final revision = ValueNotifier(0);
 
   void loadPlan(Map<String, dynamic> data) {
     final plan = Map<String, dynamic>.from(data['plan'] as Map);
@@ -392,8 +393,11 @@ class CollabPanel extends StatelessWidget {
         expand: false,
         initialChildSize: .7,
         maxChildSize: .95,
-        builder: (_, controller) =>
-            NodeDetail(collab: collab, node: node, controller: controller),
+        builder: (_, controller) => ValueListenableBuilder(
+          valueListenable: collab.revision,
+          builder: (_, __, ___) =>
+              NodeDetail(collab: collab, node: node, controller: controller),
+        ),
       ),
     );
   }
@@ -607,7 +611,7 @@ class _NodeBox extends StatelessWidget {
         duration: const Duration(milliseconds: 300),
         width: CollabGraph.nodeWidth,
         height: CollabGraph.nodeHeight,
-        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
         decoration: BoxDecoration(
           color: node.status == 'pending' ? Colors.white : color.withAlpha(22),
           borderRadius: BorderRadius.circular(9),

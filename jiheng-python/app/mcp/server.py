@@ -83,7 +83,8 @@ async def get_official_policy(limit: int = 20) -> dict:
 
 @mcp.tool()
 async def call_financial_mcp(tool_name: str, arguments: dict) -> dict:
-    """调用远程财报 MCP（A 股/港股定期报告全文）。tool_name 可选：
+    """调用远程财报 MCP（A 股/港股定期报告全文，仅含近三年年报 2023a4/2024a4/2025a4 和最近一期半年报 2026h2，无季报）。
+    tool_name 可选：
     searchCompanyInfo{query, market: CN-A|HK} → 得到 stockCode；
     financialKeywordSearch{keywords[], stockCode, reportType 如 2025a4 年报 / 2026h2 半年报} → 定位页码；
     getFinancialReportPages{stockCode, reportType, startPage, pageCount<=5} → 读取页面；

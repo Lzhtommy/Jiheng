@@ -61,6 +61,7 @@ class GraphExecutor:
         self._phase_index = -1
         self._message_seq = 0
         self._deadline = 0.0
+        self._reviewing: dict[str, int] = {}
 
     async def stream(self) -> AsyncGenerator[AgentEvent, None]:
         self._deadline = time.monotonic() + self.time_budget
@@ -84,8 +85,7 @@ class GraphExecutor:
         self._status(state, "waiting")
         for kid in kids:
             self._message(state.node.id, kid.node.id, "assign", kid.node.title)
-        await asyncio.gather(*(self._run_node(kid) for kid in kids))
-        await self._review(state, kids)
+        await asyncio.gather(*(self._supervise(state, kid) for kid in kids))
         await self._summarize(state, kids)
 
     async def _run_leaf(self, state: NodeState, feedback: str | None = None) -> None:
@@ -164,33 +164,34 @@ class GraphExecutor:
             content = content[:MAX_TOOL_RESULT_CHARS] + "…（已截断）"
         return {"role": "tool", "tool_call_id": call["id"], "content": content}
 
-    async def _review(self, state: NodeState, kids: list[NodeState]) -> None:
-        self._phase("review")
+    async def _supervise(self, parent: NodeState, kid: NodeState) -> None:
+        await self._run_node(kid)
         for round_index in range(self.max_revisions + 1):
-            pending = [kid for kid in kids if kid.status not in {"approved", "failed_final"}]
-            if not pending:
+            if kid.status == "failed":
+                self._message(parent.node.id, kid.node.id, "approve", "执行失败，按数据缺失处理")
                 return
-            self._status(state, "reviewing")
-            verdicts = await self._ask_review(state, pending)
-            revisions: list[tuple[NodeState, str]] = []
-            for kid in pending:
-                verdict = verdicts.get(kid.node.id) or {}
-                can_revise = round_index < self.max_revisions and not self._late()
-                if verdict.get("verdict") == "revise" and can_revise:
-                    feedback = str(verdict.get("feedback") or "请补充完整")
-                    self._message(state.node.id, kid.node.id, "feedback", feedback)
-                    revisions.append((kid, feedback))
-                elif kid.status == "failed":
-                    kid.status = "failed_final"
-                    self._message(state.node.id, kid.node.id, "approve", "执行失败，按数据缺失处理")
-                else:
-                    self._status(kid, "approved")
-                    note = "通过" if verdict.get("verdict") != "revise" else "已达补充上限，按现有结果通过"
-                    self._message(state.node.id, kid.node.id, "approve", note)
-            if not revisions:
-                return
-            self._status(state, "waiting")
-            await asyncio.gather(*(self._revise(kid, feedback) for kid, feedback in revisions))
+            if not any(s.status in {"pending", "running"} for s in self.states.values() if s.is_leaf):
+                self._phase("review")
+            verdict = await self._review_one(parent, kid)
+            if verdict.get("verdict") == "revise" and round_index < self.max_revisions and not self._late():
+                feedback = str(verdict.get("feedback") or "请补充完整")
+                self._message(parent.node.id, kid.node.id, "feedback", feedback)
+                await self._revise(kid, feedback)
+                continue
+            self._status(kid, "approved")
+            note = "通过" if verdict.get("verdict") != "revise" else "已达补充上限，按现有结果通过"
+            self._message(parent.node.id, kid.node.id, "approve", note)
+            return
+
+    async def _review_one(self, parent: NodeState, kid: NodeState) -> dict:
+        self._reviewing[parent.node.id] = self._reviewing.get(parent.node.id, 0) + 1
+        self._status(parent, "reviewing")
+        try:
+            return (await self._ask_review(parent, [kid])).get(kid.node.id) or {}
+        finally:
+            self._reviewing[parent.node.id] -= 1
+            if not self._reviewing[parent.node.id]:
+                self._status(parent, "waiting")
 
     async def _revise(self, state: NodeState, feedback: str) -> None:
         if state.is_leaf:

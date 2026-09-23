@@ -83,6 +83,7 @@ class FakeChat:
     def __init__(self):
         self.ids = itertools.count(1)
         self.reviews = 0
+        self.n3_reviewed = False
 
     async def step(self, messages, *, model, tools=None, reasoning=False):
         system = messages[0]["content"]
@@ -97,14 +98,12 @@ class FakeChat:
             return {"role": "assistant", "content": "## 行情要点\n最新价 100 元（2026-09-23）"}
         if "负责审核" in system:
             self.reviews += 1
-            if self.reviews == 1:
-                verdicts = [
-                    {"node_id": "n2", "verdict": "approve"},
-                    {"node_id": "n3", "verdict": "revise", "feedback": "补充市值"},
-                ]
-            else:
-                verdicts = [{"node_id": "n3", "verdict": "approve"}]
-            return {"role": "assistant", "content": json.dumps({"reviews": verdicts})}
+            node_id = "n3" if "### n3" in messages[1]["content"] else "n2"
+            verdict = {"node_id": node_id, "verdict": "approve"}
+            if node_id == "n3" and not self.n3_reviewed:
+                self.n3_reviewed = True
+                verdict = {"node_id": "n3", "verdict": "revise", "feedback": "补充市值"}
+            return {"role": "assistant", "content": json.dumps({"reviews": [verdict]})}
         raise AssertionError(system[:40])
 
     async def stream_text(self, messages, *, model):
@@ -147,6 +146,33 @@ def test_executor_runs_tree_with_revision():
     assert "".join(e.data["content"] for e in events if e.type == "text") == "## 结论\n两者对比……"
     assert events[-1].type == "refs" and events[-1].data["refs"] == [{"title": "腾讯行情", "url": "u1"}]
     assert executor.states["n1"].status == "done"
+    assert executor.llm.reviews == 3
+
+
+def test_parent_reviews_each_child_as_soon_as_it_submits():
+    class SlowN3(FakeChat):
+        async def step(self, messages, *, model, tools=None, reasoning=False):
+            if "执行成员" in messages[0]["content"] and "000858" in messages[1]["content"]:
+                await asyncio.sleep(0.05)
+            return await super().step(messages, model=model, tools=tools, reasoning=reasoning)
+
+    executor = GraphExecutor(
+        plan=make_plan(),
+        question="q",
+        expert_name="分析师",
+        llm=SlowN3(),
+        leaf_model="flash",
+        lead_model="pro",
+        tool_specs=SPECS,
+        execute_tool=fake_tool,
+    )
+
+    async def collect():
+        return [event async for event in executor.stream()]
+
+    messages = [e.data for e in asyncio.run(collect()) if e.type == "agent_message"]
+    order = [(m["from"], m["kind"]) for m in messages if m["kind"] in {"submit", "approve"}]
+    assert order.index(("n1", "approve")) < order.index(("n3", "submit"))
 
 
 def test_executor_marks_failed_leaf_without_crashing():

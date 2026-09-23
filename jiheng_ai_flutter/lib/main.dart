@@ -1,4 +1,4 @@
-﻿import 'dart:async';
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -954,6 +954,7 @@ class JihengShellState extends State<JihengShell> {
         return;
       }
       if (ai.collab != null && _applyCollabEvent(ai.collab!, name, event)) {
+        ai.collab!.revision.value++;
         return;
       }
       final callId = event['call_id']?.toString();
@@ -1020,6 +1021,10 @@ class JihengShellState extends State<JihengShell> {
         }).join('\n');
       }
       if (name.contains('done')) {
+        if (ai.collab != null && ai.collab!.phase != 'failed') {
+          ai.collab!.phase = 'done';
+          ai.collab!.revision.value++;
+        }
         ai.stage = Stage.done;
         if (ai.intro.isEmpty) ai.intro = '已完成分析。';
         if (ai.risk.isEmpty) ai.risk = '内容由 AI 生成，请核查重要信息。';
@@ -2215,7 +2220,7 @@ class Composer extends StatelessWidget {
             if (state.mode == '分析师') ...[
               const SizedBox(width: 8),
               FilterChip(
-                label: const Text('深度协作', style: TextStyle(fontSize: 12)),
+                label: const Text('多Agent模式', style: TextStyle(fontSize: 12)),
                 avatar: const Icon(Icons.hub_outlined, size: 14),
                 selected: state.collabMode,
                 showCheckmark: false,
