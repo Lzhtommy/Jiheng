@@ -86,11 +86,13 @@ JIHENG_FINANCIAL_MCP_API_KEY=...
 docker compose up --build
 ```
 
-服务启动后统一从 `http://localhost:8088` 访问：
+服务启动后统一从 `http://localhost`（nginx 默认监听 80 端口）访问：
 
-- `http://localhost:8088/api/...` → jiheng-java
-- `http://localhost:8088/chat/...` → jiheng-python（SSE，长连接）
-- `http://localhost:8088/health` → 健康检查
+- `http://localhost/api/...` → jiheng-java
+- `http://localhost/chat/...` → jiheng-python（SSE，长连接）
+- `http://localhost/health` → 健康检查
+
+生产环境通过 `.github/workflows/deploy.yml` 自动部署到 Huawei Cloud（`DEPLOY_HOST` secret），同样走 80 端口，例如 `http://113.45.32.33/health`。
 
 ### 本地分别启动（开发调试）
 
