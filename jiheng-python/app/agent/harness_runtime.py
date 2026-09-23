@@ -1,5 +1,8 @@
 import asyncio
+import os
 import shutil
+import sys
+import uuid
 from collections.abc import AsyncGenerator
 from pathlib import Path
 from shutil import which
@@ -19,9 +22,11 @@ class DeepSeekHarnessRuntime:
             from deepseek_harness import DeepSeekHarness
         except ImportError as exc:
             raise RuntimeError("Install the harness extra from DeepSeek's official distribution first") from exc
-        if which("dsh") is None:
+        interpreter_dir = os.path.dirname(sys.executable)
+        dsh_bin = which("dsh") or which("dsh", path=interpreter_dir)
+        if dsh_bin is None:
             raise RuntimeError("Official Harness runtime is installed without the required dsh executable")
-        prompt = messages[-1]["content"] if messages else ""
+        prompt = _build_prompt(messages)
         workspace = context.root(settings.dsh_workspace)
         home = context.root(settings.dsh_home)
         workspace.mkdir(parents=True, exist_ok=True)
@@ -39,6 +44,7 @@ class DeepSeekHarnessRuntime:
 
         def run() -> str:
             kwargs = {
+                "dsh_bin": dsh_bin,
                 "dsh_home": str(home),
                 "cwd": str(workspace),
                 "profile": "jiheng",
@@ -46,13 +52,39 @@ class DeepSeekHarnessRuntime:
                 "model": profile.model,
                 "api_key": settings.deepseek_api_key,
                 "base_url": settings.deepseek_base_url,
+                # MCP 数据服务以 `python -m app.mcp.server` 启动，需要项目根目录和装好依赖的解释器
+                "env": {
+                    "DSH_SYSTEM_PROMPT": profile.system_prompt,
+                    "JIHENG_APP_ROOT": settings.app_root,
+                    "PATH": interpreter_dir + os.pathsep + os.environ.get("PATH", ""),
+                },
             }
             if profile.reasoning_effort:
                 kwargs["reasoning_effort"] = profile.reasoning_effort
             with DeepSeekHarness(
                 **kwargs,
             ) as harness:
-                return harness.run(prompt, session_id=context.session_key()).final_response
+                # 每次请求都会新起 dsh 进程，而 SDK 无法续接已落盘的会话，复用 id 会报 already exists
+                session_id = f"{context.session_key()}-{uuid.uuid4().hex[:8]}"
+                return harness.run(prompt, session_id=session_id).final_response
 
         yield AgentEvent("text", {"content": await asyncio.to_thread(run)})
         yield AgentEvent("refs", {"refs": []})
+
+
+MAX_HISTORY_MESSAGES = 10
+MAX_HISTORY_CHARS = 2000
+
+
+def _build_prompt(messages: list[dict]) -> str:
+    if not messages:
+        return ""
+    current = messages[-1]["content"]
+    history = messages[:-1][-MAX_HISTORY_MESSAGES:]
+    if not history:
+        return current
+    lines = [
+        f"{'用户' if m.get('role') == 'user' else '助手'}：{str(m.get('content', ''))[:MAX_HISTORY_CHARS]}"
+        for m in history
+    ]
+    return "以下是本次对话之前的内容，供理解上下文：\n" + "\n".join(lines) + f"\n\n当前问题：{current}"

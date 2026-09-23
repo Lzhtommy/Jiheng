@@ -3,11 +3,12 @@ from contextlib import asynccontextmanager
 
 import structlog
 from fastapi import FastAPI
-from redis.asyncio import Redis
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import chat, trace
 from app.config import settings
 from app.deep_research.runner import run_worker
+from app.deep_research.task_queue import TaskQueue
 
 structlog.configure(
     processors=[
@@ -24,24 +25,24 @@ logger = structlog.get_logger()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    app.state.redis = Redis(
-        host=settings.redis_host,
-        port=settings.redis_port,
-        password=settings.redis_password or None,
-        db=settings.redis_db,
-        decode_responses=True,
-    )
-    app.state.worker = asyncio.create_task(run_worker(app.state.redis))
+    app.state.task_queue = TaskQueue()
+    app.state.worker = asyncio.create_task(run_worker(app.state.task_queue))
     logger.info("app_started", app=settings.app_name)
     yield
     app.state.worker.cancel()
-    await app.state.redis.close()
     logger.info("app_stopped", app=settings.app_name)
 
 
 app = FastAPI(
     title=settings.app_name,
     lifespan=lifespan,
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 app.include_router(chat.router, prefix="/chat", tags=["chat"])

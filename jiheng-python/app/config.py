@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from pydantic_settings import BaseSettings
 
 
@@ -8,11 +10,6 @@ class Settings(BaseSettings):
     jwt_secret: str = "jiheng-dev-secret-change-me-in-production-at-least-32-chars"
     jwt_issuer: str = "jiheng-ai"
 
-    redis_host: str = "127.0.0.1"
-    redis_port: int = 6379
-    redis_password: str = ""
-    redis_db: int = 2
-
     java_internal_base_url: str = "http://127.0.0.1:8080"
     service_token: str = "dev-service-token-change-me"
 
@@ -22,6 +19,10 @@ class Settings(BaseSettings):
     deepseek_model_deep: str = "deepseek-v4-pro"
     agent_runtime: str = "harness-sdk"
     agent_allow_tool_calls_fallback: bool = False
+    # Harness 跑完整轮才产出结果，工具调用多时会远超普通流式间隔
+    agent_silent_timeout_seconds: float = 300
+    deep_research_timeout_seconds: float = 1800
+    app_root: str = str(Path(__file__).resolve().parents[1])
     dsh_home: str = "./data/dsh-home"
     dsh_workspace: str = "./data/dsh-workspace"
     dsh_template_home: str = "./data/dsh-template"

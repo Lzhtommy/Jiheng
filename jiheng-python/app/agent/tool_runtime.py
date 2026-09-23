@@ -49,7 +49,10 @@ class DeepSeekToolRuntime:
                 conversation.append(message)
                 for call in tool_calls:
                     name = call["function"]["name"]
-                    arguments = json.loads(call["function"].get("arguments") or "{}")
+                    try:
+                        arguments = json.loads(call["function"].get("arguments") or "{}")
+                    except json.JSONDecodeError:
+                        arguments = {}
                     yield AgentEvent("tool_call", {"id": call["id"], "name": name, "arguments": arguments})
                     try:
                         result = await execute(name, arguments)

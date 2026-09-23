@@ -11,6 +11,9 @@ docker-compose.override.yml
 jiheng-python/.build-harness/
 jiheng-python/Dockerfile.local
 
+# Python 本地运行产生的 dsh 模板、会话与 trace
+jiheng-python/data/
+
 # Java build
 jiheng-java/target/
 *.class
@@ -36,3 +39,4 @@ build/
 .DS_Store
 Thumbs.db
 nul
+jiheng-java/logs/

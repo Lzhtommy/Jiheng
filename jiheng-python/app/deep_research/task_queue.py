@@ -1,18 +1,17 @@
-import json
+import asyncio
 import uuid
 
 
 class TaskQueue:
-    KEY = "task:queue:deep_research"
+    """进程内深度研究队列，重启后未执行的任务会丢失"""
 
-    def __init__(self, redis):
-        self.redis = redis
+    def __init__(self):
+        self._queue: asyncio.Queue[dict] = asyncio.Queue()
 
     async def enqueue(self, payload: dict) -> str:
         task_id = str(uuid.uuid4())
-        await self.redis.rpush(self.KEY, json.dumps({"task_id": task_id, **payload}, ensure_ascii=False))
+        await self._queue.put({"task_id": task_id, **payload})
         return task_id
 
-    async def dequeue(self) -> dict | None:
-        item = await self.redis.lpop(self.KEY)
-        return json.loads(item) if item else None
+    async def dequeue(self) -> dict:
+        return await self._queue.get()

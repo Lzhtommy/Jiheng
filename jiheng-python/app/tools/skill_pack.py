@@ -28,7 +28,7 @@ class SkillPack:
                 return {"type": "object", "properties": {"input": {"type": "string"}}}
 
             async def run(self, input: str = "", **kwargs) -> ToolResult:
-                return ToolResult(content=skill_config.get("prompt_template", ""), sources=[])
+                return ToolResult(content=skill_config.get("promptTemplate", ""), sources=[])
 
         tool = SkillTool()
         self._mounted[skill_id] = tool

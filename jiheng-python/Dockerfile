@@ -40,7 +40,7 @@ COPY pyproject.toml harness/UPSTREAM.lock ./
 RUN --mount=type=cache,target=/root/.cache/pip \
     pip install deepseek-harness-sdk==0.1.5rc1 deepseek-harness-runtime-bin==0.1.5rc1 \
     && command -v dsh \
-    && pip install fastapi "uvicorn[standard]" httpx redis pydantic pydantic-settings sse-starlette PyJWT structlog "mcp>=1.1.2,<2" pymupdf beautifulsoup4
+    && pip install fastapi "uvicorn[standard]" httpx pydantic pydantic-settings sse-starlette PyJWT structlog "mcp>=1.1.2,<2" pymupdf beautifulsoup4
 COPY --from=harness-builder /opt/jiheng-dsh-template /opt/jiheng-dsh-template
 COPY app app
 COPY harness harness

@@ -22,7 +22,3 @@ class ChatRequest(BaseModel):
     messages: list[ChatMessage] = Field(..., min_length=1)
     model: str | None = None
     system_prompt: str | None = None
-
-
-class AbortRequest(BaseModel):
-    conversation_id: str

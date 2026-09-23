@@ -2,13 +2,10 @@ package com.jiheng.controller.auth;
 
 import com.jiheng.dto.ApiResponse;
 import com.jiheng.dto.auth.CaptchaResponse;
-import com.jiheng.dto.auth.LoginRequest;
 import com.jiheng.dto.auth.LoginResponse;
 import com.jiheng.dto.auth.RefreshRequest;
-import com.jiheng.dto.auth.SmsRequest;
 import com.jiheng.service.auth.AuthService;
 import com.jiheng.service.auth.CaptchaService;
-import com.jiheng.util.TraceContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,12 +25,10 @@ public class AuthController {
 
     private final AuthService authService;
     private final CaptchaService captchaService;
-    private final TraceContext traceContext;
 
-    public AuthController(AuthService authService, CaptchaService captchaService, TraceContext traceContext) {
+    public AuthController(AuthService authService, CaptchaService captchaService) {
         this.authService = authService;
         this.captchaService = captchaService;
-        this.traceContext = traceContext;
     }
 
     @GetMapping("/captcha")
@@ -43,16 +38,13 @@ public class AuthController {
     }
 
     @PostMapping("/sms")
-    public ApiResponse<Void> sendSms(@Valid @RequestBody SmsRequest request) {
-        authService.sendSms(request);
+    public ApiResponse<Void> sendSms() {
         return ApiResponse.ok(null);
     }
 
     @PostMapping("/login")
-    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request,
-                                             HttpServletRequest httpRequest) {
-        String ip = getClientIp(httpRequest);
-        return ApiResponse.ok(authService.login(request, ip));
+    public ApiResponse<LoginResponse> login(HttpServletRequest httpRequest) {
+        return ApiResponse.ok(authService.login(getClientIp(httpRequest)));
     }
 
     @PostMapping("/refresh")
@@ -61,11 +53,7 @@ public class AuthController {
     }
 
     @PostMapping("/logout")
-    public ApiResponse<Void> logout(HttpServletRequest httpRequest) {
-        String authHeader = httpRequest.getHeader("Authorization");
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            authService.logout(authHeader.substring(7));
-        }
+    public ApiResponse<Void> logout() {
         return ApiResponse.ok(null);
     }
 

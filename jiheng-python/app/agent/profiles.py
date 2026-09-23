@@ -33,7 +33,9 @@ def build_profile(mode: str, expert: dict | None = None) -> AgentProfile:
     prompt = "你是玑衡AI金融研究助手。只能依据工具返回的数据作数值结论，引用必须来自工具来源。不得给出买卖指令。"
     if expert:
         prompt += "\n专家角色：" + str(expert.get("name", expert.get("expertId", "金融研究专家")))
-        prompt += "\n" + str(expert.get("systemPrompt", expert.get("system_prompt", "")))
+        instruction = expert.get("systemPrompt") or expert.get("system_prompt") or expert.get("description") or ""
+        if instruction:
+            prompt += "\n" + str(instruction)
     return AgentProfile(
         mode=mode,
         model=model,

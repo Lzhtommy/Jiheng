@@ -1,6 +1,4 @@
 services:
-  redis:
-    image: redis:7-alpine
   postgres:
     image: postgres:16
     environment:
@@ -17,7 +15,6 @@ services:
   java:
     build: ./jiheng-java
     environment:
-      REDIS_HOST: redis
       # 留空则连本服务自带的 postgres；填了就连你自己的实例（比如团队共享库）
       VR_PG_HOST: ${VR_PG_HOST:-postgres}
       VR_PG_PORT: ${VR_PG_PORT:-5432}
@@ -28,14 +25,11 @@ services:
       JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
       SERVICE_TOKEN: ${SERVICE_TOKEN:?set SERVICE_TOKEN}
     depends_on:
-      redis:
-        condition: service_started
       postgres:
         condition: service_healthy
   python:
     build: ./jiheng-python
     environment:
-      JIHENG_REDIS_HOST: redis
       JIHENG_JWT_SECRET: ${JWT_SECRET:?set JWT_SECRET}
       JIHENG_SERVICE_TOKEN: ${SERVICE_TOKEN:?set SERVICE_TOKEN}
       JIHENG_JAVA_INTERNAL_BASE_URL: http://java:8080
@@ -43,7 +37,6 @@ services:
       JIHENG_FINANCIAL_MCP_API_KEY: ${JIHENG_FINANCIAL_MCP_API_KEY:?set JIHENG_FINANCIAL_MCP_API_KEY}
     depends_on:
       - java
-      - redis
   nginx:
     image: nginx:1.27-alpine
     ports:

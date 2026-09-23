@@ -20,6 +20,8 @@ async def verify_jwt(request: Request) -> dict:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="AUTH_TOKEN_EXPIRED")
     except jwt.InvalidTokenError:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="AUTH_TOKEN_INVALID")
+    if payload.get("type") != "access":
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="AUTH_TOKEN_INVALID")
     if "sub" not in payload and "user_id" in payload:
         payload["sub"] = str(payload["user_id"])
     return payload

@@ -89,18 +89,22 @@ class ApiClient {
   String? accessToken;
   String? refreshToken;
   String? userId;
+  void Function()? onUnauthorized;
+
+  void _checkUnauthorized(int statusCode) {
+    if (statusCode == 401 && accessToken != null) onUnauthorized?.call();
+  }
 
   Future<void> loadTokens() async {
     try {
-      accessToken = await storage
-          .read(key: 'accessToken')
-          .timeout(const Duration(milliseconds: 250));
-      refreshToken = await storage
-          .read(key: 'refreshToken')
-          .timeout(const Duration(milliseconds: 250));
-      userId = await storage
-          .read(key: 'userId')
-          .timeout(const Duration(milliseconds: 250));
+      final values = await Future.wait([
+        storage.read(key: 'accessToken'),
+        storage.read(key: 'refreshToken'),
+        storage.read(key: 'userId'),
+      ]).timeout(const Duration(seconds: 1));
+      accessToken = values[0];
+      refreshToken = values[1];
+      userId = values[2];
     } on MissingPluginException {
       accessToken = null;
       refreshToken = null;
@@ -152,6 +156,7 @@ class ApiClient {
     final text = utf8.decode(response.bodyBytes);
     final decoded = text.isEmpty ? null : jsonDecode(text);
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      _checkUnauthorized(response.statusCode);
       throw Exception(decoded is Map && decoded['message'] != null
           ? decoded['message']
           : 'HTTP ${response.statusCode}');
@@ -205,6 +210,7 @@ class ApiClient {
     request.bodyBytes = utf8.encode(jsonEncode(body));
     final response = await request.send();
     if (response.statusCode < 200 || response.statusCode >= 300) {
+      _checkUnauthorized(response.statusCode);
       throw Exception('SSE HTTP ${response.statusCode}');
     }
 
@@ -232,6 +238,14 @@ class ApiClient {
       } else if (line.startsWith('data:')) {
         if (data.isNotEmpty) data.write('\n');
         data.write(line.substring(5).trim());
+      }
+    }
+    if (data.isNotEmpty) {
+      final parsed = jsonDecode(data.toString());
+      if (parsed is Map<String, dynamic>) {
+        yield {'event': event, ...parsed};
+      } else {
+        yield {'event': event, 'data': parsed};
       }
     }
   }
@@ -398,11 +412,39 @@ class JihengShellState extends State<JihengShell> {
   bool loadingData = false;
   bool sending = false;
   bool get prototypeFirst => true;
+  String? _chatSessionId;
+
+  String get chatSessionId => _chatSessionId ??=
+      'mobile-${api.userId ?? 'guest'}-${DateTime.now().microsecondsSinceEpoch}';
 
   @override
   void initState() {
     super.initState();
+    api.onUnauthorized = _handleUnauthorized;
     _bootstrap();
+  }
+
+  Future<void> _handleUnauthorized() async {
+    if (mounted) {
+      setState(() {
+        isLoggedIn = false;
+        profile = null;
+        messages.clear();
+        _chatSessionId = null;
+        sending = false;
+        apiError = '登录已失效，请重新登录';
+      });
+    }
+    await api.clearTokens();
+  }
+
+  void newChat() {
+    setState(() {
+      messages.clear();
+      _chatSessionId = null;
+      sending = false;
+    });
+    go(PageKey.home);
   }
 
   @override
@@ -471,6 +513,7 @@ class JihengShellState extends State<JihengShell> {
       isLoggedIn = false;
       profile = null;
       messages.clear();
+      _chatSessionId = null;
     });
   }
 
@@ -636,22 +679,25 @@ class JihengShellState extends State<JihengShell> {
       'status': 'enabled',
       'title': '每周一 08:30 自动重跑高研发低估值筛选',
     };
+    var synced = false;
     try {
       if (isLoggedIn) {
-        final data = await api.post('/api/v1/tasks', {
+        await api.post('/api/v1/tasks', {
           'type': task['type'],
           'cron': '0 30 8 ? * MON',
           'payload': jsonEncode(task),
         });
-        if (data is Map) task.addAll(Map<String, dynamic>.from(data));
+        synced = true;
       }
     } catch (e) {
       _rememberApiError(e);
     }
+    if (!mounted) return;
     setState(() {
-      localTasks.insert(0, task);
+      if (!synced) localTasks.insert(0, task);
       reminders.insert(0, asText(task['title']));
     });
+    if (synced) await _loadTasks();
     snack('已创建 mock 任务');
   }
 
@@ -719,10 +765,33 @@ class JihengShellState extends State<JihengShell> {
           _applySseEvent(ai, event);
           _scrollDown();
         }
-        if (mounted) setState(() => sending = false);
+        if (!mounted) return;
+        setState(() {
+          if (ai.stage != Stage.done) {
+            ai.stage = Stage.done;
+            if (ai.intro.isEmpty) ai.intro = '已完成分析。';
+            if (ai.risk.isEmpty) ai.risk = '内容由 AI 生成，请核查重要信息。';
+          }
+          sending = false;
+        });
         return;
       } catch (e) {
+        if (!mounted) return;
+        if (!isLoggedIn) {
+          setState(() => sending = false);
+          return;
+        }
         _rememberApiError(e);
+        // 真实登录会话出错时展示错误，演示模式（无令牌）才回落到本地示例
+        if (api.accessToken != null) {
+          setState(() {
+            ai.stage = Stage.done;
+            if (ai.intro.isEmpty) ai.intro = '请求失败，请稍后重试。';
+            ai.risk = e.toString();
+            sending = false;
+          });
+          return;
+        }
       }
     }
     Timer(const Duration(milliseconds: 700), () {
@@ -748,9 +817,9 @@ class JihengShellState extends State<JihengShell> {
               ? 'expert'
               : 'quick',
       'expert': mode == '金融专家团' ? selectedExpertId : null,
-      'conversation_id':
-          'mobile-${api.userId ?? 'guest'}-${DateTime.now().microsecondsSinceEpoch}',
+      'conversation_id': chatSessionId,
       'messages': [
+        ..._chatHistory(),
         {
           'role': 'user',
           'content': text,
@@ -758,6 +827,20 @@ class JihengShellState extends State<JihengShell> {
         }
       ],
     };
+  }
+
+  // 本轮 send() 已把当前提问和待填充的 AI 消息加进 messages，历史不含这两条
+  List<Map<String, dynamic>> _chatHistory() {
+    final previous = messages.length >= 2
+        ? messages.sublist(0, messages.length - 2)
+        : <ChatMsg>[];
+    final history = <Map<String, dynamic>>[];
+    for (final msg in previous) {
+      final content = msg.isUser ? msg.text : msg.intro;
+      if (content.trim().isEmpty) continue;
+      history.add({'role': msg.isUser ? 'user' : 'assistant', 'content': content});
+    }
+    return history.length > 10 ? history.sublist(history.length - 10) : history;
   }
 
   void _applySseEvent(ChatMsg ai, Map<String, dynamic> event) {
@@ -772,7 +855,7 @@ class JihengShellState extends State<JihengShell> {
           sending = false;
           return;
         }
-        ai.intro = '服务暂时不可用，已切换为本地演示回复。';
+        ai.intro = '服务暂时不可用，请稍后重试。';
         ai.sections.add(const SectionData('错误信息', ['请稍后重试，或检查后端服务地址与登录状态。']));
         ai.risk = event['message']?.toString() ?? '内容由 AI 生成，请核查重要信息。';
         sending = false;
@@ -959,7 +1042,7 @@ class _LoginViewState extends State<LoginView> {
       sms.text = '000000';
       if (mounted) widget.state.snack('已填入默认短信验证码 000000');
     } catch (e) {
-      setState(() => error = '短信发送失败：$e');
+      if (mounted) setState(() => error = '短信发送失败：$e');
     } finally {
       if (mounted) setState(() => loading = false);
     }
@@ -2623,7 +2706,8 @@ class RemindersView extends StatelessWidget {
               final id = asText(task['taskId'] ?? task['task_id']);
               if (id.isNotEmpty &&
                   state.isLoggedIn &&
-                  !id.startsWith('local-')) {
+                  !id.startsWith('local-') &&
+                  task['type'] != 'deep_research') {
                 try {
                   await state.api.delete('/api/v1/tasks/$id');
                 } catch (error) {
@@ -2955,7 +3039,13 @@ class DrawerOverlay extends StatelessWidget {
               ListTile(
                   leading: Icon(item[2] as IconData),
                   title: Text(item[0] as String),
-                  onTap: () => state.go(item[1] as PageKey)),
+                  onTap: () {
+                    if (item[0] == '新建对话') {
+                      state.newChat();
+                    } else {
+                      state.go(item[1] as PageKey);
+                    }
+                  }),
             const Divider(),
             const Text('最近对话', style: TextStyle(color: C.muted)),
             TextButton(

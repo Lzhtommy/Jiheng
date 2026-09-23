@@ -18,12 +18,6 @@ spring:
       maximum-pool-size: ${JIHENG_PG_MAX_POOL_SIZE:12}
       minimum-idle: ${JIHENG_PG_MIN_IDLE:2}
       connection-timeout: ${JIHENG_PG_CONNECTION_TIMEOUT_MS:8000}
-  data:
-    redis:
-      host: ${REDIS_HOST:127.0.0.1}
-      port: ${REDIS_PORT:6379}
-      password: ${REDIS_PASSWORD:}
-      database: ${REDIS_DB:0}
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -58,6 +52,7 @@ security:
     - ::1
 
 app:
+  default-phone: ${JIHENG_DEFAULT_PHONE:15611437032}
   hashids:
     salt: ${HASHIDS_SALT:jiheng-hashids-salt}
     min-length: 8

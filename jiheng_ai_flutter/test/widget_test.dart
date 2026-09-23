@@ -7,7 +7,7 @@ void main() {
   testWidgets('renders the login page before auth',
       (WidgetTester tester) async {
     await tester.pumpWidget(const JihengApp());
-    await tester.pump(const Duration(milliseconds: 500));
+    await tester.pump(const Duration(milliseconds: 1500));
 
     expect(find.text('玑衡AI'), findsOneWidget);
     expect(find.text('你的智能金融操作系统'), findsOneWidget);

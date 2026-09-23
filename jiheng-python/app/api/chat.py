@@ -10,15 +10,12 @@ from app.agent.factory import create_runtime
 from app.agent.profiles import build_profile
 from app.agent.runtime import AgentRunContext
 from app.clients.java_internal import JavaInternalClient
-from app.core.abort_manager import AbortManager
-from app.core.conversation_guard import ConversationGuard
+from app.config import settings
 from app.core.jwt_verify import verify_jwt
 from app.core.mode_router import ModeRouter
 from app.core.sse_emitter import SseEmitter
-from app.deep_research.task_queue import TaskQueue
-from app.models.chat import AbortRequest, ChatRequest
+from app.models.chat import ChatRequest
 from app.models.sse_events import (
-    AbortedEvent,
     DoneEvent,
     ErrorEvent,
     StartEvent,
@@ -30,43 +27,16 @@ router = APIRouter()
 
 @router.post("/deep-research", status_code=202)
 async def enqueue_deep_research(request: Request, chat_req: ChatRequest, payload: dict = Depends(verify_jwt)):
-    task_id = await TaskQueue(request.app.state.redis).enqueue(
-        {
-            "user_id": payload["sub"],
-            "conversation_id": chat_req.conversation_id,
-            "expert": chat_req.expert,
-            "messages": [message.model_dump() for message in chat_req.messages],
-        }
-    )
-    return {"task_id": task_id}
+    return {"task_id": await _enqueue_deep_research(request, chat_req, payload)}
 
 
 @router.post("/stream")
 async def chat_stream(request: Request, chat_req: ChatRequest, payload: dict = Depends(verify_jwt)):
     if chat_req.mode.value == "deep":
-        task_id = await TaskQueue(request.app.state.redis).enqueue(
-            {
-                "user_id": payload["sub"],
-                "conversation_id": chat_req.conversation_id,
-                "expert": chat_req.expert,
-                "messages": [message.model_dump() for message in chat_req.messages],
-            }
-        )
+        task_id = await _enqueue_deep_research(request, chat_req, payload)
         return JSONResponse(status_code=202, content={"task_id": task_id})
 
     correlation_id = str(uuid.uuid4())
-    redis = request.app.state.redis
-
-    guard = ConversationGuard(redis)
-    abort_mgr = AbortManager(redis)
-
-    if not await guard.acquire(chat_req.conversation_id):
-        return StreamingResponse(
-            _error_stream(correlation_id, "CONVERSATION_BUSY", "同一会话已有进行中对话"),
-            media_type="text/event-stream",
-        )
-
-    await abort_mgr.register(chat_req.conversation_id)
 
     async def event_generator():
         recorder = TraceRecorder(correlation_id, chat_req.conversation_id, chat_req.mode.value)
@@ -110,17 +80,15 @@ async def chat_stream(request: Request, chat_req: ChatRequest, payload: dict = D
                     completed = False
                     break
                 try:
-                    event = await asyncio.wait_for(flow_iterator.__anext__(), timeout=min(60, remaining))
+                    event = await asyncio.wait_for(
+                        flow_iterator.__anext__(), timeout=min(settings.agent_silent_timeout_seconds, remaining)
+                    )
                 except StopAsyncIteration:
                     break
                 except TimeoutError:
                     yield SseEmitter.error(
                         ErrorEvent(correlation_id=correlation_id, code="MODEL_SILENT_TIMEOUT", message="模型响应超时")
                     )
-                    completed = False
-                    break
-                if await abort_mgr.is_aborted(chat_req.conversation_id):
-                    yield SseEmitter.aborted(AbortedEvent(correlation_id=correlation_id, reason="user_abort"))
                     completed = False
                     break
                 recorder.record("sse", {"event": event.split("\n", 1)[0]})
@@ -132,23 +100,16 @@ async def chat_stream(request: Request, chat_req: ChatRequest, payload: dict = D
             yield SseEmitter.error(ErrorEvent(correlation_id=correlation_id, code="INTERNAL_ERROR", message=str(e)))
         finally:
             await recorder.save()
-            await guard.release(chat_req.conversation_id)
 
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
-@router.post("/abort")
-async def abort_chat(request: Request, abort_req: AbortRequest, payload: dict = Depends(verify_jwt)):
-    redis = request.app.state.redis
-    guard = ConversationGuard(redis)
-    if not await redis.exists(guard.KEY_PREFIX + abort_req.conversation_id):
-        from fastapi import HTTPException
-
-        raise HTTPException(status_code=404, detail="CONVERSATION_NOT_FOUND")
-    abort_mgr = AbortManager(redis)
-    await abort_mgr.abort(abort_req.conversation_id)
-    return {"success": True}
-
-
-async def _error_stream(correlation_id: str, code: str, message: str):
-    yield SseEmitter.error(ErrorEvent(correlation_id=correlation_id, code=code, message=message))
+async def _enqueue_deep_research(request: Request, chat_req: ChatRequest, payload: dict) -> str:
+    return await request.app.state.task_queue.enqueue(
+        {
+            "user_id": payload["sub"],
+            "conversation_id": chat_req.conversation_id,
+            "expert": chat_req.expert,
+            "messages": [message.model_dump() for message in chat_req.messages],
+        }
+    )

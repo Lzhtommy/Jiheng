@@ -29,7 +29,7 @@ Jiheng/
 
 ```
                 ┌────────────┐
-   client ───▶  │   nginx    │  :8088
+   client ───▶  │   nginx    │  :80
                 └─────┬──────┘
            ┌──────────┼───────────┐
      /api/ │                /chat/│ /health
@@ -37,14 +37,14 @@ Jiheng/
    ┌───────────────┐      ┌───────────────┐
    │  jiheng-java  │◀────▶│ jiheng-python │
    │ (Spring Boot) │ HTTP │  (FastAPI)    │
-   └───────┬───────┘      └───────┬───────┘
-           │                      │
-      Postgres                 Redis
-      (业务数据)              (会话/缓存，两服务共用)
+   └───────┬───────┘      └───────────────┘
+           │
+      Postgres
+      (业务数据)
 ```
 
-- **jiheng-java**：业务 CRUD 服务，负责鉴权（JWT）、用户画像、技能、报告、任务、通知、专家等模块，落地 PostgreSQL（Flyway 管理迁移），MyBatis-Plus 访问数据。
-- **jiheng-python**：Agent 服务，基于 FastAPI + DeepSeek Harness 驱动对话、深度研究与工具调用（行情、新闻、搜索、技能包），通过内部 HTTP 调用 jiheng-java，SSE 推送流式事件。
+- **jiheng-java**：业务 CRUD 服务，负责鉴权（黑客松阶段固定默认账号 `15611437032` 登录，只签发 JWT，不校验验证码、不存服务端会话）、用户画像、技能、报告、任务、通知、专家等模块，落地 PostgreSQL（Flyway 管理迁移），MyBatis-Plus 访问数据。
+- **jiheng-python**：Agent 服务，基于 FastAPI + DeepSeek Harness 驱动对话、深度研究与工具调用（行情、新闻、搜索、技能包），通过内部 HTTP 调用 jiheng-java，SSE 推送流式事件；深度研究任务使用进程内队列，重启后未执行的任务会丢失。
 - **nginx**：统一入口，`/api/` 转发 Java 服务，`/chat/` 与 `/health` 转发 Python 服务，`/internal/` 直接拒绝外部访问。
 - **industry_research_institute**：独立的行业研究 agent 集群仓库，共享申万 2021 行业分类与财报/一致预期拉数作业，为各一级行业单独建模估值（详见其 [README](industry_research_institute/README.md)）。
 
@@ -52,8 +52,8 @@ Jiheng/
 
 | 模块 | 技术栈 |
 | --- | --- |
-| jiheng-java | Java 21・Spring Boot 3.5・MyBatis-Plus・PostgreSQL・Flyway・Redis・JWT (jjwt) |
-| jiheng-python | Python 3.11+・FastAPI・DeepSeek Harness (dsh)・httpx・Redis・SSE |
+| jiheng-java | Java 21・Spring Boot 3.5・MyBatis-Plus・PostgreSQL・Flyway・JWT (jjwt) |
+| jiheng-python | Python 3.11+・FastAPI・DeepSeek Harness (dsh)・httpx・SSE |
 | industry_research_institute | Python・Postgres 拉数作业・申万 2021 行业分类 |
 | 网关 | nginx |
 | 编排 | Docker Compose |
