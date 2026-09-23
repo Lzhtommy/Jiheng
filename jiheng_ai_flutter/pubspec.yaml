@@ -19,6 +19,8 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/prototype/
   fonts:
     - family: Noto Serif SC
       fonts:

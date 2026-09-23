@@ -368,14 +368,7 @@ class JihengShellState extends State<JihengShell> {
   final input = TextEditingController();
   final scroll = ScrollController();
   final List<ChatMsg> messages = [];
-  final Set<String> disabledSkills = {
-    '有色板块深度透视',
-    '贵金属板块深度透视',
-    '期货主力行为分析',
-    '基金涨跌解读',
-    '期货资金流向监测',
-    '期权波动率洞察',
-  };
+  final Set<String> disabledSkills = {};
   final List<String> reminders = [];
   final List<String> notifications = [];
   final List<String> activity = ['影石创新：影像硬件出海'];
@@ -404,6 +397,7 @@ class JihengShellState extends State<JihengShell> {
   bool isLoggedIn = false;
   bool loadingData = false;
   bool sending = false;
+  bool get prototypeFirst => true;
 
   @override
   void initState() {
@@ -425,9 +419,6 @@ class JihengShellState extends State<JihengShell> {
       isLoggedIn = api.accessToken != null && api.accessToken!.isNotEmpty;
       authReady = true;
     });
-    if (isLoggedIn) {
-      await loadRemoteData();
-    }
   }
 
   Future<void> login({
@@ -448,7 +439,6 @@ class JihengShellState extends State<JihengShell> {
       isLoggedIn = true;
       apiError = null;
     });
-    await loadRemoteData();
   }
 
   Future<Map<String, dynamic>?> loadCaptcha() async {
@@ -670,13 +660,6 @@ class JihengShellState extends State<JihengShell> {
       page = next;
       drawerOpen = false;
     });
-    if (isLoggedIn) {
-      if (next == PageKey.reports) _loadReports();
-      if (next == PageKey.skills) _loadSkills();
-      if (next == PageKey.notifications) _loadNotifications();
-      if (next == PageKey.profile) _loadProfile();
-      if (next == PageKey.reminders) _loadTasks();
-    }
   }
 
   void mutate(VoidCallback change) {
@@ -707,7 +690,7 @@ class JihengShellState extends State<JihengShell> {
       sending = true;
     });
     _scrollDown();
-    if (isLoggedIn) {
+    if (isLoggedIn && !prototypeFirst) {
       try {
         if (mode == '深度研究') {
           final data =
@@ -1375,18 +1358,6 @@ class HomeView extends StatelessWidget {
             controller: state.scroll,
             padding: const EdgeInsets.only(bottom: 8),
             children: [
-              if (state.loadingData)
-                const Padding(
-                  padding: EdgeInsets.fromLTRB(16, 4, 16, 4),
-                  child: LinearProgressIndicator(minHeight: 2),
-                ),
-              if (state.apiError != null)
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 4, 16, 4),
-                  child: Text('后端连接异常，已使用本地 mock 兜底',
-                      style:
-                          TextStyle(color: Colors.red.shade400, fontSize: 12)),
-                ),
               const AiGreeting(),
               if (state.messages.isEmpty) ...[
                 HomeSection(
@@ -1429,17 +1400,40 @@ class HomeHeader extends StatelessWidget {
                   icon: const Icon(Icons.notifications_none_rounded)),
             ],
           ),
-          const Column(children: [
-            Text('玑衡AI',
-                style: TextStyle(
-                    fontFamily: 'serif',
-                    fontWeight: FontWeight.w700,
-                    letterSpacing: 2,
-                    fontSize: 17)),
-            Text('你的智能金融操作系统',
-                style: TextStyle(
-                    fontSize: 11, color: Color(0xFF8B9299), letterSpacing: 1)),
-          ]),
+          Container(
+            padding: const EdgeInsets.all(3),
+            decoration: BoxDecoration(
+              color: const Color(0xFFF1EFEB),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Row(mainAxisSize: MainAxisSize.min, children: [
+              Container(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(8),
+                  boxShadow: const [
+                    BoxShadow(
+                        color: Color(0x14000000),
+                        blurRadius: 3,
+                        offset: Offset(0, 1))
+                  ],
+                ),
+                child: const Text('玑衡AI',
+                    style:
+                        TextStyle(fontWeight: FontWeight.w600, fontSize: 14)),
+              ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 6),
+                child: Text('玑衡World',
+                    style: TextStyle(
+                        color: Color(0xFF9AA1A8),
+                        fontWeight: FontWeight.w500,
+                        fontSize: 14)),
+              ),
+            ]),
+          ),
         ],
       ),
     );
@@ -1519,12 +1513,24 @@ class HomeSection extends StatelessWidget {
 }
 
 const expertOptions = [
-  ['会议专家', '会', '作为你的会议专家，全程协助处理一场会议从会前到会后的关键工作。', Color(0xFF1F2429)],
-  ['个股研究专家', '股', '面向二级市场的个股研究搭档，围绕公司基本面、财报与事件。', Color(0xFF2F4A55)],
-  ['行业研究专家', '行', '面向投研团队的行业研究搭档，围绕行业、子行业、产业链。', Color(0xFF3C5545)],
-  ['财富管理专家', '财', '面向投资顾问和理财师的财富管理专业助手。', Color(0xFF8A6033)],
-  ['研报专家', '研', '7×24小时追踪全市场研报，提炼核心观点与评级变化。', Color(0xFF4A4550)],
-  ['舆情专家', '舆', '7×24小时监测个股与行业舆情，识别异动与情绪拐点。', Color(0xFF55483C)],
+  [
+    '个股研究专家',
+    'assets/prototype/expert-stock.png',
+    '面向二级市场的个股研究搭档，围绕公司基本面、财报与事件、估…',
+    'stock'
+  ],
+  [
+    '行业研究专家',
+    'assets/prototype/expert-industry.png',
+    '面向股票投研团队的行业研究搭档，围绕行业、子行业、产业链环…',
+    'industry'
+  ],
+  [
+    '研报专家',
+    'assets/prototype/expert-report.png',
+    '7×24小时追踪全市场研报，提炼核心观点、评级变化与目标价调整…',
+    'report'
+  ],
 ];
 
 Color colorFromHex(dynamic value, Color fallback) {
@@ -1544,17 +1550,7 @@ class ExpertGrid extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final rows = state.apiExperts.isNotEmpty
-        ? state.apiExperts
-            .map((e) => [
-                  asText(e['name']),
-                  asText(e['initial'], '专'),
-                  asText(e['description']),
-                  colorFromHex(e['avatarBg'] ?? e['avatar_bg'], C.ink),
-                  asText(e['expertId'] ?? e['expert_id']),
-                ])
-            .toList()
-        : expertOptions.map((e) => [...e, '']).toList();
+    const rows = expertOptions;
     return GridView.builder(
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -1567,10 +1563,9 @@ class ExpertGrid extends StatelessWidget {
       ),
       itemBuilder: (context, index) {
         final e = rows[index];
-        final name = e[0] as String;
-        final initial = e[1] as String;
-        final color = e[3] as Color;
-        final expertId = e.length > 4 ? e[4] as String : '';
+        final name = e[0];
+        final image = e[1];
+        final expertId = e[3];
         final picked = state.expert == name;
         return InkWell(
           onTap: () => state.mutate(() {
@@ -1591,14 +1586,16 @@ class ExpertGrid extends StatelessWidget {
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                CircleAvatar(
-                  radius: 19,
-                  backgroundColor: color,
-                  child: Text(initial,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontFamily: 'serif',
-                          fontSize: 16)),
+                Container(
+                  width: 52,
+                  height: 52,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    shape: BoxShape.circle,
+                    border: Border.all(color: C.line),
+                  ),
+                  child: Image.asset(image, fit: BoxFit.cover),
                 ),
                 const SizedBox(height: 8),
                 Text(name,
@@ -1725,35 +1722,49 @@ class MessageBubble extends StatelessWidget {
         const SizedBox(width: 10),
         Expanded(
           child: Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-                color: C.faint, borderRadius: BorderRadius.circular(14)),
+            padding: const EdgeInsets.symmetric(vertical: 2),
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               if (message.stage == Stage.thinking)
-                const Row(children: [
-                  SizedBox(
-                      width: 16,
-                      height: 16,
-                      child: CircularProgressIndicator(strokeWidth: 2)),
-                  SizedBox(width: 8),
-                  Text('正在理解问题并拆解任务…', style: TextStyle(color: C.muted)),
-                ]),
+                const Text('正在检索……',
+                    style: TextStyle(color: C.muted, fontSize: 13.5)),
               if (message.stage != Stage.thinking) ...[
-                Label(text: isSkill ? '技能调用 · $tool' : '工具调用 · $tool'),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 11, vertical: 8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Color(0xFFE7E5E0)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Row(children: [
+                    Text(isSkill ? '已调用技能 · $tool' : tool,
+                        style: const TextStyle(
+                            color: C.gold,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12.5)),
+                    const SizedBox(width: 8),
+                    Expanded(
+                        child: Text(
+                            message.stage == Stage.tool
+                                ? '正在生成搜索问句…'
+                                : '正在检索相关数据…',
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
+                                color: C.muted, fontSize: 12.5))),
+                    if (message.stage == Stage.tool)
+                      const SizedBox(
+                          width: 13,
+                          height: 13,
+                          child: CircularProgressIndicator(strokeWidth: 2))
+                    else
+                      const Text('✓',
+                          style: TextStyle(color: C.green, fontSize: 13)),
+                  ]),
+                ),
                 const SizedBox(height: 10),
                 Text(intro.isEmpty ? '正在检索……' : intro,
                     style: const TextStyle(fontSize: 14, height: 1.7)),
-                if (message.stage == Stage.tool) ...[
-                  const SizedBox(height: 12),
-                  const LinearProgressIndicator(minHeight: 3),
-                  const SizedBox(height: 8),
-                  Text(
-                      message.stageNote.isEmpty
-                          ? '正在检索、取数、交叉验证…'
-                          : message.stageNote,
-                      style: const TextStyle(color: C.muted, fontSize: 12)),
-                ],
               ],
               if (message.stage == Stage.done) ...[
                 const SizedBox(height: 12),
@@ -1999,7 +2010,7 @@ class ReportsView extends StatelessWidget {
         'refCount': 9,
       },
     ];
-    final source = state.apiReports.isNotEmpty ? state.apiReports : fallback;
+    final source = fallback;
     final reports = source
         .where((r) =>
             state.reportTab == '全部' || asText(r['kind']) == state.reportTab)
@@ -2559,7 +2570,7 @@ class RemindersView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final tasks = [...state.localTasks, ...state.apiTasks];
+    const tasks = <Map<String, dynamic>>[];
     return Column(children: [
       PrototypeHeader(title: '定时与提醒', onBack: () => state.go(PageKey.home)),
       Expanded(
@@ -2679,14 +2690,7 @@ class NotificationsView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final remote = state.apiNotifications
-        .map((n) => {
-              'title': asText(n['title']),
-              'subtitle':
-                  '${asText(n['type'], '任务记录')} · ${asText(n['createdAt'] ?? n['created_at'], '刚刚')}',
-              'id': n['id'],
-            })
-        .toList();
+    const remote = <Map<String, dynamic>>[];
     return Column(children: [
       PrototypeHeader(title: '通知中心', onBack: () => state.go(PageKey.home)),
       Padding(
@@ -2752,8 +2756,8 @@ class ProfileView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p = state.profile ?? {};
-    final stats = Map<String, dynamic>.from((p['stats'] as Map?) ?? {});
+    const p = <String, dynamic>{};
+    const stats = <String, dynamic>{};
     final rows = [
       ('账号与安全', '已绑定手机'),
       ('订阅与积分', '机构版 · 8,420 分'),
@@ -2991,24 +2995,7 @@ class ExpertSheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final experts = state.apiExperts.isNotEmpty
-        ? state.apiExperts
-            .map((e) => [
-                  asText(e['name']),
-                  asText(e['initial'], '专'),
-                  asText(e['description']),
-                  asText(e['expertId'] ?? e['expert_id']),
-                  colorFromHex(e['avatarBg'] ?? e['avatar_bg'], C.ink),
-                ])
-            .toList()
-        : [
-            ['会议专家', '会', '全程协助处理会前到会后的关键工作', '', C.ink],
-            ['个股研究专家', '股', '围绕公司基本面、财报与事件进行研究', '', C.ink],
-            ['行业研究专家', '行', '围绕行业、子行业、产业链环节分析', '', C.ink],
-            ['财富管理专家', '财', '覆盖客户洞察、产品匹配与沟通话术', '', C.ink],
-            ['研报专家', '研', '追踪全市场研报，提炼核心观点', '', C.ink],
-            ['舆情专家', '舆', '监测个股与行业舆情，识别情绪拐点', '', C.ink],
-          ];
+    const experts = expertOptions;
     return Stack(children: [
       Positioned.fill(
           child: GestureDetector(
@@ -3023,11 +3010,13 @@ class ExpertSheet extends StatelessWidget {
               borderRadius: BorderRadius.vertical(top: Radius.circular(18))),
           child: Column(children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(18, 14, 12, 8),
+              padding: const EdgeInsets.fromLTRB(18, 18, 12, 10),
               child: Row(children: [
                 const Text('选择金融专家',
-                    style:
-                        TextStyle(fontWeight: FontWeight.w700, fontSize: 17)),
+                    style: TextStyle(
+                        fontFamily: 'Noto Serif SC',
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16)),
                 const Spacer(),
                 IconButton(
                     onPressed: () =>
@@ -3035,23 +3024,47 @@ class ExpertSheet extends StatelessWidget {
                     icon: const Icon(Icons.close)),
               ]),
             ),
+            Container(
+              height: 40,
+              margin: const EdgeInsets.fromLTRB(18, 0, 18, 6),
+              padding: const EdgeInsets.symmetric(horizontal: 13),
+              decoration: BoxDecoration(
+                color: C.faint,
+                border: Border.all(color: C.line),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: const Row(children: [
+                Icon(Icons.search, size: 15, color: Color(0xFF8B9299)),
+                SizedBox(width: 8),
+                Text('搜索金融专家',
+                    style: TextStyle(color: Color(0xFF8B9299), fontSize: 13)),
+              ]),
+            ),
             Expanded(
               child: ListView(
                 children: experts
                     .map((e) => ListTile(
-                          leading: CircleAvatar(
-                              backgroundColor: e[4] as Color,
-                              child: Text(e[1] as String,
-                                  style: const TextStyle(
-                                      color: Color(0xFFD8B483)))),
-                          title: Text(e[0] as String),
-                          subtitle: Text(e[2] as String),
+                          contentPadding:
+                              const EdgeInsets.symmetric(horizontal: 18),
+                          leading: Container(
+                            width: 40,
+                            height: 40,
+                            clipBehavior: Clip.antiAlias,
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: C.line),
+                            ),
+                            child: Image.asset(e[1], fit: BoxFit.cover),
+                          ),
+                          title: Text(e[0]),
+                          subtitle: Text(e[2]),
                           trailing: state.expert == e[0]
                               ? const Icon(Icons.check, color: C.green)
                               : null,
                           onTap: () => state.mutate(() {
-                            state.expert = e[0] as String;
-                            state.selectedExpertId = e[3] as String;
+                            state.expert = e[0];
+                            state.selectedExpertId = e[3];
                             state.mode = '金融专家团';
                             state.modeSelected = true;
                             state.expertSheet = false;
@@ -3131,13 +3144,9 @@ class BrandAvatar extends StatelessWidget {
     return Container(
       width: size,
       height: size,
-      alignment: Alignment.center,
+      clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(shape: BoxShape.circle, color: C.ink),
-      child: Text('玑',
-          style: TextStyle(
-              color: const Color(0xFFD8B483),
-              fontFamily: 'serif',
-              fontSize: size * .45)),
+      child: Image.asset('assets/prototype/logo.png', fit: BoxFit.cover),
     );
   }
 }

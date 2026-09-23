@@ -14,7 +14,7 @@ void main() {
     expect(find.text('登录'), findsOneWidget);
   });
 
-  testWidgets('skills start with the six enabled prototype entries',
+  testWidgets('skills start with all prototype entries enabled',
       (WidgetTester tester) async {
     await tester.binding.setSurfaceSize(const Size(375, 812));
     final state = JihengShellState();
@@ -22,11 +22,9 @@ void main() {
       home: Scaffold(body: SkillsView(state: state)),
     ));
 
-    expect(find.text('6 个技能已开启'), findsOneWidget);
+    expect(find.text('12 个技能已开启'), findsOneWidget);
+    expect(find.text('有色板块深度透视'), findsOneWidget);
     expect(find.text('期权定价计算器'), findsOneWidget);
     expect(find.text('机构持仓透视'), findsOneWidget);
-    expect(find.text('期货盘中异动归因'), findsOneWidget);
-    expect(find.text('组合周度复盘'), findsOneWidget);
-    expect(find.text('有色板块深度透视'), findsNothing);
   });
 }
