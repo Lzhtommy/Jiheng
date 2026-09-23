@@ -43,9 +43,11 @@ textarea{font-family:inherit;}
           <div onClick="{{ openDrawer }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1b1f24;">
             <svg width="19" height="14" viewBox="0 0 20 16"><rect width="20" height="1.6" rx="0.8" fill="currentColor"/><rect y="7.2" width="15" height="1.6" rx="0.8" fill="currentColor"/><rect y="14.4" width="20" height="1.6" rx="0.8" fill="currentColor"/></svg>
           </div>
-          <div style="position:absolute;left:0;right:0;top:6px;text-align:center;pointer-events:none;">
-            <div style="font-family:'Noto Serif SC',serif;font-size:17px;font-weight:600;letter-spacing:.06em;color:#1b1f24;">玑衡AI</div>
-            <div style="font-size:11px;color:#8b9299;margin-top:2px;letter-spacing:.08em;">你的智能金融操作系统</div>
+          <div style="position:absolute;left:0;right:0;top:6px;display:flex;justify-content:center;pointer-events:none;">
+            <div style="display:flex;gap:2px;padding:3px;background:#f1efeb;border-radius:10px;pointer-events:auto;">
+              <div style="padding:6px 16px;border-radius:8px;background:#fff;box-shadow:0 1px 3px rgba(27,31,36,.08);font-size:14px;font-weight:600;color:#1b1f24;cursor:default;">玑衡AI</div>
+              <div onClick="{{ goWorld }}" style="padding:6px 16px;border-radius:8px;font-size:14px;font-weight:500;color:#9aa1a8;cursor:pointer;">玑衡World</div>
+            </div>
           </div>
           <div onClick="{{ goNotifications }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1b1f24;">
             <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M18 8.5a6 6 0 10-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5z"/><path d="M13.7 19a2 2 0 01-3.4 0"/></svg>
@@ -54,7 +56,7 @@ textarea{font-family:inherit;}
 
         <div ref="{{ chatScrollRef }}" style="flex:1;overflow-y:auto;padding-bottom:8px;">
           <div style="display:flex;gap:10px;padding:14px 16px 4px;">
-            <div style="width:36px;height:36px;flex:0 0 36px;border-radius:50%;background:#1f2429;color:#d8b483;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:16px;">玑</div>
+            <div style="width:36px;height:36px;flex:0 0 36px;border-radius:50%;overflow:hidden;background:url('assets/logo.png') 50% 43% / 152% no-repeat #0f2a5c;"></div>
             <div style="background:#f6f4f0;border:1px solid #edeae3;border-radius:4px 14px 14px 14px;padding:13px 15px;font-size:14px;line-height:1.7;color:#1b1f24;max-width:268px;">已为你接入实时行情、研究数据与自动化金融 Agent，今天想做什么？</div>
           </div>
 
@@ -67,9 +69,9 @@ textarea{font-family:inherit;}
               <span onClick="{{ openExpertSheet }}" style="color:#9c6b3c;font-size:12.5px;cursor:pointer;">全部专家</span>
             </div>
             <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;">
-              <sc-for list="{{ expertOptions }}" as="e" hint-placeholder-count="6">
+              <sc-for list="{{ expertOptions }}" as="e" hint-placeholder-count="0">
                 <div onClick="{{ e.onClick }}" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:14px 8px 12px;background:{{ e.cardBg }};border:1px solid {{ e.cardBd }};border-radius:12px;cursor:pointer;">
-                  <div style="width:38px;height:38px;border-radius:50%;background:{{ e.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:16px;">{{ e.initial }}</div>
+                  <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;background:#fff;border:1px solid #edeae3;"><div style="width:100%;height:100%;background-image:{{ e.imgUrl }};background-size:116%;background-position:center;background-repeat:no-repeat;"></div></div>
                   <div style="font-family:'Noto Serif SC',serif;font-size:13px;font-weight:600;color:#1b1f24;line-height:1.35;">{{ e.name }}</div>
                   <sc-if value="{{ e.picked }}" hint-placeholder-val="{{ false }}">
                     <span style="font-size:10.5px;color:#9c6b3c;">已选择</span>
@@ -87,7 +89,7 @@ textarea{font-family:inherit;}
             </sc-if>
             <sc-if value="{{ m.isAI }}" hint-placeholder-val="{{ false }}">
               <div style="display:flex;gap:10px;padding:10px 16px;align-items:flex-start;">
-                <div style="width:36px;height:36px;flex:0 0 36px;border-radius:50%;background:#1f2429;color:#d8b483;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:16px;">玑</div>
+                <div style="width:36px;height:36px;flex:0 0 36px;border-radius:50%;overflow:hidden;background:url('assets/logo.png') 50% 43% / 152% no-repeat #0f2a5c;"></div>
                 <div style="flex:1;min-width:0;font-size:14px;line-height:1.75;color:#1b1f24;">
                   <sc-if value="{{ m.thinking }}" hint-placeholder-val="{{ false }}">
                     <div style="color:#767e86;font-size:13.5px;">正在检索……</div>
@@ -260,6 +262,26 @@ textarea{font-family:inherit;}
       </div>
       </sc-if>
 
+      <sc-if value="{{ isWorld }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#0f1d33;color:#fff;">
+        <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px;position:relative;">
+          <div style="width:32px;height:32px;"></div>
+          <div style="position:absolute;left:0;right:0;top:6px;display:flex;justify-content:center;pointer-events:none;">
+            <div style="display:flex;gap:2px;padding:3px;background:rgba(255,255,255,.08);border-radius:10px;pointer-events:auto;">
+              <div onClick="{{ goHome }}" style="padding:6px 16px;border-radius:8px;font-size:14px;font-weight:500;color:#8a97a9;cursor:pointer;">玑衡AI</div>
+              <div style="padding:6px 16px;border-radius:8px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);font-size:14px;font-weight:600;color:#0f1d33;cursor:default;">玑衡World</div>
+            </div>
+          </div>
+          <div style="width:32px;height:32px;"></div>
+        </div>
+        <div style="flex:1;margin:10px 16px 24px;border:1.5px dashed rgba(216,180,131,.45);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;">
+          <div style="width:96px;height:96px;border-radius:50%;overflow:hidden;background:url('assets/logo.png') 50% 43% / 152% no-repeat #0f2a5c;box-shadow:0 0 0 1px rgba(216,180,131,.35);"></div>
+          <div style="font-family:'Noto Serif SC',serif;font-size:20px;font-weight:600;letter-spacing:.08em;color:#fff;margin-top:10px;">玑衡World</div>
+          <div style="font-size:12.5px;color:#9aa8bb;line-height:1.7;">游戏内容区域 · 预留位</div>
+        </div>
+      </div>
+      </sc-if>
+
       <sc-if value="{{ isSkills }}" hint-placeholder-val="{{ false }}">
       <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;">
         <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px;position:relative;">
@@ -373,9 +395,9 @@ textarea{font-family:inherit;}
             <span>搜索金融专家</span>
           </div>
           <div style="flex:1;overflow-y:auto;padding:6px 0 16px;">
-            <sc-for list="{{ expertOptions }}" as="e" hint-placeholder-count="5">
+            <sc-for list="{{ expertOptions }}" as="e" hint-placeholder-count="0">
               <div onClick="{{ e.onClick }}" style="display:flex;align-items:flex-start;gap:12px;padding:13px 18px;cursor:pointer;border-bottom:1px solid #f3f1ec;">
-                <div style="width:38px;height:38px;border-radius:50%;flex:0 0 38px;background:{{ e.avatarBg }};color:#fff;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:15px;">{{ e.initial }}</div>
+                <div style="width:40px;height:40px;border-radius:50%;flex:0 0 40px;overflow:hidden;background:#fff;border:1px solid #edeae3;"><div style="width:100%;height:100%;background-image:{{ e.imgUrl }};background-size:116%;background-position:center;background-repeat:no-repeat;"></div></div>
                 <div style="flex:1;min-width:0;">
                   <div style="font-family:'Noto Serif SC',serif;font-size:14.5px;font-weight:600;color:#1b1f24;">{{ e.name }}</div>
                   <div style="font-size:12.5px;color:#767e86;line-height:1.6;margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;">{{ e.desc }}</div>
@@ -394,7 +416,7 @@ textarea{font-family:inherit;}
       <div onClick="{{ closeDrawer }}" style="position:absolute;inset:0;background:rgba(23,25,28,.32);z-index:20;">
         <div onClick="{{ stop }}" style="position:absolute;top:0;left:0;bottom:0;width:82%;background:#fff;display:flex;flex-direction:column;padding-top:52px;box-shadow:2px 0 24px rgba(0,0,0,.12);">
           <div style="padding:0 20px 14px;display:flex;align-items:center;gap:9px;">
-            <div style="width:26px;height:26px;border-radius:50%;background:#1f2429;color:#d8b483;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:13px;">玑</div>
+            <div style="width:28px;height:28px;flex:0 0 28px;border-radius:50%;overflow:hidden;background:url('assets/logo.png') 50% 43% / 152% no-repeat #0f2a5c;"></div>
             <div style="font-family:'Noto Serif SC',serif;font-size:15px;font-weight:600;letter-spacing:.08em;color:#1b1f24;">玑衡AI</div>
           </div>
           <div style="flex:1;overflow-y:auto;">
@@ -514,12 +536,9 @@ const MODE_PH = {
 };
 
 const EXPERT_OPTIONS = [
-  {name:'会议专家', initial:'会', avatarBg:'#1f2429', desc:'作为你的会议专家，全程协助处理一场会议从会前到会后的关键工作…'},
-  {name:'个股研究专家', initial:'股', avatarBg:'#2f4a55', desc:'面向二级市场的个股研究搭档，围绕公司基本面、财报与事件、估…'},
-  {name:'行业研究专家', initial:'行', avatarBg:'#3c5545', desc:'面向股票投研团队的行业研究搭档，围绕行业、子行业、产业链环…'},
-  {name:'财富管理专家', initial:'财', avatarBg:'#8a6033', desc:'面向投资顾问和理财师的财富管理专业助手，覆盖客户洞察、产品…'},
-  {name:'研报专家', initial:'研', avatarBg:'#4a4550', desc:'7×24小时追踪全市场研报，提炼核心观点、评级变化与目标价调整…'},
-  {name:'舆情专家', initial:'舆', avatarBg:'#55483c', desc:'7×24小时监测个股与行业舆情，识别异动、传闻与情绪拐点…'}
+  {name:'个股研究专家', img:'assets/expert-stock.png', desc:'面向二级市场的个股研究搭档，围绕公司基本面、财报与事件、估…'},
+  {name:'行业研究专家', img:'assets/expert-industry.png', desc:'面向股票投研团队的行业研究搭档，围绕行业、子行业、产业链环…'},
+  {name:'研报专家', img:'assets/expert-report.png', desc:'7×24小时追踪全市场研报，提炼核心观点、评级变化与目标价调整…'}
 ];
 
 const MY_SKILLS = [
@@ -634,7 +653,9 @@ class Component extends DCLogic {
       bd: st.mode===k ? '#e4d7c4' : '#edeae3',
       onClick: k==='expert'
         ? ()=> this.setState({expertSheet:true})
-        : ()=> this.setState({mode:k, modeSelected:true})
+        : k==='quick'
+          ? ()=>{}
+          : ()=> this.setState({mode:k, modeSelected:true})
     }));
 
     const official = SKILLS.map(([t,d])=>({t, d, badge:'官方', meta:''}));
@@ -650,11 +671,13 @@ class Component extends DCLogic {
       isReports: st.page==='reports', isProfile: st.page==='profile',
       isReminders: st.page==='reminders', isNotifications: st.page==='notifications',
       goProfile: ()=> this.go('profile'),
+      isWorld: st.page==='world',
+      goWorld: ()=> this.go('world'),
       expertSheet: st.expertSheet,
       openExpertSheet: ()=> this.setState({expertSheet:true}),
       closeExpertSheet: ()=> this.setState({expertSheet:false}),
       expertOptions: EXPERT_OPTIONS.map(e=>({
-        key:e.name, name:e.name, initial:e.initial, avatarBg:e.avatarBg, desc:e.desc,
+        key:e.name, name:e.name, imgUrl:'url("'+e.img+'")', desc:e.desc,
         picked: st.expert===e.name,
         cardBg: st.expert===e.name ? '#faf6ee' : '#faf9f6',
         cardBd: st.expert===e.name ? '#e4d7c4' : '#edeae3',
