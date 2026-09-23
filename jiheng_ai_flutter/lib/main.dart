@@ -957,7 +957,6 @@ class _LoginViewState extends State<LoginView> {
       await widget.state
           .sendSms(phone.text.trim(), captcha.text.trim(), captchaId);
       sms.text = '000000';
-      await _loadCaptcha(clearInput: true);
       if (mounted) widget.state.snack('已填入默认短信验证码 000000');
     } catch (e) {
       setState(() => error = '短信发送失败：$e');
