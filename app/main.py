@@ -10,6 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from .data import DEMO_UNIVERSE
 from .engine import DATA_NOTICE, diagnosis, debate, screen
 from .models import ScreenRequest, ScreenResponse
+from .npc_dialogue import NpcDialogueRequest, npc_dialogue, npc_model_enabled
 from .world import world_scenario
 
 
@@ -28,6 +29,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.mount("/static", StaticFiles(directory=BASE_DIR / "static"), name="static")
+app.mount("/assets", StaticFiles(directory=BASE_DIR / "static" / "assets"), name="assets")
 
 
 @app.get("/", include_in_schema=False)
@@ -43,6 +45,22 @@ def world() -> FileResponse:
 @app.get("/world-v2", include_in_schema=False)
 def world_v2() -> FileResponse:
     return FileResponse(BASE_DIR / "static" / "world_v2.html")
+
+
+@app.get("/procurement-explore", include_in_schema=False)
+def procurement_explore() -> FileResponse:
+    """First-person industry-chain journey with NPC conversations."""
+    return FileResponse(BASE_DIR / "static" / "procurement-journey.html")
+
+
+@app.get("/api/procurement/npc/status")
+def procurement_npc_status() -> dict[str, bool]:
+    return {"enabled": npc_model_enabled()}
+
+
+@app.post("/api/procurement/npc")
+async def procurement_npc_chat(request: NpcDialogueRequest) -> dict[str, str]:
+    return await npc_dialogue(request)
 
 
 @app.get("/api/health")
