@@ -1014,7 +1014,8 @@ class _LoginViewState extends State<LoginView> {
                   child: Container(
                     width: compact ? 58 : 64,
                     height: compact ? 58 : 64,
-                    alignment: Alignment.center,
+                    padding: const EdgeInsets.all(2),
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                       color: C.ink,
                       shape: BoxShape.circle,
@@ -1026,12 +1027,7 @@ class _LoginViewState extends State<LoginView> {
                         )
                       ],
                     ),
-                    child: const Text('玑',
-                        style: TextStyle(
-                            color: Color(0xFFD8B483),
-                            fontFamily: 'serif',
-                            fontSize: 30,
-                            fontWeight: FontWeight.w600)),
+                    child: Image.asset('logo.png', fit: BoxFit.contain),
                   ),
                 ),
                 SizedBox(height: compact ? 14 : 18),
@@ -3145,7 +3141,7 @@ class BrandAvatar extends StatelessWidget {
       height: size,
       clipBehavior: Clip.antiAlias,
       decoration: const BoxDecoration(shape: BoxShape.circle, color: C.ink),
-      child: Image.asset('assets/prototype/logo.png', fit: BoxFit.cover),
+      child: Image.asset('logo.png', fit: BoxFit.contain),
     );
   }
 }
