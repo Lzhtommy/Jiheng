@@ -3,8 +3,7 @@ import time
 import uuid
 
 from fastapi import APIRouter, Depends, Request
-from fastapi.responses import JSONResponse
-from sse_starlette.sse import EventSourceResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 
 from app.agent.event_adapter import as_sse
 from app.agent.factory import create_runtime
@@ -62,7 +61,10 @@ async def chat_stream(request: Request, chat_req: ChatRequest, payload: dict = D
     abort_mgr = AbortManager(redis)
 
     if not await guard.acquire(chat_req.conversation_id):
-        return EventSourceResponse(_error_stream(correlation_id, "CONVERSATION_BUSY", "同一会话已有进行中对话"))
+        return StreamingResponse(
+            _error_stream(correlation_id, "CONVERSATION_BUSY", "同一会话已有进行中对话"),
+            media_type="text/event-stream",
+        )
 
     await abort_mgr.register(chat_req.conversation_id)
 
@@ -132,7 +134,7 @@ async def chat_stream(request: Request, chat_req: ChatRequest, payload: dict = D
             await recorder.save()
             await guard.release(chat_req.conversation_id)
 
-    return EventSourceResponse(event_generator())
+    return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
 @router.post("/abort")

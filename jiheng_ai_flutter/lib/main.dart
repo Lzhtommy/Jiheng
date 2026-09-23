@@ -799,6 +799,11 @@ class JihengShellState extends State<JihengShell> {
         ai.stage = Stage.tool;
         ai.intro = event['intro'].toString();
       }
+      if (event['content'] != null) {
+        ai.stage = Stage.tool;
+        final chunk = event['content'].toString();
+        ai.intro = ai.intro.isEmpty ? chunk : '${ai.intro}$chunk';
+      }
       if (event['title'] != null ||
           event['items'] != null ||
           event['para'] != null) {
