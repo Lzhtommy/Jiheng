@@ -24,6 +24,36 @@ py -3.11 -m venv .venv
 
 打开 <http://127.0.0.1:8000/>。
 
+## Docker 部署
+
+服务器安装 Docker 和 Docker Compose 后，在项目根目录运行：
+
+```bash
+docker compose up -d --build
+```
+
+服务默认监听容器内 `8000` 端口，并映射到服务器的 `18000` 端口。启动后打开：
+
+- `http://服务器IP:18000/`
+- `http://服务器IP:18000/docs`
+- `http://服务器IP:18000/api/health`
+
+常用命令：
+
+```bash
+docker compose logs -f backend
+docker compose restart backend
+docker compose down
+```
+
+如果要启用 NPC 模型改写，在服务器环境变量或项目根目录 `.env` 文件中配置：
+
+```bash
+JIHENG_NPC_API_URL=https://你的兼容接口/v1/chat/completions
+JIHENG_NPC_API_KEY=你的密钥
+JIHENG_NPC_MODEL=你的模型名
+```
+
 ## 玑衡 World · 沉浸式产业链走访
 
 打开 <http://127.0.0.1:8000/procurement-explore>，以采购负责人的第一视角走访盐湖矿区、材料工坊、电芯城、车企港和储能灯塔。与各站 NPC 对话、追问报价与交付条件、收集卷轴，并从地图进入下一场景。游戏中的人物、合同及数字均为虚构演示，不代表真实企业披露或投资建议。

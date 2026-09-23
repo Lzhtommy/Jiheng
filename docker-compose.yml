@@ -1,0 +1,13 @@
+services:
+  backend:
+    build:
+      context: .
+    image: jiheng-backend:latest
+    container_name: jiheng-backend
+    restart: unless-stopped
+    ports:
+      - "18000:8000"
+    environment:
+      JIHENG_NPC_API_URL: ${JIHENG_NPC_API_URL:-}
+      JIHENG_NPC_API_KEY: ${JIHENG_NPC_API_KEY:-}
+      JIHENG_NPC_MODEL: ${JIHENG_NPC_MODEL:-}
