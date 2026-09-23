@@ -143,7 +143,7 @@ class ApiClient {
   }
 
   Map<String, String> get _headers => {
-        'Content-Type': 'application/json',
+        'Content-Type': 'application/json; charset=utf-8',
         if (accessToken != null && accessToken!.isNotEmpty)
           'Authorization': 'Bearer $accessToken',
       };
@@ -170,13 +170,13 @@ class ApiClient {
 
   Future<dynamic> post(String path, Map<String, dynamic> body) async {
     final response = await http.post(Uri.parse('$javaBase$path'),
-        headers: _headers, body: jsonEncode(body));
+        headers: _headers, body: utf8.encode(jsonEncode(body)));
     return _unwrap(response);
   }
 
   Future<dynamic> put(String path, Map<String, dynamic> body) async {
     final response = await http.put(Uri.parse('$javaBase$path'),
-        headers: _headers, body: jsonEncode(body));
+        headers: _headers, body: utf8.encode(jsonEncode(body)));
     return _unwrap(response);
   }
 
@@ -188,7 +188,7 @@ class ApiClient {
 
   Future<dynamic> agentPost(String path, Map<String, dynamic> body) async {
     final response = await http.post(Uri.parse('$agentBase$path'),
-        headers: _headers, body: jsonEncode(body));
+        headers: _headers, body: utf8.encode(jsonEncode(body)));
     if (response.statusCode == 202) {
       return jsonDecode(utf8.decode(response.bodyBytes));
     }
@@ -202,7 +202,7 @@ class ApiClient {
       'Accept': 'text/event-stream',
       'Cache-Control': 'no-cache',
     });
-    request.body = jsonEncode(body);
+    request.bodyBytes = utf8.encode(jsonEncode(body));
     final response = await request.send();
     if (response.statusCode < 200 || response.statusCode >= 300) {
       throw Exception('SSE HTTP ${response.statusCode}');
