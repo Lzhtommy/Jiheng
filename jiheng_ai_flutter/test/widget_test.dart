@@ -27,4 +27,18 @@ void main() {
     expect(find.text('期权定价计算器'), findsOneWidget);
     expect(find.text('机构持仓透视'), findsOneWidget);
   });
+
+  testWidgets('report detail decodes archived reference JSON',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(const MaterialApp(
+      home: ReportDetailPage(report: {
+        'title': '测试报告',
+        'content': '报告正文',
+        'refs': '[{"title":"交易所公告","url":"https://example.com/report"}]',
+      }),
+    ));
+
+    expect(find.text('· 交易所公告'), findsOneWidget);
+    expect(find.textContaining('"url"'), findsNothing);
+  });
 }

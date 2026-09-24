@@ -154,6 +154,25 @@ String prettyJson(String? raw) {
   }
 }
 
+List<Map<String, String>> referenceList(Object? value) {
+  Object? decoded = value;
+  if (value is String) {
+    try {
+      decoded = jsonDecode(value);
+    } on FormatException {
+      return [];
+    }
+  }
+  if (decoded is! List) return [];
+  return decoded.map((item) {
+    final source = item is Map ? item : {'title': item};
+    return {
+      'title': (source['title'] ?? '').toString(),
+      'url': (source['url'] ?? '').toString(),
+    };
+  }).toList();
+}
+
 class ApiClient {
   ApiClient();
 
@@ -4060,6 +4079,7 @@ class ReportDetailPage extends StatelessWidget {
     final content = asText(report['content']);
     final summary = asText(report['summary'], '报告正文生成中，请稍后刷新查看。');
     final refs = asText(report['refs'], '暂无完整引用列表');
+    final refList = referenceList(report['refs']);
     return Scaffold(
       backgroundColor: C.paper,
       appBar: AppBar(
@@ -4098,14 +4118,8 @@ class ReportDetailPage extends StatelessWidget {
                 const Text('引用来源',
                     style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, height: 1.6)),
                 const SizedBox(height: 4),
-                if (report['refs'] is List && (report['refs'] as List).isNotEmpty)
-                  _RefList(refs: (report['refs'] as List).map((item) {
-                    final source = item is Map ? item : {'title': item};
-                    return {
-                      'title': (source['title'] ?? '').toString(),
-                      'url': (source['url'] ?? '').toString(),
-                    };
-                  }).toList())
+                if (refList.isNotEmpty)
+                  _RefList(refs: refList)
                 else
                   Text(refs, style: const TextStyle(fontSize: 12.5, height: 1.6)),
               ],
