@@ -10,6 +10,7 @@ from shutil import which
 
 from app.agent.profiles import AgentProfile
 from app.agent.runtime import AgentEvent, AgentRunContext
+from app.agent.sources import add_sources, requires_sources
 from app.config import settings
 
 
@@ -90,6 +91,8 @@ class DeepSeekHarnessRuntime:
         finally:
             if not task.done():
                 task.cancel()
+        if profile.mode == "expert" and not refs and requires_sources(str(messages[-1].get("content", "")), final):
+            final = "暂未取得可核验的数据来源，因此无法给出可靠的事实性分析。请稍后重试或缩小查询范围。"
         yield AgentEvent("text", {"content": final})
         yield AgentEvent("refs", {"refs": list(refs.values())})
 
@@ -144,9 +147,7 @@ def _collect_refs(text: str, refs: dict[str, dict]) -> None:
     result = _parse_json(text)
     if not isinstance(result, dict):
         return
-    for source in result.get("sources") or []:
-        if isinstance(source, dict) and source.get("url"):
-            refs.setdefault(str(source["url"]), source)
+    add_sources(refs, result.get("sources") or [])
 
 
 MAX_HISTORY_MESSAGES = 10

@@ -6,6 +6,7 @@ import httpx
 
 from app.agent.profiles import AgentProfile
 from app.agent.runtime import AgentEvent, AgentRunContext
+from app.agent.sources import add_sources, requires_sources
 from app.agent.tool_registry import execute, openai_tools
 from app.config import settings
 
@@ -20,10 +21,12 @@ class DeepSeekToolRuntime:
             yield AgentEvent("text", {"content": "暂未配置 DeepSeek API，无法执行智能体分析。"})
             return
         conversation = [{"role": "system", "content": profile.system_prompt}, *messages]
-        refs: list[dict] = []
+        refs: dict[str, dict] = {}
         headers = {"Authorization": f"Bearer {settings.deepseek_api_key}"}
         tools = await openai_tools(profile.tool_names)
         wrote_text = False
+        source_retry_used = False
+        question = str(messages[-1].get("content", "")) if messages else ""
         async with httpx.AsyncClient(timeout=httpx.Timeout(10, read=60)) as client:
             for round_index in range(profile.max_tool_rounds + 1):
                 if round_index == profile.max_tool_rounds:
@@ -37,6 +40,7 @@ class DeepSeekToolRuntime:
                     payload["thinking"] = {"type": "enabled"}
                 message: dict = {}
                 separated = False
+                pending: list[str] = []
                 try:
                     async for delta in _stream_completion(
                         client,
@@ -45,23 +49,41 @@ class DeepSeekToolRuntime:
                         message,
                         suppress_tool_markup=round_index == profile.max_tool_rounds,
                     ):
-                        if wrote_text and not separated:
-                            delta = "\n\n" + delta
+                        if profile.mode == "expert":
+                            pending.append(delta)
+                        else:
+                            if wrote_text and not separated:
+                                delta = "\n\n" + delta
+                            wrote_text = True
+                            yield AgentEvent("text", {"content": delta})
                         separated = True
-                        wrote_text = True
-                        yield AgentEvent("text", {"content": delta})
                 except httpx.TimeoutException as exc:
                     if round_index == 0 and not separated:
                         raise RuntimeError("模型接口响应超时，请稍后重试") from exc
                     note = "（模型响应中断，以上为已生成的内容）" if separated else NO_ANSWER_TEXT
                     yield AgentEvent("text", {"content": ("\n\n" if wrote_text else "") + note})
-                    yield AgentEvent("refs", {"refs": refs})
+                    yield AgentEvent("refs", {"refs": list(refs.values())})
                     return
                 tool_calls = message.get("tool_calls") or []
                 if not tool_calls or round_index == profile.max_tool_rounds:
-                    if not separated:
+                    answer = "".join(pending) if profile.mode == "expert" else str(message.get("content") or "")
+                    needs_sources = profile.mode == "expert" and requires_sources(question, answer)
+                    if needs_sources and not refs and not source_retry_used and round_index < profile.max_tool_rounds:
+                        conversation.append(message)
+                        conversation.append({"role": "user", "content": SOURCE_REQUIRED_INSTRUCTION})
+                        source_retry_used = True
+                        continue
+                    if needs_sources and not refs:
+                        answer = NO_SOURCE_TEXT
+                    if profile.mode == "expert":
+                        if wrote_text and answer:
+                            answer = "\n\n" + answer
+                        if answer:
+                            wrote_text = True
+                            yield AgentEvent("text", {"content": answer})
+                    elif not separated:
                         yield AgentEvent("text", {"content": ("\n\n" if wrote_text else "") + NO_ANSWER_TEXT})
-                    yield AgentEvent("refs", {"refs": refs})
+                    yield AgentEvent("refs", {"refs": list(refs.values())})
                     return
                 conversation.append(message)
                 parsed = [(call, _arguments(call)) for call in tool_calls]
@@ -71,7 +93,8 @@ class DeepSeekToolRuntime:
                     )
                 results = await asyncio.gather(*(_run_tool(call["function"]["name"], args) for call, args in parsed))
                 for (call, _), result in zip(parsed, results):
-                    refs.extend(result.get("sources", []))
+                    if result.get("status") == "success":
+                        add_sources(refs, result.get("sources") or [])
                     yield AgentEvent(
                         "tool_result",
                         {
@@ -83,7 +106,7 @@ class DeepSeekToolRuntime:
                         },
                     )
                     conversation.append({"role": "tool", "tool_call_id": call["id"], "content": _tool_content(result)})
-        yield AgentEvent("refs", {"refs": refs})
+        yield AgentEvent("refs", {"refs": list(refs.values())})
 
 
 async def _stream_completion(
@@ -159,6 +182,11 @@ TOOL_MARKUP = "<｜DSML｜"
 FINAL_ROUND_INSTRUCTION = (
     "工具调用次数已用完。请只根据上面已经取得的工具数据写出最终回答，缺失的数据写明暂无，不要再调用任何工具。"
 )
+SOURCE_REQUIRED_INSTRUCTION = (
+    "这个问题涉及外部可验证的金融事实，但你尚未取得可引用来源。不要直接回答；"
+    "请先调用最相关的数据工具，取得来源后再基于工具结果作答。"
+)
+NO_SOURCE_TEXT = "暂未取得可核验的数据来源，因此无法给出可靠的事实性分析。请稍后重试或缩小查询范围。"
 NO_ANSWER_TEXT = (
     "（本次取数已结束，但模型没有给出完整结论。上方工具卡片里是已取得的数据，可以换成深度研究或分析师模式再问一次。）"
 )

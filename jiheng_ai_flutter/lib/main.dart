@@ -1195,6 +1195,8 @@ class JihengShellState extends State<JihengShell> {
           return {
             'title': (source['title'] ?? '').toString(),
             'url': (source['url'] ?? '').toString(),
+            'tag': (source['tag'] ?? '').toString(),
+            'date': (source['date'] ?? '').toString(),
           };
         }).toList();
         ai.ref = ai.refList.map((s) => '· ${s['title']}').join('\n');
@@ -2447,7 +2449,7 @@ class MessageBubble extends StatelessWidget {
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: C.line)),
                     child: message.refList.isEmpty
-                        ? const Text('本次回答未调用带来源的数据工具',
+                        ? const Text('本次回答无需外部引用，或暂未取得可核验来源',
                             style: TextStyle(fontSize: 12, height: 1.55))
                         : _RefList(refs: message.refList),
                   ),
@@ -4145,10 +4147,14 @@ class _RefList extends StatelessWidget {
       children: refs.map((source) {
         final title = source['title'] ?? '';
         final url = source['url'] ?? '';
+        final meta = [source['tag'], source['date']]
+            .where((value) => value != null && value.isNotEmpty)
+            .join(' · ');
+        final label = meta.isEmpty ? '· $title' : '· $title\n  $meta';
         if (url.isEmpty) {
           return Padding(
             padding: const EdgeInsets.only(bottom: 4),
-            child: Text('· $title',
+            child: Text(label,
                 style: const TextStyle(fontSize: 12, height: 1.55)),
           );
         }
@@ -4156,7 +4162,7 @@ class _RefList extends StatelessWidget {
           padding: const EdgeInsets.only(bottom: 4),
           child: GestureDetector(
             onTap: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
-            child: Text('· $title',
+            child: Text(label,
                 style: const TextStyle(
                     fontSize: 12,
                     height: 1.55,

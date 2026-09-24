@@ -144,7 +144,9 @@ def test_executor_runs_tree_with_revision():
     assert executor.states["n3"].attempt == 2
     assert executor.states["n2"].attempt == 1
     assert "".join(e.data["content"] for e in events if e.type == "text") == "## 结论\n两者对比……"
-    assert events[-1].type == "refs" and events[-1].data["refs"] == [{"title": "腾讯行情", "url": "u1"}]
+    assert events[-1].type == "refs" and events[-1].data["refs"] == [
+        {"title": "腾讯行情", "url": "u1", "tag": "数据", "date": ""}
+    ]
     assert executor.states["n1"].status == "done"
     assert executor.llm.reviews == 3
 
@@ -201,6 +203,30 @@ def test_executor_marks_failed_leaf_without_crashing():
     failed = {e.data["node_id"] for e in events if e.type == "agent_status" and e.data["status"] == "failed"}
     assert failed == {"n2", "n3"}
     assert executor.states["n1"].status == "done"
+
+
+def test_executor_returns_controlled_answer_when_no_sources_are_available():
+    async def source_less_tool(name, arguments):
+        return {"status": "success", "data": {"price": 100}, "sources": []}
+
+    executor = GraphExecutor(
+        plan=make_plan(),
+        question="q",
+        expert_name="分析师",
+        llm=FakeChat(),
+        leaf_model="flash",
+        lead_model="pro",
+        tool_specs=SPECS,
+        execute_tool=source_less_tool,
+    )
+
+    async def collect():
+        return [event async for event in executor.stream()]
+
+    events = asyncio.run(collect())
+    answer = "".join(event.data["content"] for event in events if event.type == "text")
+    assert answer == "暂未取得可核验的数据来源，因此无法形成可靠的协作研究结论。请稍后重试。"
+    assert events[-1].data == {"refs": []}
 
 
 def test_planner_retries_until_plan_is_valid():

@@ -42,7 +42,10 @@ def _expert_sop(expert_id: object) -> str:
 def build_profile(mode: str, expert: dict | None = None) -> AgentProfile:
     is_deep = mode in {"deep", "expert"}
     model = settings.deepseek_model_deep if is_deep else settings.deepseek_model_quick
-    prompt = "你是玑衡AI金融研究助手。只能依据工具返回的数据作数值结论，引用必须来自工具来源。不得给出买卖指令。"
+    prompt = (
+        "你是玑衡AI金融研究助手。涉及行情、公司、财务、公告、新闻、政策等外部事实时，必须先调用数据工具；"
+        "只能依据工具返回的数据作事实和数值结论，引用必须来自工具来源。不得给出买卖指令。"
+    )
     if expert:
         prompt += "\n专家角色：" + str(expert.get("name", expert.get("expertId", "金融研究专家")))
         instruction = (

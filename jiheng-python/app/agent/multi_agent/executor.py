@@ -8,6 +8,7 @@ from app.agent.multi_agent.llm import ChatModel
 from app.agent.multi_agent.plan import Plan, PlanNode
 from app.agent.multi_agent.prompts import leaf_prompt, reviewer_prompt, summarizer_prompt
 from app.agent.runtime import AgentEvent
+from app.agent.sources import add_sources
 
 ToolExecutor = Callable[[str, dict], Awaitable[dict]]
 
@@ -145,9 +146,7 @@ class GraphExecutor:
         success = result.get("status") == "success"
         if success:
             state.tool_ok += 1
-            for source in result.get("sources") or []:
-                if isinstance(source, dict) and source.get("url"):
-                    self.refs.setdefault(source["url"], source)
+            add_sources(self.refs, result.get("sources") or [])
         self._emit(
             "tool_result",
             {
@@ -247,6 +246,12 @@ class GraphExecutor:
             async with self.sem:
                 message = await self.llm.step(messages, model=self.lead_model)
             self._submit(state, message.get("content") or "")
+            return
+        if not self.refs:
+            message = "暂未取得可核验的数据来源，因此无法形成可靠的协作研究结论。请稍后重试。"
+            self._emit("text", {"content": message})
+            state.submission = message
+            self._status(state, "done")
             return
         chunks: list[str] = []
         async with self.sem:

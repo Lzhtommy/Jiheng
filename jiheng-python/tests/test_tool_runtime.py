@@ -1,11 +1,17 @@
 import asyncio
+import copy
 import json
 
 import httpx
 
 from app.agent.profiles import AgentProfile
 from app.agent.runtime import AgentRunContext
-from app.agent.tool_runtime import FINAL_ROUND_INSTRUCTION, DeepSeekToolRuntime, _stream_completion
+from app.agent.tool_runtime import (
+    FINAL_ROUND_INSTRUCTION,
+    SOURCE_REQUIRED_INSTRUCTION,
+    DeepSeekToolRuntime,
+    _stream_completion,
+)
 from app.config import settings
 
 
@@ -86,3 +92,94 @@ def test_runtime_removes_tools_and_requests_answer_on_final_round(monkeypatch):
     assert "tools" not in final_payload
     assert final_payload["messages"][-1] == {"role": "user", "content": FINAL_ROUND_INSTRUCTION}
     assert suppress_tool_markup is True
+
+
+def test_expert_runtime_retries_for_sources_and_emits_normalized_refs(monkeypatch):
+    requests = []
+
+    async def fake_openai_tools(tool_names):
+        return [{"type": "function", "function": {"name": "get_realtime_quote"}}]
+
+    async def fake_run_tool(name, arguments):
+        return {
+            "status": "success",
+            "data": {"price": 100},
+            "sources": [{"title": "行情", "url": "u1", "retrieved_at": "2026-09-24T08:00:00Z"}],
+        }
+
+    async def fake_completion(client, headers, payload, message, *, suppress_tool_markup=False):
+        requests.append(copy.deepcopy(payload))
+        if len(requests) == 1:
+            message.update({"role": "assistant", "content": "当前价格是 100 元。"})
+            yield "当前价格是 100 元。"
+        elif len(requests) == 2:
+            message.update(
+                {
+                    "role": "assistant",
+                    "content": "",
+                    "tool_calls": [
+                        {"id": "call-1", "function": {"name": "get_realtime_quote", "arguments": '{"symbols": ["x"]}'}}
+                    ],
+                }
+            )
+        else:
+            message.update({"role": "assistant", "content": "当前价格是 100 元。"})
+            yield "当前价格是 100 元。"
+
+    monkeypatch.setattr(settings, "deepseek_api_key", "test-key")
+    monkeypatch.setattr("app.agent.tool_runtime.openai_tools", fake_openai_tools)
+    monkeypatch.setattr("app.agent.tool_runtime._run_tool", fake_run_tool)
+    monkeypatch.setattr("app.agent.tool_runtime._stream_completion", fake_completion)
+    profile = AgentProfile("expert", "test", "system", ("get_realtime_quote",), 3, None)
+
+    async def collect():
+        return [
+            event
+            async for event in DeepSeekToolRuntime().stream(
+                [{"role": "user", "content": "最新股价是多少？"}], profile, AgentRunContext("user", "conversation")
+            )
+        ]
+
+    events = asyncio.run(collect())
+
+    assert requests[1]["messages"][-1] == {"role": "user", "content": SOURCE_REQUIRED_INSTRUCTION}
+    assert [event.data["content"] for event in events if event.type == "text"] == ["当前价格是 100 元。"]
+    assert [event.data for event in events if event.type == "refs"] == [
+        {
+            "refs": [
+                {
+                    "title": "行情",
+                    "url": "u1",
+                    "retrieved_at": "2026-09-24T08:00:00Z",
+                    "tag": "数据",
+                    "date": "2026-09-24",
+                }
+            ]
+        }
+    ]
+
+
+def test_expert_runtime_allows_conceptual_answer_without_refs(monkeypatch):
+    async def fake_openai_tools(tool_names):
+        return []
+
+    async def fake_completion(client, headers, payload, message, *, suppress_tool_markup=False):
+        message.update({"role": "assistant", "content": "市盈率是股价与每股收益的比值。"})
+        yield "市盈率是股价与每股收益的比值。"
+
+    monkeypatch.setattr(settings, "deepseek_api_key", "test-key")
+    monkeypatch.setattr("app.agent.tool_runtime.openai_tools", fake_openai_tools)
+    monkeypatch.setattr("app.agent.tool_runtime._stream_completion", fake_completion)
+    profile = AgentProfile("expert", "test", "system", (), 2, None)
+
+    async def collect():
+        return [
+            event
+            async for event in DeepSeekToolRuntime().stream(
+                [{"role": "user", "content": "解释一下什么是市盈率"}], profile, AgentRunContext("user", "conversation")
+            )
+        ]
+
+    events = asyncio.run(collect())
+    assert [event.data["content"] for event in events if event.type == "text"] == ["市盈率是股价与每股收益的比值。"]
+    assert events[-1].data == {"refs": []}
