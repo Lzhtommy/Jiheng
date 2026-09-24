@@ -65,11 +65,23 @@
   var WALK_MIN_Y = 66;
   var WALK_MAX_Y = 96;
 
-  var stage = null, player = null, buildings = null, card = null, mounted = false;
+  /* 「加号基座」：不指向任何一家公司，而是让玩家自己输入想了解的公司。
+     x / y 必须落在建筑矩形之外的空档里（wide 在 CATL 与 NAURA 之间，narrow 在两者之间的路面）。 */
+  var PEDESTAL = {
+    id: "custom",
+    label: "添加公司",
+    wide: { x: 44, y: 88, w: 5.5, h: 9 },
+    narrow: { x: 54, y: 88, w: 11, h: 7 }
+  };
+  /* 玩家提交公司名后派发这个事件，由宿主（页面 / App）决定接下来怎么把关卡生成出来。
+     本模块自己不生成、不请求任何东西，只把「用户想要哪家公司」这件事交出去。 */
+  var REQUEST_EVENT = "jh-world:request-company";
+
+  var stage = null, player = null, buildings = null, card = null, pedestal = null, mounted = false;
   var narrow = false;
   var nodes = {};
 
-  var state = { x: SPAWN.wide.x, y: SPAWN.wide.y, selected: null };
+  var state = { x: SPAWN.wide.x, y: SPAWN.wide.y, selected: null, requested: null };
   var arrivalTimer = null, arrivalHandler = null;
 
   /* ---------- 小工具 ---------- */
@@ -248,6 +260,22 @@
     return b;
   }
 
+  /* 加号基座：一座小台子，上面顶着一个发光的「+」 */
+  function buildPedestal() {
+    var p = el("button", "we-pedestal");
+    p.type = "button";
+    p.dataset.company = PEDESTAL.id;
+    p.setAttribute("aria-label", PEDESTAL.label + "：输入你想了解的公司");
+    p.innerHTML =
+      '<span class="we-pd-glow"></span>' +
+      '<span class="we-pd-plus" aria-hidden="true">+</span>' +
+      '<span class="we-pd-cap"></span>' +
+      '<span class="we-pd-shaft"></span>' +
+      '<span class="we-pd-base"></span>' +
+      '<span class="we-pd-sign">' + PEDESTAL.label + '</span>';
+    return p;
+  }
+
   function buildPlayer() {
     var p = el("div", "we-player");
     p.dataset.facing = "right";
@@ -291,14 +319,16 @@
   }
 
   function applyLayout() {
-    for (var i = 0; i < COMPANIES.length; i++) {
-      var c = COMPANIES[i], node = nodes[c.id];
-      if (!node) continue;
-      var l = layoutOf(c);
-      placeAt(node, l.x, l.y);
-      node.style.width = l.w + "%";
-      node.style.height = l.h + "%";
-    }
+    for (var i = 0; i < COMPANIES.length; i++) layoutEntity(nodes[COMPANIES[i].id], COMPANIES[i]);
+    layoutEntity(pedestal, PEDESTAL);
+  }
+
+  function layoutEntity(node, spec) {
+    if (!node) return;
+    var l = layoutOf(spec);
+    placeAt(node, l.x, l.y);
+    node.style.width = l.w + "%";
+    node.style.height = l.h + "%";
   }
 
   /* ---------- 移动 ---------- */
@@ -353,9 +383,9 @@
     for (var i = 0; i < COMPANIES.length; i++) {
       var node = nodes[COMPANIES[i].id];
       if (!node) continue;
-      var on = state.selected === COMPANIES[i].id;
-      node.classList.toggle("is-active", on);
+      node.classList.toggle("is-active", state.selected === COMPANIES[i].id);
     }
+    if (pedestal) pedestal.classList.toggle("is-active", state.selected === PEDESTAL.id);
   }
 
   function showCard(c) {
@@ -386,6 +416,60 @@
     });
   }
 
+  /* 「想了解哪家公司？」——自己输入，提交后交给宿主 */
+  function showRequestCard() {
+    card.innerHTML =
+      '<div class="we-card-code">NEW</div>' +
+      '<div class="we-card-name">想了解哪家公司？</div>' +
+      '<div class="we-card-tag">说出名字，玑衡替你把它的产业链搭出来</div>' +
+      '<form class="we-card-form" data-request-form="1">' +
+      '<input class="we-card-input" type="text" maxlength="24" autocomplete="off" ' +
+      'placeholder="例如：隆基绿能" aria-label="公司名称">' +
+      '<button class="we-card-act" type="submit">开始搭建</button>' +
+      '</form>';
+    card.hidden = false;
+    var input = card.querySelector(".we-card-input");
+    if (input && input.focus) input.focus();
+  }
+
+  function showQueuedCard(name) {
+    card.innerHTML =
+      '<div class="we-card-code">QUEUED</div>' +
+      '<div class="we-card-name">' + name + '</div>' +
+      '<div class="we-card-tag">已收到。产业链关卡的生成能力即将接入玑衡 Agent ——' +
+      '接上之后，这里会直接打开《' + name + '》的新关卡。</div>' +
+      '<button type="button" class="we-card-act we-card-back" data-close-card="1">回到城市</button>';
+    card.hidden = false;
+  }
+
+  function selectPedestal() {
+    var stand = standPoint(PEDESTAL);
+    moveTo(stand.x, stand.y, function () {
+      state.selected = PEDESTAL.id;
+      paint();
+      showRequestCard();
+    });
+  }
+
+  function submitCompany(rawName) {
+    var name = String(rawName || "").replace(/\s+/g, " ").trim().slice(0, 24);
+    if (!name) return false;
+    state.requested = name;
+    showQueuedCard(name);
+    if (typeof global.CustomEvent === "function") {
+      global.dispatchEvent(new CustomEvent(REQUEST_EVENT, { detail: { company: name } }));
+    }
+    return true;
+  }
+
+  function onStageSubmit(event) {
+    var form = event.target;
+    if (!form || !form.closest || !form.closest("[data-request-form]")) return;
+    event.preventDefault();
+    var input = form.querySelector(".we-card-input");
+    if (!submitCompany(input ? input.value : "") && input && input.focus) input.focus();
+  }
+
   function enterScenario() {
     if (typeof global.CustomEvent === "function") {
       global.dispatchEvent(new CustomEvent(ENTER_EVENT));
@@ -396,9 +480,12 @@
     var target = event.target;
     if (target && target.closest) {
       if (target.closest(".we-card")) {
-        if (target.closest("[data-enter]")) enterScenario();
+        if (target.closest("[data-enter]")) { enterScenario(); return; }
+        if (target.closest("[data-close-card]")) { deselect(); return; }
         return;
       }
+      var pod = target.closest(".we-pedestal");
+      if (pod) { selectPedestal(); return; }
       var bld = target.closest(".we-bld");
       if (bld) { select(bld.dataset.company); return; }
     }
@@ -485,6 +572,8 @@
       nodes[COMPANIES[i].id] = node;
       buildings.appendChild(node);
     }
+    pedestal = buildPedestal();
+    buildings.appendChild(pedestal);
     root.appendChild(buildings);
 
     player = buildPlayer();
@@ -507,6 +596,7 @@
     place(false);
 
     root.addEventListener("click", onStageClick);
+    root.addEventListener("submit", onStageSubmit);
     global.addEventListener("resize", onResize);
     global.addEventListener(BACK_EVENT, onBackToWorld);
   }
@@ -515,8 +605,10 @@
     mount: mount,
     isMounted: function () { return mounted; },
     /* 供调试/测试使用 */
-    state: function () { return { x: state.x, y: state.y, selected: state.selected }; },
+    state: function () { return { x: state.x, y: state.y, selected: state.selected, requested: state.requested }; },
     select: select,
+    selectPedestal: selectPedestal,
+    requestCompany: submitCompany,
     enter: enterScenario
   };
 

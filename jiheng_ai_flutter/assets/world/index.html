@@ -46,6 +46,59 @@
   .inspect-pin{min-height:42px;border:1px solid rgba(247,221,180,.65);border-radius:12px;padding:8px 12px;background:rgba(8,24,30,.78);color:#fff5df;box-shadow:0 10px 30px #0008;backdrop-filter:blur(9px);font-size:12px;font-weight:750;text-align:left}
   .inspect-pin:before{content:"✦";margin-right:7px;color:var(--gold)}.inspect-pin.done{border-color:rgba(157,216,208,.65);color:var(--teal)}.inspect-pin.done:before{content:"✓";color:var(--teal)}
   .inspect-pin:hover{background:rgba(27,60,62,.93);transform:translateX(3px)}
+  .cell-progress{position:absolute;z-index:4;left:clamp(24px,5vw,82px);top:calc(39% - 52px);border:1px solid rgba(243,200,132,.7);border-radius:11px;background:rgba(8,24,30,.82);color:#ffe2ae;padding:9px 13px;font-size:12px;font-weight:800;box-shadow:0 10px 25px #0008}
+  .cell-helper{position:absolute;z-index:4;right:clamp(24px,5vw,82px);top:30%;display:flex;align-items:center;gap:8px;border:1px solid #88c9fc;border-radius:14px;background:rgba(10,30,58,.86);color:#e1f3ff;padding:7px 11px;box-shadow:0 12px 30px #0009;font-size:11px;font-weight:800}
+  .cell-helper-face{position:relative;display:grid;place-items:center;width:28px;height:24px;border:2px solid #9cdcff;border-radius:8px;background:#2765b2;color:#d6f6ff;font-size:14px;line-height:1;box-shadow:0 0 0 3px rgba(87,158,245,.2)}
+  .cell-helper-face:before{content:"";position:absolute;left:11px;top:-7px;width:2px;height:5px;background:#9cdcff}
+  .scene-hotspots.cell-hotspots{inset:0;left:0;right:0;top:0;display:block;pointer-events:none}
+  .cell-hotspot{position:absolute;left:var(--x);top:var(--y);transform:translate(-50%,-50%);display:grid;place-items:center;width:62px;height:62px;border:0;border-radius:50%;background:transparent;color:#ffe7b6;pointer-events:auto;touch-action:manipulation}
+  .cell-hotspot:before{content:"";position:absolute;width:20px;height:20px;border:1px solid rgba(255,225,160,.9);border-radius:50%;background:rgba(255,222,145,.2);box-shadow:0 0 14px #f6c975aa;animation:hotspot-pulse 2.5s ease-in-out infinite}
+  .cell-hotspot:after{content:"✦";position:relative;font-size:12px;text-shadow:0 0 9px #ffd477;animation:hotspot-glint 3.2s ease-in-out infinite}
+  .cell-hotspot.visited:before{border-color:#8de2c8;background:rgba(89,199,166,.34);box-shadow:0 0 16px #6dd3b8aa;animation:none}
+  .cell-hotspot.visited:after{content:"✓";color:#d7fff1;font-size:14px;animation:none}
+  .cell-hotspot.inspecting:before{width:35px;height:35px;border-color:#fff4c9;background:rgba(255,218,135,.45);box-shadow:0 0 30px #ffd477;animation:none}
+  .cell-hotspot .hotspot-label{position:absolute;left:50%;top:calc(100% + 1px);transform:translateX(-50%);display:none;padding:5px 9px;border:1px solid rgba(255,231,182,.5);border-radius:99px;background:rgba(7,20,27,.88);color:#fff5df;font-size:10px;white-space:nowrap;box-shadow:0 6px 18px #0008}
+  .cell-hotspot:hover .hotspot-label,.cell-hotspot:focus-visible .hotspot-label{display:block}
+  @keyframes hotspot-pulse{50%{transform:scale(1.24);opacity:.62}}
+  @keyframes hotspot-glint{50%{opacity:.55;transform:scale(.85) rotate(35deg)}}
+  .world.cell-world .dialogue{height:clamp(165px,22dvh,215px);bottom:18px}
+  .world.cell-world .dialogue-main{display:block;padding:7px 22px 2px}
+  .world.cell-world .speaker-side{display:none}
+  .world.cell-world .speech-area .npc-line{font-size:clamp(16px,1.65vw,21px);line-height:1.45;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:auto}
+  .world.cell-world .prompt-row{min-height:39px;padding:2px 22px 6px;}
+  .world.cell-world .input-row{display:none}
+  .world.cell-world.chat-open .dialogue{height:min(430px,56dvh)}
+  .world.cell-world.chat-open .input-row{display:flex}
+  .cell-widget{margin:15px 0;padding:15px;border:1px solid #b9a574;border-radius:10px;background:rgba(255,255,255,.22)}
+  .cell-widget-title{display:flex;align-items:center;justify-content:space-between;gap:10px;color:#526257;font-size:12px;font-weight:850}
+  .cell-widget-note{color:#6d725f;font-size:11px;line-height:1.6}
+  .timeline-chart{display:block;width:100%;height:145px;margin:8px 0 1px;overflow:visible}
+  .timeline-chart .grid{stroke:#8b927b;stroke-opacity:.35;stroke-width:1}.timeline-chart .trend{fill:none;stroke:#498c77;stroke-width:5;stroke-linecap:round;stroke-linejoin:round}.timeline-chart .timelineDot{fill:#e9a64c;stroke:#fff3d0;stroke-width:3;transition:cx .12s,cy .12s}
+  .timeline-slider{width:100%;accent-color:#4d8c72;touch-action:pan-y}.timeline-years{display:flex;justify-content:space-between;color:#677166;font-size:10px}
+  .timeline-readout{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:5px;padding:8px 10px;border-radius:7px;background:#ece0bd;color:#4b5549;font-size:11px}.timeline-readout strong{font-size:16px;color:#366c57}
+  .mini-action{min-height:42px;border:1px solid #7b683f;border-radius:8px;background:#ead8ad;color:#3b2b19;padding:9px 13px;font-size:12px;font-weight:850}.mini-action:disabled{opacity:.5;cursor:not-allowed}
+  .factory-meter{height:13px;margin:10px 0 5px;border-radius:99px;background:#d1c4a0;overflow:hidden}.factory-meter span{display:block;width:48%;height:100%;border-radius:inherit;background:linear-gradient(90deg,#c99951,#4c9978);transition:width .5s}.factory-meter.upgraded span{width:92%}
+  .factory-stats{display:flex;justify-content:space-between;gap:8px;color:#566255;font-size:12px}.factory-stats strong{color:#355f4d}
+  .interaction-row{display:grid;grid-template-columns:minmax(120px,.8fr) minmax(180px,1.2fr);gap:12px;align-items:center;margin-top:14px}
+  .drag-card{min-height:64px;border:1px solid #a99467;border-radius:9px;background:#fff0ce;color:#344139;padding:10px 12px;text-align:center;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+  .drag-card:active{cursor:grabbing}.drag-card.dragging{opacity:.72;z-index:100;pointer-events:none;box-shadow:0 15px 35px #0004}
+  .drop-zone{min-height:86px;display:grid;place-items:center;border:2px dashed #9d895f;border-radius:10px;background:rgba(255,255,255,.18);padding:12px;color:#667060;text-align:center;font-size:12px;line-height:1.6;transition:.15s}
+  .drop-zone.ready{border-color:#4e9c7c;background:#e2f0ce;color:#315e4b}
+  .market-feed{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:15px 0}
+  .market-feed article{border:1px solid #b8a87f;border-radius:9px;background:rgba(255,255,255,.24);padding:12px 8px;text-align:center;color:#4e5b50}
+  .market-feed b{display:block;font-size:20px;color:#3f8667}.market-feed article:last-child b{color:#b46f50}.market-feed span{font-size:10px;line-height:1.4}
+  .market-options{display:grid;gap:8px}.market-options button{min-height:44px;border:1px solid #ac946a;border-radius:8px;padding:9px 12px;background:#f7e9cb;color:#334039;text-align:left;font-size:12px;line-height:1.5}.market-options button:hover{background:#fff3d8}
+  .industry-card{border-left-color:#54836d;background:linear-gradient(120deg,#fff0ca,#e6ebce)}.industry-card strong{font-size:20px}.industry-card .card-label{display:inline-block;margin:6px 0 0;color:#4e8068;font-weight:900;font-size:10px;letter-spacing:.12em}
+  .analysis-card-list{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:15px 0}
+  .analysis-card-list .drag-card{min-height:76px;font-size:12px}.analysis-board{position:relative;min-height:150px;display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:1fr 1fr;align-items:center;justify-items:center;gap:6px;border:1px solid #b4a476;border-radius:12px;background:radial-gradient(circle at center,#fff2cf,#e5d5ad);padding:14px}
+  .analysis-board:before{content:"";position:absolute;left:20%;right:20%;top:50%;border-top:1px dashed #a98d55}.analysis-target{grid-column:2;grid-row:1/3;z-index:1;display:grid;place-items:center;width:126px;min-height:78px;border:2px solid #997947;border-radius:12px;background:#f7e8c2;color:#355d4b;text-align:center;font:17px "Songti SC",serif;padding:8px}
+  .analysis-slot{z-index:1;max-width:115px;min-width:80px;min-height:36px;border:1px dashed #a99768;border-radius:8px;background:#f7edda;color:#6b6c5e;padding:7px;text-align:center;font-size:10px}
+  .analysis-slot.connected{border-style:solid;border-color:#588d73;background:#e2efd7;color:#3a6951;font-weight:850}
+  .analysis-equation{margin-top:11px;color:#536254;text-align:center;font-size:12px}.analysis-equation b{color:#527e63}
+  .cell-insight{border:1px solid #b69457;border-radius:11px;padding:20px;background:radial-gradient(circle at 88% 15%,#fff6cf,#e6d5aa);text-align:center}
+  .cell-insight .stamp{font-size:11px;letter-spacing:.27em;color:#725120;font-weight:900}.cell-insight strong{display:block;margin:8px 0;font:clamp(22px,4vw,32px) "Songti SC",serif;color:#345c4d}
+  .cell-insight p{margin:8px 0}.cell-insight .equation{color:#4c735e;font-size:14px;font-weight:850;line-height:1.9}
+  .analysis-button{display:block;margin:12px auto 0;min-height:42px;border:1px solid #6e795e;border-radius:8px;background:#516f5b;color:#fff6df;padding:9px 16px;font-weight:850}.analysis-button:disabled{opacity:.45;cursor:not-allowed}
   .toolbelt{position:absolute;z-index:7;left:clamp(15px,3vw,42px);bottom:calc(min(350px,45dvh) + 32px);display:flex;gap:9px}
   .tool{min-width:70px;border:1px solid rgba(246,224,183,.4);border-radius:14px;background:rgba(8,23,29,.73);color:var(--ink);padding:7px 11px;text-align:center;box-shadow:0 12px 25px #0006;backdrop-filter:blur(12px)}
   .tool .ico{display:block;font-size:21px;line-height:1.15}.tool span:last-child{display:block;font-size:10px;font-weight:700;letter-spacing:.13em}
@@ -88,6 +141,8 @@
   .route-node{flex:1;min-width:0;min-height:145px;border:1px solid #a99467;background:rgba(255,255,255,.15);border-radius:9px;padding:15px 11px;text-align:left;color:#27372f;transition:.15s}
   .route-node:hover:not(:disabled){background:#f7e7c4;transform:translateY(-3px)}
   .route-node.current{outline:3px solid #8e5b25;background:#f5e3bc}.route-node.fog{border-style:dashed;opacity:.5;cursor:not-allowed}
+  .route-node.new{border:2px solid #53ac89;background:#e3f3ce;box-shadow:0 0 0 3px #6bbb8d36;animation:new-route 1.5s ease-in-out 2}
+  @keyframes new-route{50%{box-shadow:0 0 0 9px #6bbb8d36}}
   .route-node small{display:block;letter-spacing:.15em;font-size:9px;font-weight:800;color:#86653c}
   .route-node strong{display:block;font-family:"Songti SC",serif;font-size:17px;margin:10px 0 4px}
   .route-node span{display:block;font-size:10px;line-height:1.55;color:#6a725f}
@@ -96,6 +151,11 @@
   .sheet-foot button:hover,.scroll button:hover,.epilogue-action:hover{background:#f8eacb}
   .scroll-list{display:grid;gap:12px}.scroll{background:#f6e8c7;border:1px solid #bea879;border-left:5px solid #9e763c;border-radius:5px;padding:14px 17px}
   .scroll small{display:block;color:#8e6e39;font-size:10px;font-weight:850;letter-spacing:.1em}.scroll strong{display:block;font-family:"Songti SC",serif;font-size:18px;margin:5px 0}.scroll p{margin:0;color:#475146}.scroll .actions{display:flex;justify-content:space-between;align-items:center;margin-top:10px;gap:10px;font-size:10px;color:#7e7867}
+  .mission-scroll{border-left-color:#507e9e}.mission-list{list-style:none;padding:0;margin:10px 0;display:grid;gap:6px;color:#405149;font-size:12px}.mission-list li.done{color:#246d5d}.mission-progress{display:inline-block;margin-top:7px;color:#725627;font-size:12px;font-weight:850}
+  .cell-record{border-left:3px solid #8d6835;padding:12px 14px;background:#f7e7c4;color:#334039;font-size:13px;line-height:1.75;margin:12px 0}.cell-record b{display:block;color:#806133;margin-bottom:4px}
+  .cell-options{display:grid;gap:9px;margin:16px 0}.cell-options button{border:1px solid #a99467;border-radius:9px;background:#f7e8c6;padding:13px 15px;color:#28322d;text-align:left;font-size:13px;line-height:1.5}.cell-options button:hover{background:#fff1d4;transform:translateY(-2px)}
+  .cell-feedback{border-left:3px solid #aa6c37;padding:9px 12px;background:#f5dfbc;color:#5d3d22;font-size:12px;line-height:1.6}
+  .cell-complete{border:1px solid #b69457;border-radius:11px;padding:20px;background:radial-gradient(circle at 88% 15%,#fff6cf,#e6d5aa);text-align:center}.cell-complete .stamp{font-size:11px;letter-spacing:.27em;color:#725120;font-weight:900}.cell-complete strong{display:block;margin:8px 0;font:32px "Songti SC",serif;color:#345c4d}.cell-complete p{margin:0}.cell-complete .unlock{margin-top:14px;color:#26745b;font-size:13px;font-weight:850}
   .deal-options{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:15px 0}.deal-option{display:block;width:100%;min-height:166px;border:1px solid #a99467;border-radius:10px;padding:16px 13px;background:rgba(255,255,255,.23);color:#28322d;text-align:left}
   .deal-option:hover:not(:disabled){background:#f8e8c5;transform:translateY(-2px)}.deal-option:disabled{opacity:.57;cursor:not-allowed}.deal-option strong{display:block;font:20px "Songti SC",serif;margin:6px 0}.deal-option span{display:block;font-size:12px;line-height:1.55}.deal-option small{display:block;margin-top:11px;color:#835c28;font-size:10px;font-weight:800}
   .deal-current{border-left:3px solid #8d6835;padding:9px 12px;background:#f7e7c4;color:#48534a;font-size:12px;line-height:1.6}
@@ -113,22 +173,28 @@
   .epilogue-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.epilogue-action{font-size:13px;padding:11px 14px}
   @media(max-width:760px){
     .world{height:100dvh;min-height:0;--mobile-dialogue-height:clamp(260px,44dvh,380px)}
-    .scene-bg{background-position:68% center}.scene-bg.crop{background-size:auto 100%;background-position:right center}.scene-bg.port{background-size:auto 120%;background-position:72% 80%}.scene-bg.storage{background-size:auto 125%;background-position:77% 65%}
+    .scene-bg{background-position:68% center}.scene-bg.crop{background-size:auto 100%;background-position:right center}.scene-bg.cell.crop{background-position:68% center}.scene-bg.port{background-size:auto 120%;background-position:72% 80%}.scene-bg.storage{background-size:auto 125%;background-position:77% 65%}
     .scene-shade{background:linear-gradient(180deg,rgba(3,11,16,.72),rgba(3,11,16,.04) 32%,rgba(3,11,16,.1) 53%,rgba(3,11,16,.68) 68%)}
     .topbar{padding:calc(8px + env(safe-area-inset-top)) 12px 10px;gap:7px}.brand{font-size:14px;gap:7px}.brand .brand-mark{width:34px;height:34px}.brand small{font-size:8px;letter-spacing:.13em}.case,.top-note{display:none}.top-action{min-height:40px;font-size:11px;padding:6px 9px}.app-exit{width:40px;height:40px}
     .scene-copy{left:16px;top:calc(68px + env(safe-area-inset-top));max-width:min(82vw,320px)}.scene-copy h1{font-size:clamp(29px,8vw,38px);margin:5px 0 5px}.scene-copy p{font-size:12px;line-height:1.5;max-width:285px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}.eyebrow{font-size:10px}.ambient-line{display:none}
     .npc-portrait{height:45dvh;max-height:460px;right:-19vw;bottom:calc(var(--mobile-dialogue-height) - 18px);width:89vw;opacity:.94}.npc-presence{display:none}
     .scene-hotspots{left:12px;right:12px;top:calc(166px + env(safe-area-inset-top));display:flex;flex-direction:row;gap:6px;overflow-x:auto;scrollbar-width:none}.scene-hotspots::-webkit-scrollbar{display:none}.inspect-pin{min-height:42px;flex:none;padding:8px 10px;font-size:11px}.inspect-pin:hover{transform:none}
+    .cell-progress{left:12px;top:calc(211px + env(safe-area-inset-top));font-size:10px;padding:7px 9px}.cell-helper{right:12px;top:calc(211px + env(safe-area-inset-top));font-size:10px;padding:5px 8px}.cell-helper-face{width:24px;height:21px;font-size:12px}
     .dialogue{left:0;right:0;bottom:0;height:var(--mobile-dialogue-height);border-radius:23px 23px 0 0;padding-bottom:env(safe-area-inset-bottom);background:linear-gradient(160deg,rgba(8,25,32,.98),rgba(11,27,34,.97))}.dialogue:before{left:calc(50% - 21px);right:auto;top:6px;width:42px;border-top:3px solid rgba(243,200,132,.7);border-radius:4px}.dialogue-head{padding:14px 15px 6px;min-height:53px}.speaker-icon{height:34px;width:34px;font-size:18px;flex:none}.speaker{min-width:0}.speaker b{font-size:14px}.speaker small{display:block;max-width:150px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:9px}.mood{display:none}.head-btn{margin-left:auto;font-size:11px;white-space:nowrap}
+    .world.cell-world .dialogue{left:0;right:0;bottom:0;height:clamp(170px,23dvh,215px);border-radius:23px 23px 0 0;padding-bottom:env(safe-area-inset-bottom)}.world.cell-world .dialogue-head{min-height:45px;padding:10px 14px 4px}.world.cell-world .speaker-icon{width:31px;height:31px}.world.cell-world .dialogue-main{padding:5px 15px 1px}.world.cell-world .speech-area .npc-line{font-size:clamp(15px,4vw,18px);line-height:1.38;-webkit-line-clamp:3}.world.cell-world .prompt-row{min-height:39px;padding:1px 11px 5px;gap:5px}.world.cell-world .prompt{font-size:10px;padding:6px 9px;min-height:33px}.world.cell-world .input-row{display:none}.world.cell-world.chat-open .dialogue{height:min(62dvh,540px)}.world.cell-world.chat-open .input-row{display:flex;margin:0 10px 8px}.world.cell-world.chat-open.input-focused .dialogue{height:min(78dvh,680px)}
     .dialogue-main{display:block;flex:1;min-height:0;padding:9px 16px 3px}.speaker-side{display:none}.speech-area{height:100%;gap:6px}.speech-area .npc-line{font-size:clamp(17px,4.7vw,21px);line-height:1.55}.speech-area .said-by-you{font-size:11px}
     .prompt-row{padding:4px 14px 8px;min-height:48px;gap:7px}.prompt{min-height:38px;font-size:11px;padding:7px 12px}.input-row{margin:0 12px 9px;min-height:49px}.input-row input{font-size:16px;padding:9px 7px}.send{min-height:39px;font-size:12px;padding:8px 13px}
     .toolbelt{left:12px;bottom:calc(var(--mobile-dialogue-height) + 10px);gap:7px}.tool{min-width:48px;min-height:44px;padding:4px 7px;border-radius:12px}.tool .ico{font-size:19px}.tool span:last-child{font-size:9px}.tool .count{margin:-35px 0 0 35px}
+    .world.cell-world .toolbelt{bottom:calc(clamp(170px,23dvh,215px) + 9px)}
+    .world.cell-world.chat-open .toolbelt{display:none}.world.cell-world.chat-open.input-focused .cell-hotspots,.world.cell-world.chat-open.input-focused .cell-helper,.world.cell-world.chat-open.input-focused .cell-progress{display:none}
     .travel{right:12px;bottom:calc(var(--mobile-dialogue-height) + 11px);max-width:53vw;min-height:44px;font-size:10px;padding:7px 10px}
     .world.input-focused{--mobile-dialogue-height:min(420px,78dvh)}.world.input-focused .scene-copy,.world.input-focused .toolbelt,.world.input-focused .travel{display:none}
     .cover{padding:calc(12px + env(safe-area-inset-top)) 10px calc(12px + env(safe-area-inset-bottom))}.sheet{width:100%;max-height:100%;padding:24px 18px}.route{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}.route-node{min-height:103px}.route-node strong{font-size:15px}.close{min-width:40px;min-height:40px}
     .deal-options{grid-template-columns:1fr;gap:8px}.deal-option{min-height:0;padding:12px 14px}.deal-option strong{font-size:18px;margin:2px 0}.deal-option small{margin-top:5px}
     .epilogue{min-height:100dvh;height:auto;padding:calc(26px + env(safe-area-inset-top)) 14px calc(26px + env(safe-area-inset-bottom))}
+    .interaction-row{grid-template-columns:1fr}.timeline-chart{height:120px}.analysis-card-list{grid-template-columns:1fr;gap:6px}.analysis-card-list .drag-card{min-height:54px}.analysis-board{min-height:178px;padding:9px;gap:4px}.analysis-target{width:104px;min-height:74px;font-size:15px}.analysis-slot{min-width:70px;padding:5px;font-size:9px}.market-feed article{padding:10px 4px}.market-feed span{font-size:9px}
   }
+  @media(max-width:360px){.cell-helper{top:calc(248px + env(safe-area-inset-top))}}
   @media(max-width:760px) and (max-height:600px){.world{--mobile-dialogue-height:min(310px,54dvh)}.scene-copy p{display:none}.npc-portrait{height:44dvh}.scene-hotspots{top:132px}}
   @media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;transition-duration:.01ms!important}}
 </style>
@@ -262,7 +328,23 @@ const MATERIAL_OFFERS = {
   audit:{title:"季度核价",detail:"先守住价格依据；排产位暂不保留。",need:"需要看过长协条款",prompt:"上游长协按季度调价，我要求按季度复核批次成本后再议涨幅。",terms:"按季度核价并待补批次进价；工坊暂未承诺排产位置。",risk:"价格传导有核验边界，但下一站交期仍不确定。",reply:"岑把涨价函收回去：季度核价我认，但没拿到你的滚动订单，我不能替你占着机台。你去问电芯厂交期时，要把这句也带上。"},
   rolling:{title:"滚动采购计划",detail:"用分批订单换排产窗口；价格与数量逐季核对。",need:"需要台账、长协和排产线索",prompt:"我按月给滚动采购计划，旧料与现货分批核价，季度复核；你先留可调整的排产窗口。",terms:"分批滚动采购；旧料与现货分批核价、季度复核；排产窗口为条件预留。",risk:"成本和交期都有约束，但分批数量与实际需求仍需逐月核对。",reply:"岑把白板上的窗口圈了一下：这能谈。你每月给我滚动量，我按批次说明成本，季度再复核价格。窗口是条件预留，不是半年死保。电芯厂会按这份节奏给你拆报价。"}
 };
+const CELL_STATIONS = {
+  warehouse:{label:"仓库",title:"近期材料入库记录",record:"本局模拟记录：磷酸铁锂采购价格指数回落 18%，电解液回落 11%，隔膜回落 6%。",finding:"关键材料采购成本正在下降。",desktop:{x:15,y:79},mobile:{x:13,y:67}},
+  factory:{label:"生产线",title:"生产线控制台",record:"自动化升级后，同一时段的合格电芯产出增加。",finding:"自动化与规模效应降低单位制造成本。",desktop:{x:48,y:49},mobile:{x:45,y:48}},
+  market:{label:"市场终端",title:"市场实时数据",record:"本局模拟：新能源汽车销量与储能装机规模上行，电芯平均报价下行。",finding:"需求仍在增长，但报价正在下行。",desktop:{x:88,y:25},mobile:{x:86,y:30}}
+};
+const CELL_CARDS = {
+  warehouse:{id:"cell-cost",kind:"产业信息卡",from:"电芯城 · 仓库",title:"成本下降",body:"上游材料采购价格正在回落。"},
+  factory:{id:"cell-efficiency",kind:"产业信息卡",from:"电芯城 · 生产线",title:"效率提升",body:"自动化与规模效应提高产出，降低单位制造成本。"},
+  market:{id:"cell-demand",kind:"产业信息卡",from:"电芯城 · 市场终端",title:"需求仍在增长",body:"新能源车与储能需求仍在上行，电芯报价却下降，市场竞争也在加剧。"}
+};
+const CELL_MARKET_CHOICES = {
+  demandPrice:{label:"需求增长，但电芯价格仍在下降",correct:true},
+  noDemand:{label:"电池已经没人买了",correct:false},
+  carSales:{label:"新能源汽车销量正在下降",correct:false}
+};
 const ALL_SCROLLS = new Map(SCENES.flatMap(scene => scene.topics.filter(topic => topic.scroll).map(topic => [topic.scroll.id,Object.assign({from:scene.place},topic.scroll)])));
+Object.values(CELL_CARDS).forEach(card=>ALL_SCROLLS.set(card.id,card));
 const STORAGE_KEY = "jiheng-procurement-journey-v1";
 /* Phase 1：World 与 Scenario 分层。存档 key 与字段语义都不变；
    scenario 的六个字段由 world-state.js 用非枚举访问器映射回顶层，现有玩法代码一行不改。 */
@@ -323,25 +405,112 @@ function progress(scene){
   }
   const p=S.scenes[scene.id];
   if(!Array.isArray(p.inspected)) p.inspected=[];
+  if(scene.id==="cell" && (!p.cellMission || p.cellMission.version!==2)){
+    const previous=p.cellMission||{};
+    const legacyComplete=!!previous.completed || S.unlocked>2 || !!p.leadHeard;
+    p.cellMission={version:2,interactions:{warehouse:legacyComplete,factory:legacyComplete,market:legacyComplete},cards:[],connected:[],marketFeedback:"",analysisCompleted:legacyComplete,completed:legacyComplete};
+    saveState();
+  }else if(scene.id==="cell"){
+    const mission=p.cellMission;
+    if(!mission.interactions) mission.interactions={warehouse:false,factory:false,market:false};
+    if(!Array.isArray(mission.cards)) mission.cards=[];
+    if(!Array.isArray(mission.connected)) mission.connected=[];
+    if(typeof mission.marketFeedback!=="string") mission.marketFeedback="";
+    if(typeof mission.analysisCompleted!=="boolean") mission.analysisCompleted=!!mission.completed;
+  }
   return p;
+}
+function cellCount(p){ return p.cellMission.cards.length; }
+function cellCardOwned(p,id){ return p.cellMission.cards.includes(CELL_CARDS[id]&&CELL_CARDS[id].id); }
+function openCellInteraction(scene,p,id){
+  if(scene.id!=="cell" || !CELL_STATIONS[id]) return false;
+  overlay="cell-interaction:"+id;
+  if(id==="warehouse") cellTimelinePosition=0;
+  render();
+  return true;
+}
+function collectCellCard(scene,p,id){
+  const card=CELL_CARDS[id];
+  if(scene.id!=="cell" || !card || p.cellMission.completed) return false;
+  if(!cellCardOwned(p,id)){
+    p.cellMission.cards.push(card.id);
+    p.cellMission.interactions[id]=true;
+    addScroll(card);
+    appendHistory(p,"you","我把「"+card.title+"」记进了背包。");
+    appendHistory(p,"npc",cellCount(p)===3?"墨看着你收下最后一张卡：看来线索已经凑齐。把它们放上调查桌，试着拼出报价变化的原因。":"墨点点头：这条发现先收好，场景里也许还有别的线索。" );
+  }
+  overlay="cell-card:"+id;
+  saveState();
+  render();
+  return true;
+}
+function updateCellTimeline(value){
+  cellTimelinePosition=Math.max(0,Math.min(100,Number(value)||0));
+  const dot=document.getElementById("timelineDot"),year=document.getElementById("timelineYear"),price=document.getElementById("timelinePrice"),action=document.getElementById("timelineRecord");
+  const x=38+cellTimelinePosition*2.22,y=30+cellTimelinePosition*1.02,index=Math.round(100-cellTimelinePosition*.18),shownYear=2024+Math.round(cellTimelinePosition/50);
+  if(dot){dot.setAttribute("cx",String(x));dot.setAttribute("cy",String(y));}
+  if(year) year.textContent=String(shownYear);
+  if(price) price.textContent=String(index);
+  if(action) action.disabled=cellTimelinePosition<80;
+  return {year:shownYear,index:index,ready:cellTimelinePosition>=80};
+}
+let cellTimelinePosition=0,cellChatOpen=false,activePointerDrag=null;
+function completeCellTimeline(scene,p){
+  if(scene.id!=="cell" || cellTimelinePosition<80) return false;
+  return collectCellCard(scene,p,"warehouse");
+}
+function completeFactoryUpgrade(scene,p){
+  if(scene.id!=="cell" || cellCardOwned(p,"factory")) return false;
+  p.cellMission.interactions.factory=true;
+  appendHistory(p,"you","我把自动化升级模块接入了产线，控制台显示单位时段的合格产出提高。" );
+  appendHistory(p,"npc","墨指着效率记录：产出上去了，但这不代表每一家工厂都能达到同样效果。先把这条模拟结果记下来。" );
+  overlay="cell-factory-result";saveState();render();return true;
+}
+function answerCellMarket(scene,p,choiceId){
+  if(scene.id!=="cell" || p.cellMission.completed) return false;
+  const choice=CELL_MARKET_CHOICES[choiceId];
+  if(!choice) return false;
+  if(!choice.correct){
+    p.cellMission.marketFeedback="小玑：再看看销量和价格是不是在朝同一个方向变化？";
+    saveState();render();return false;
+  }
+  appendHistory(p,"you","我观察到需求还在增长，电芯报价却在下降。");
+  appendHistory(p,"npc","小玑：没错。价格下降不能简单解释成没人买；成本与竞争也值得继续看。" );
+  return collectCellCard(scene,p,"market");
+}
+function connectCellCard(p,id){
+  if(!CELL_CARDS[id] || !cellCardOwned(p,id) || p.cellMission.connected.includes(id)) return false;
+  p.cellMission.connected.push(id);
+  appendHistory(p,"you","我把「"+CELL_CARDS[id].title+"」放上了调查桌。");
+  saveState();render();return true;
+}
+function submitCellAnalysis(scene,p){
+  const allCards=Object.keys(CELL_CARDS);
+  if(scene.id!=="cell" || !allCards.every(id=>p.cellMission.connected.includes(id))) return false;
+  p.cellMission.analysisCompleted=true;
+  appendHistory(p,"npc","墨看着调查桌：问题不在没人买。材料成本回落、产线效率提高，再加上行业竞争，合起来就能解释报价为什么下行。" );
+  overlay="cell-insight";saveState();render();return true;
+}
+function completeCellArea(scene,p){
+  if(scene.id!=="cell" || !p.cellMission.analysisCompleted) return false;
+  p.cellMission.completed=true;p.leadHeard=true;
+  unlockAfter(scene);overlay="cell-complete";saveState();render();return true;
 }
 function materialDeal(){ return S.scenes.materials && S.scenes.materials.deal; }
 function materialRoute(){ const deal=materialDeal(); return deal && deal.route; }
 function openingLine(scene){
   if(scene.id!=="cell") return scene.opening;
   const route=materialRoute();
-  if(route==="rush") return "岑说你先锁了材料排产，但交货日价格没有上限。我的综合报价会把这段成本敞口算进去。你要我给半年价，准备怎么分担？";
-  if(route==="audit") return "岑同意按季度核价，却没给你保排产位。价格能慢慢核，产线不能一直等。你这边能保证哪一天把料送到？";
-  if(route==="rolling") return "岑给了你分批排产窗口和季度核价框架。好，我可以按这份节奏拆报价；但每一批的交期和数量，你得跟我对齐。";
-  return scene.opening;
+  const handoff=route==="rush"?"岑说你先锁了材料排产，但交货日价格没有上限。":route==="audit"?"岑同意按季度核价，却没给你保排产位。":route==="rolling"?"岑给了你分批排产窗口和季度核价框架。":"";
+  return handoff+"最近本局电芯报价一直在下降，但需求却没有消失。奇怪的是，工厂最近反而比以前更忙了。你能帮我看看这里到底发生了什么吗？";
 }
 function arrivalLine(scene){
   if(scene.id!=="cell") return scene.arrival;
   const route=materialRoute();
-  if(route==="rush") return "你从工坊抢到了排产，但材料成本尚未封顶；电芯厂已经把这个风险写进总价。";
-  if(route==="audit") return "你在工坊守住了核价依据，却没拿到排产位；电芯厂开始追问供料时间。";
-  if(route==="rolling") return "你的滚动采购计划带来了分批窗口；电芯厂愿意谈拆价和逐批交付。";
-  return scene.arrival;
+  if(route==="rush") return "材料排产锁住了，成本却未封顶。墨的疑问还在：需求没消失，报价为什么往下走？";
+  if(route==="audit") return "你守住季度核价，排产位却未锁。墨正在看着忙碌的产线。";
+  if(route==="rolling") return "你拿到了分批窗口。墨指了指厂房里的生产线，似乎有新变化。";
+  return "产线比以往更忙，市场屏幕上的报价却往下走。墨想听听你的发现。";
 }
 function esc(value){
   return String(value==null?"":value).replace(/[&<>"']/g,function(c){
@@ -351,7 +520,7 @@ function esc(value){
 function seenCount(p){ return p.seen.filter(id=>["claim","proof","risk"].includes(id)).length; }
 function relevantPresentations(scene,p){ return p.presented.filter(id=>Object.prototype.hasOwnProperty.call(scene.cross,id)).length; }
 function conversationDepth(scene,p){ return seenCount(p)+Math.min(1,relevantPresentations(scene,p)); }
-function canRevealLead(scene,p){ return scene.id==="materials"?!!p.deal:conversationDepth(scene,p)>=2 || !!p.deal; }
+function canRevealLead(scene,p){ return scene.id==="cell"?!!p.cellMission.completed:scene.id==="materials"?!!p.deal:conversationDepth(scene,p)>=2 || !!p.deal; }
 function appendHistory(p,speaker,text){
   p.history.push({speaker:speaker,text:String(text).slice(0,550)});
   if(p.history.length>80) p.history.splice(0,p.history.length-80);
@@ -364,6 +533,7 @@ function addScroll(item){
   toastTimer=setTimeout(function(){toastText=""; const node=document.getElementById("toast"); if(node) node.remove();},3300);
 }
 function unlockAfter(scene){
+  if(scene.id==="cell" && !progress(scene).cellMission.completed) return;
   const index=SCENES.findIndex(x=>x.id===scene.id);
   if(index===SCENES.length-1) S.finished=true;
   else S.unlocked=Math.max(S.unlocked,index+1);
@@ -427,6 +597,7 @@ function resolveTurn(scene,p,text,forced,itemId){
     return scene.npc+"看完卷轴：这是"+item.from+"的材料。它能帮你追问，却不能直接证明我这里的库存、报价或交期。你想拿它问我什么？";
   }
   if(intent==="lead"){
+    if(scene.id==="cell" && !p.cellMission.completed) return "墨指向手里的委托：现场还有几条线索，先把它们收进背包，再试着拼出一条解释。下一段路由你亲手点亮。";
     if(!canRevealLead(scene,p)) return scene.npc+"按住地图：先弄清我这里的价格依据或交付条件。你至少得带着一个问题去下一站。";
     p.leadHeard=true;
     unlockAfter(scene);
@@ -450,10 +621,11 @@ function resolveTurn(scene,p,text,forced,itemId){
         p.deal.risk+=" 上游窗口为条件预留，实际数量仍需复核。";
       }
     }
-    p.leadHeard=true;
-    unlockAfter(scene);
     const route=scene.id==="cell"?materialRoute():null;
     const routeReply=route==="rush"?"墨补了一句：材料位置是锁住了，原料涨幅我会单列在报价里。":route==="audit"?"墨敲了敲交期栏：工坊没给排产位，这里只能先写待确认。":route==="rolling"?"墨在交付栏画了分批线：按你从工坊拿来的窗口逐批走。":"";
+    if(scene.id==="cell" && !p.cellMission.completed) return (strong?scene.offerStrong:scene.offerWeak)+" "+routeReply+" 不过这份委托还没收束。先把现场线索带回来，我们再接着谈下一步。";
+    p.leadHeard=true;
+    unlockAfter(scene);
     return (strong?scene.offerStrong:scene.offerWeak)+" "+routeReply+" "+scene.lead;
   }
   const topic=scene.topics.find(x=>x.id===intent);
@@ -528,6 +700,11 @@ function topicPrompts(scene,p){
     if(canRevealLead(scene,p)) prompts.push({label:"问下一站",text:"这条链下一站该去哪里？",intent:"lead"});
     return prompts;
   }
+  if(scene.id==="cell"){
+    if(p.cellMission.completed) return [{label:"查看已完成委托",action:"open-cell-mission"},{label:"打开地图",action:"open-map"}];
+    if(cellCount(p)===3) return [{label:"展开调查桌",action:"open-cell-analysis"},{label:"背包",action:"open-bag"},{label:"问小玑",action:"open-cell-hint"}];
+    return [{label:"背包",action:"open-bag"},{label:"问小玑",action:"open-cell-hint"}];
+  }
   const unseen=scene.topics.filter(x=>!p.seen.includes(x.id));
   const prompts=unseen.slice(0,3).map(x=>({label:x.label,text:x.prompt,intent:x.id}));
   prompts.push({label:p.deal?"再谈条件":"提出条件",text:scene.offerPrompt,intent:"offer"});
@@ -544,12 +721,15 @@ function renderMap(){
   let nodes="";
   SCENES.forEach(function(scene,index){
     const known=index<=S.unlocked,here=index===S.current;
-    const p=S.scenes[scene.id],state=!known?"尚未发现":(p&&p.deal?"已谈过条件":(p&&p.leadHeard?"已走访":"可走访"));
-    nodes+='<button class="route-node '+(here?"current ":"")+(known?"":"fog")+'" data-act="map-node" data-index="'+index+'" '+(known?"":"disabled")+'>'+
+    const p=S.scenes[scene.id],cellDone=scene.id==="cell" && !!(p&&p.cellMission&&p.cellMission.completed);
+    const justUnlocked=index===3 && known && !p && S.current===2 && !!(S.scenes.cell&&S.scenes.cell.cellMission&&S.scenes.cell.cellMission.completed);
+    const state=!known?"🔒 尚未解锁":cellDone?"✓ 已完成":justUnlocked?"🔓 NEW · 亲自前往":(p&&p.deal?"已谈过条件":(p&&p.leadHeard?"已走访":"可走访"));
+    nodes+='<button class="route-node '+(here?"current ":"")+(justUnlocked?"new ":"")+(known?"":"fog")+'" data-act="map-node" data-index="'+index+'" '+(known?"":"disabled")+'>'+
       '<small>CHAPTER '+String(index+1).padStart(2,"0")+'</small><strong>'+esc(known?scene.place:"未探明")+'</strong>'+
-      '<span>'+esc(here?"你正在这里":state)+'</span></button>';
+      '<span>'+esc(here?(cellDone?"✓ 已完成 · 你正在这里":"● 你正在这里"):state)+'</span></button>';
   });
-  const body='<p>你亲手走过的地方才会在地图上亮起。下一站的名字，要从眼前这个人嘴里问出来。</p>'+
+  const cellReady=currentScene().id==="cell" && !!progress(currentScene()).cellMission.completed;
+  const body='<p>'+(cellReady?"电芯城已完成；下一段产业链已点亮。点击地图上的新地点，由你决定何时出发。":"你亲手走过的地方才会在地图上亮起。完成眼前区域的走访，下一段路才会开放。")+'</p>'+
     '<div class="route">'+nodes+'</div>';
   const footer='<span>已发现 '+(S.unlocked+1)+' / '+SCENES.length+' 个地点 · 本局进度保存在本机</span>'+
     '<button data-act="reset">重新开始这一趟</button>';
@@ -578,17 +758,101 @@ function renderMaterialGuide(){
   return overlayFrame("给采购新人的提示","现场走访 · 可跳过",body,'<span>提示不是标准答案；拿到证据后仍要自己权衡条件。</span><button data-act="close">回到现场</button>');
 }
 function renderBag(){
+  const inCell=currentScene().id==="cell",p=inCell?progress(currentScene()):null;
+  const mission=inCell?'<article class="scroll mission-scroll"><small>随身委托 · '+(p.cellMission.completed?"已完成":"调查中")+'</small><strong>📜 电芯报价之谜</strong><p>报价下行，但需求没消失，产线却更忙。把沿途发现收进背包，再试着找出它们之间的关系。</p>'+
+    '<div class="actions"><span>'+(p.cellMission.cards.length?"已收下的线索会在下方显示。":"地图上还有未点亮的调查点。")+'</span>'+
+    (p.cellMission.cards.length===3 && !p.cellMission.completed?'<button data-act="open-cell-analysis">摊开调查桌</button>':p.cellMission.completed?'<button data-act="open-map">打开地图</button>':'<button data-act="close">回到场景</button>')+'</div></article>':"";
   const list=S.scrolls.map(function(id){
     const item=ALL_SCROLLS.get(id);
     if(!item) return "";
+    if(inCell && Object.values(CELL_CARDS).some(function(card){return card.id===id;})){
+      return '<article class="scroll industry-card"><small>'+esc(item.kind)+' · '+esc(item.from)+'</small><strong>'+esc(item.title)+'</strong><p>'+esc(item.body)+'</p><div class="actions"><span>'+(p.cellMission.connected.includes(id)?'✓ 已放上调查桌':'收集到的现场线索')+'</span>'+(p.cellMission.cards.length===3&&!p.cellMission.completed?'<button data-act="open-cell-analysis">去调查桌组合</button>':"")+'</div></article>';
+    }
     return '<article class="scroll"><small>'+esc(item.kind)+' · '+esc(item.from)+'</small>'+
       '<strong>'+esc(item.title)+'</strong><p>'+esc(item.body)+'</p>'+
       '<div class="actions"><span>本局情景材料 · 尚需真实来源核对</span>'+
       '<button data-act="present" data-scroll="'+esc(id)+'">出示给'+esc(currentScene().npc)+'</button></div></article>';
   }).join("");
-  const body='<p>和人物交谈时得到的说法与单据会放在这里。出示卷轴，对方会按自己的立场回应。</p>'+
-    '<div class="scroll-list">'+(list||'<div class="scroll"><strong>背包还是空的</strong><p>先回去和眼前的人谈谈价格、条款或交付。</p></div>')+'</div>';
-  return overlayFrame("走访卷轴","SATCHEL · "+S.scrolls.length+" 份",body,'<span>卷轴记录的是游戏内情景，不代表真实企业文件。</span><button data-act="close">回到对话</button>');
+  const body='<p>'+(inCell?"这张委托记录你在电芯城亲手查过什么；其他卷轴仍可出示给人物。":"和人物交谈时得到的说法与单据会放在这里。出示卷轴，对方会按自己的立场回应。")+'</p>'+
+    '<div class="scroll-list">'+mission+(list||(!mission?'<div class="scroll"><strong>背包还是空的</strong><p>先回去和眼前的人谈谈价格、条款或交付。</p></div>':""))+'</div>';
+  return overlayFrame("走访卷轴","SATCHEL · "+(S.scrolls.length+(inCell?1:0))+" 份",body,'<span>卷轴记录的是游戏内情景，不代表真实企业文件。</span><button data-act="close">回到对话</button>');
+}
+function renderCellInteraction(id){
+  const station=CELL_STATIONS[id],p=progress(currentScene());
+  if(!station) return "";
+  if(cellCardOwned(p,id)) return renderCellCard(id);
+  if(id==="warehouse"){
+    const readout=updateCellTimeline(cellTimelinePosition);
+    const chart='<svg class="timeline-chart" viewBox="0 0 260 150" role="img" aria-label="模拟材料价格指数趋势"><path class="grid" d="M10 25H250M10 60H250M10 95H250M10 130H250"/><path class="trend" d="M15 30 C45 34 48 48 78 50 S116 65 140 68 S184 82 205 94 S228 111 245 120"/><circle id="timelineDot" class="timelineDot" cx="'+(38+cellTimelinePosition*2.22)+'" cy="'+(30+cellTimelinePosition*1.02)+'" r="7"/></svg>';
+    const body='<p>仓库管理员翻出两年的采购台账：几类电芯原料的到货成本在缓慢变化。拖动时间轴，看看成本曲线走向。</p>'+
+      '<div class="cell-widget"><div class="cell-widget-title"><span>原料采购成本指数</span><span>情景模拟</span></div>'+chart+
+      '<input class="timeline-slider" data-act="cell-timeline" type="range" min="0" max="100" value="'+cellTimelinePosition+'" aria-label="查看原料成本变化时间轴">'+
+      '<div class="timeline-years"><span>2024</span><span>2025</span><span>2026</span></div>'+
+      '<div class="timeline-readout"><span><span id="timelineYear">'+readout.year+'</span> 年 · 成本指数</span><strong id="timelinePrice">'+readout.index+'</strong></div>'+
+      '<p class="cell-widget-note">指数仅用于本局玩法演示，不是实时行情或真实企业采购价格。</p></div>';
+    return overlayFrame("仓库 · 翻看采购台账","现场调查 · 互动线索",body,'<span>看到成本回落后，才能把这页台账收进背包。</span><button class="mini-action" id="timelineRecord" data-act="cell-timeline-complete" '+(cellTimelinePosition<80?"disabled":"")+'>收下这页台账</button>');
+  }
+  if(id==="factory"){
+    if(p.cellMission.interactions.factory) return renderFactoryResult();
+    const body='<p>墨带你走到生产线控制台。新装的自动化模块还没有接入，工人请你把它拖到控制台上，再观察单位时段的合格产出。</p>'+
+      '<div class="cell-widget"><div class="cell-widget-title"><span>电芯产线 · 升级前</span><span>互动模拟</span></div>'+
+      '<div class="factory-meter"><span></span></div><div class="timeline-readout"><span>每班合格产出</span><strong>100</strong></div>'+
+      '<div class="interaction-row"><button class="drag-card" data-drag-card="factory" aria-label="拖动自动化升级模块">⚙ 自动化升级模块 <small>按住并拖到控制台</small></button><div class="drop-zone" data-drop-zone="factory">把升级模块放到这里<br>接入产线控制台</div></div>'+
+      '<p class="cell-widget-note">数值为本局情景设定；现实产能还取决于良率、设备利用率和产品结构。</p></div>';
+    return overlayFrame("生产线 · 接入升级模块","现场调查 · 动手试试",body,'<span>试着把模块拖进右侧的控制台。</span><button data-act="close">稍后再来</button>');
+  }
+  if(id==="market"){
+    const options=Object.entries(CELL_MARKET_CHOICES).map(function([key,choice]){return '<button data-act="cell-market-choice" data-choice="'+key+'">'+esc(choice.label)+'</button>';}).join("");
+    const feedback=p.cellMission.marketFeedback?'<div class="cell-feedback">'+esc(p.cellMission.marketFeedback)+'</div>':"";
+    const body='<p>市场终端的屏幕正在滚动。三项指标里，只有一组信号能同时解释现场听到的“销量还行”和“报价变低”。你会怎么判断？</p>'+
+      '<div class="market-feed"><article><b>新能源汽车销量</b><strong>↑</strong><span>需求信号</span></article><article><b>储能新增装机</b><strong>↑</strong><span>需求信号</span></article><article><b>电芯平均报价</b><strong>↓</strong><span>价格信号</span></article></div>'+feedback+
+      '<div class="cell-options">'+options+'</div><p class="cell-widget-note">这是本局虚构情景，不是实时市场数据。</p>';
+    return overlayFrame("市场终端 · 看懂价格信号","现场调查 · 作出判断",body,'<span>选错可以继续观察，不扣分。</span><button data-act="close">回到场景</button>');
+  }
+  return "";
+}
+function renderCellCard(id){
+  const card=CELL_CARDS[id];
+  if(!card) return "";
+  const p=progress(currentScene());
+  const body='<div class="cell-record"><b>【'+esc(card.kind)+'】'+esc(card.title)+'</b>'+esc(card.body)+'</div><p>这张线索卡已放进你的背包。你可以继续探索，也可以回看刚收下的卷轴。</p>';
+  return overlayFrame(card.title,"新线索 · 已收入背包",body,'<span>收集到的线索不会直接给出答案。</span>'+(cellCount(p)===3?'<button data-act="open-cell-analysis">摊开调查桌</button>':'<button data-act="close">继续探索</button>'));
+}
+function renderFactoryResult(){
+  const body='<p>模块接入后，控制台重新跑了一轮模拟生产。墨把变化记在记录板上。</p><div class="cell-widget"><div class="cell-widget-title"><span>电芯产线 · 模拟结果</span><span>本局情景</span></div>'+
+    '<div class="factory-meter upgraded"><span></span></div><div class="timeline-readout"><span>每班合格产出</span><strong>100 → 128</strong></div><div class="deal-current">单位制造成本随产出效率提升而下降（情景设定）。</div></div>';
+  return overlayFrame("生产线 · 模块接入成功","发现线索 · 效率变化",body,'<span>把生产记录带走，稍后和其他信息交叉验证。</span><button data-act="collect-cell-card" data-card="factory">收下效率卡</button>');
+}
+function renderCellMission(){
+  const p=progress(currentScene());
+  const body='<p>墨把一张没有写明调查对象的委托递给你：报价在变，需求与产线却传来不同信号。到场后自己找证据，别急着下结论。</p>'+
+    '<div class="scroll mission-scroll"><small>📜 电芯城 · '+(p.cellMission.completed?"已完成":"待探索")+'</small><strong>报价之谜</strong><p>把现场发现收成线索卡，摊开后试着连接因果。</p></div>';
+  return overlayFrame("一份待查的委托","CURRENT MISSION",body,'<span>所有数字均为虚构教学场景。</span><button data-act="'+(p.cellMission.completed?"open-map":cellCount(p)===3?"open-cell-analysis":"close")+'">'+(p.cellMission.completed?"查看新路线":cellCount(p)===3?"摊开调查桌":"回到场景")+'</button>');
+}
+function renderCellAnalysis(){
+  const p=progress(currentScene());
+  if(cellCount(p)!==3 || p.cellMission.completed) return renderCellMission();
+  const cards=Object.entries(CELL_CARDS).map(function([id,card]){const connected=p.cellMission.connected.includes(id);return '<button class="drag-card '+(connected?"connected":"")+'" data-drag-card="analysis:'+id+'" '+(connected?"disabled":"")+'>'+esc(card.title)+' <small>'+(connected?"已放上桌":"拖到关系图中")+'</small></button>';}).join("");
+  const slots=Object.entries(CELL_CARDS).map(function([id,card]){const connected=p.cellMission.connected.includes(id);return '<div class="analysis-slot '+(connected?"connected":"")+'">'+(connected?"✓ "+esc(card.title):"待连接")+'</div>';}).join("");
+  const ready=Object.keys(CELL_CARDS).every(function(id){return p.cellMission.connected.includes(id);});
+  const board='<div class="analysis-board" data-drop-zone="analysis">'+slots+'<div class="analysis-target">报价<br>为什么下降？</div></div>';
+  const equation=ready?'<div class="analysis-equation">材料成本回落 <b>＋</b> 产线效率提升 <b>＋</b> 市场竞争 <b>→</b> 报价下行</div>':'<div class="analysis-equation">把你认为相关的线索卡，拖到中间的调查桌。</div>';
+  const body='<p>把刚收集到的线索从背包拖到调查桌，看看哪些变化可能一起影响电芯报价。没有要求你先知道答案。</p><div class="analysis-card-list">'+cards+'</div>'+board+equation;
+  return overlayFrame("摊开调查桌 · 连起因果","线索整理 · 拖放互动",body,'<span>'+(ready?"线索已连接，可以形成你的产业判断。":"把三张线索卡逐一放到桌面。")+'</span><button class="analysis-button" data-act="submit-cell-analysis" '+(ready?"":"disabled")+'>形成产业判断</button>');
+}
+function renderCellInsight(){
+  const body='<div class="cell-insight"><div class="stamp">INDUSTRY INSIGHT · 情景推演</div><strong>价格下降，不等于需求消失</strong><p>把三条现场线索放在一起看：</p><div class="equation">材料成本回落<br>＋ 自动化提高单位产出<br>＋ 需求增长下的市场竞争<br>↓<br>电芯报价承压下行</div></div><p style="margin-top:16px">这是这次模拟可以得到的一种解释。真实公司还需核对产品结构、良率、产能利用率、合同价格与财报披露，不能仅凭这几条线索推断股价。</p>';
+  return overlayFrame("你的调查发现","墨 · 现场复盘",body,'<span>把这条产业逻辑记下来，再打开下一段地图。</span><button data-act="complete-cell-area">完成电芯城走访</button>');
+}
+function renderCellComplete(){
+  const body='<div class="cell-complete"><div class="stamp">AREA COMPLETE</div><strong>✓ 电芯城调查完成</strong><p>你把仓库的材料成本、工厂的生产效率、市场终端的竞争变化连在了一起。</p><div class="unlock">获得产业知识：「电芯成本与规模效应」<br>🔓 新产业区域已开放</div></div>'+
+    '<p style="margin-top:16px">本局模拟结论不是宁德时代的真实报价分析。下一站已在地图上点亮，但不会自动前往。</p>';
+  return overlayFrame("电芯城 · 已完成","YOUR EXPLORATION",body,'<span>由你决定何时前往下一段产业链。</span><button data-act="open-map">打开地图</button>');
+}
+function renderCellHint(){
+  const p=progress(currentScene());
+  const hint=p.cellMission.completed?"这趟调查已经收束。地图上新亮起的地方，等你决定要不要继续走。":cellCount(p)===3?"你带回来的材料里已经有三条不同方向的信号。把它们放到桌上看看：是互不相关，还是能拼成一条因果链？":cellCount(p)>0?"别急着听我下结论。回想这条线索记录了什么变化，再找一找有没有能和它互相解释的现场信息。":"可以先四处看看。注意场景里显眼的闪光点，靠近后听听现场的人怎么说。";
+  return overlayFrame("小玑的提示","AI 探索搭档 · 不剧透",'<div class="cell-record"><b>🤖 小玑</b>'+esc(hint)+'</div><p>也可以展开对话框，直接问墨他刚才为什么那样判断。</p>','<span>提示只给方向，不代替你做判断。</span><button data-act="close">继续探索</button>');
 }
 function renderHistory(){
   const scene=currentScene(),p=progress(scene);
@@ -623,6 +887,16 @@ function renderOverlay(){
   if(overlay==="history") return renderHistory();
   if(overlay==="material-offer" && currentScene().id==="materials") return renderMaterialOffer();
   if(overlay==="material-guide" && currentScene().id==="materials") return renderMaterialGuide();
+  if(currentScene().id==="cell"){
+    if(overlay==="cell-mission") return renderCellMission();
+    if(overlay && overlay.startsWith("cell-interaction:")) return renderCellInteraction(overlay.slice(17));
+    if(overlay && overlay.startsWith("cell-card:")) return renderCellCard(overlay.slice(10));
+    if(overlay==="cell-factory-result") return renderFactoryResult();
+    if(overlay==="cell-analysis") return renderCellAnalysis();
+    if(overlay==="cell-insight") return renderCellInsight();
+    if(overlay==="cell-complete") return renderCellComplete();
+    if(overlay==="cell-hint") return renderCellHint();
+  }
   return "";
 }
 function renderScene(){
@@ -637,8 +911,14 @@ function renderScene(){
   }).join("");
   const hotspots=scene.id==="materials"?'<nav class="scene-hotspots" aria-label="可查看的工坊现场">'+Object.entries(MATERIAL_CLUES).map(function([id,clue]){
     return '<button class="inspect-pin '+(p.seen.includes(clue.topic)?"done":"")+'" data-act="inspect-material" data-clue="'+id+'" aria-label="查看'+esc(clue.label)+'">'+esc(clue.label)+'</button>';
+  }).join("")+'</nav>':scene.id==="cell"?'<nav class="scene-hotspots cell-hotspots" aria-label="场景中的可调查线索">'+Object.entries(CELL_STATIONS).map(function([id,station],index){
+    const point=window.matchMedia("(max-width:760px)").matches?station.mobile:station.desktop;
+    const side=["左侧","中央","右侧"][index];
+    return '<button class="cell-hotspot '+(p.cellMission.interactions[id]?"visited":"")+'" style="--x:'+point.x+'%;--y:'+point.y+'%" data-act="cell-inspect" data-station="'+id+'" aria-label="调查'+side+'场景物件" title="场景线索"><span class="hotspot-label">'+(p.cellMission.interactions[id]?"已调查":"调查")+'</span></button>';
   }).join("")+'</nav>':"";
-  app.innerHTML='<section class="world" id="world">'+
+  const cellTools=scene.id==="cell"?'<button class="cell-progress" data-act="open-cell-mission" aria-label="查看随身委托">📜 '+(p.cellMission.completed?"委托已完成":cellCount(p)?"线索已收入":"随身委托")+'</button>'+
+    '<button class="cell-helper" data-act="open-cell-hint" aria-label="询问小玑提示"><span class="cell-helper-face" aria-hidden="true">◕</span><span>小玑</span></button>':"";
+  app.innerHTML='<section class="world '+(scene.id==="cell"?'cell-world '+(cellChatOpen?'chat-open':''):'')+'" id="world">'+
     '<div class="scene-bg '+esc(scene.id)+' '+(scene.crop?"crop ":"")+(scene.storage?"storage":"")+'" style="background-image:url(&quot;'+esc(scene.bg)+'&quot;)"></div>'+
     '<div class="scene-shade"></div>'+
     '<header class="topbar"><button class="app-exit" data-act="exit-app" aria-label="返回玑衡 App">←</button><div class="brand"><span class="brand-mark"><img src="assets/jiheng-world-logo.png" alt="" aria-hidden="true"></span><span>玑衡 <small>WORLD · 走访</small></span></div>'+
@@ -649,20 +929,20 @@ function renderScene(){
     '<div class="scene-copy"><div class="eyebrow">'+esc(scene.region)+'</div><h1>'+esc(scene.place)+'</h1>'+
     '<p>'+esc(arrivalLine(scene))+'</p><div class="ambient-line">'+esc(scene.atmosphere)+'</div></div>'+
     (scene.portrait?'<img class="npc-portrait" src="'+esc(scene.portrait)+'" alt="'+esc(scene.npc)+'的角色立绘">':"")+
-    hotspots+
+    hotspots+cellTools+
     '<nav class="toolbelt" aria-label="走访工具"><button class="tool" data-act="open-map" aria-label="展开地图"><span class="ico">▤</span><span>地图</span></button>'+
-    '<button class="tool" data-act="open-bag" aria-label="打开卷轴背包"><span class="ico">▣</span><span>背包</span>'+(S.scrolls.length?'<span class="count">'+S.scrolls.length+'</span>':"")+'</button></nav>'+
-    (reveal?'<button class="travel" data-act="travel">'+esc(nextLabel)+' →</button>':"")+
+    '<button class="tool" data-act="open-bag" aria-label="打开卷轴背包"><span class="ico">▣</span><span>背包</span>'+(S.scrolls.length+(scene.id==="cell"?1:0)?'<span class="count">'+(S.scrolls.length+(scene.id==="cell"?1:0))+'</span>':"")+'</button></nav>'+
+    (reveal && scene.id!=="cell"?'<button class="travel" data-act="travel">'+esc(nextLabel)+' →</button>':"")+
     '<section class="dialogue" aria-label="与'+esc(scene.npc)+'交谈"><div class="dialogue-head">'+
     '<span class="speaker-icon">'+esc(scene.npc.slice(0,1))+'</span><div class="speaker"><b>'+esc(scene.npc)+'</b>'+
     '<small id="npcMode">'+esc(scene.role)+' · '+(npcModel?"模型对话":"离线剧情对话")+'</small></div><span class="mood">'+esc(mood)+'</span>'+
-    '<button class="head-btn" data-act="open-history">回看对话</button></div>'+
-    '<div class="dialogue-main"><div class="speaker-side"><b>此行目的</b>为栖岸储能谈半年采购。听他说，也告诉他你的条件。<br><br>你可以打字、追问，或出示背包里的卷轴。</div>'+
+    '<button class="head-btn" data-act="'+(scene.id==="cell"?"toggle-cell-chat":"open-history")+'">'+(scene.id==="cell"?(cellChatOpen?"收起对话":"和墨聊聊"):"回看对话")+'</button></div>'+
+    '<div class="dialogue-main"><div class="speaker-side"><b>此行目的</b>'+(scene.id==="cell"?"听听墨的发现，自己走进现场找线索。":"为栖岸储能谈半年采购。听他说，也告诉他你的条件。")+'<br><br>你可以打字、追问，或出示背包里的卷轴。</div>'+
     '<div class="speech-area" aria-live="polite">'+(lastYou?'<div class="said-by-you">你刚才说：'+esc(lastYou.text)+'</div>':"")+
     '<div class="npc-line">'+esc(busy?"（"+scene.npc+"正在想你提出的条件……）":lastNpc.text)+'</div>'+
     (reveal?'<div class="travel-hint">地图上亮起了下一段路 →</div>':"")+'</div></div>'+
-    '<div class="prompt-row">'+prompts+'<button class="prompt" data-act="open-bag">出示卷轴</button></div>'+
-    '<form class="input-row" id="speakForm"><input id="playerInput" maxlength="240" autocomplete="off" aria-label="对'+esc(scene.npc)+'说话" placeholder="直接对'+esc(scene.npc)+'说话，例如：这个价格依据是什么？" '+(busy?"disabled":"")+'>'+
+    '<div class="prompt-row">'+prompts+(scene.id==="cell"?"":'<button class="prompt" data-act="open-bag">出示卷轴</button>')+'</div>'+
+    '<form class="input-row" id="speakForm"><input id="playerInput" maxlength="240" autocomplete="off" aria-label="对'+esc(scene.npc)+'说话" placeholder="'+(scene.id==="cell"?"直接问墨：为什么产线更忙，报价反而更低？":"直接对"+esc(scene.npc)+"说话，例如：这个价格依据是什么？")+'" '+(busy?"disabled":"")+'>'+
     '<button class="send" type="submit" '+(busy?"disabled":"")+'>'+ (busy?"回应中":"发送 ↗")+'</button></form></section>'+
     (toastText?'<div class="toast" id="toast" role="status">'+esc(toastText)+'</div>':"")+
     (overlay?renderOverlay():"")+'</section>';
@@ -683,12 +963,14 @@ function transitionTo(index){
   clearTimeout(toastTimer);
   transitioning=true;
   const target=SCENES[index];
+  const firstCellVisit=target.id==="cell" && !S.scenes.cell;
   app.insertAdjacentHTML("beforeend",'<div class="wipe" aria-live="polite"><div class="wipe-card"><small>展开手中的地图 · '+esc(target.region)+'</small><strong>'+esc(target.place)+'</strong><span>下一段产业链正在你面前展开</span></div></div>');
   setTimeout(function(){
     S.current=index;
     progress(target);
     saveState();
     transitioning=false;
+    if(firstCellVisit){overlay=null;cellChatOpen=false;}
     render();
     const world=document.getElementById("world");
     if(world){world.classList.add("entering");setTimeout(function(){world.classList.remove("entering");},1000);}
@@ -715,6 +997,23 @@ app.addEventListener("click",function(event){
   if(act==="open-history"){overlay="history";render();return;}
   if(act==="open-material-offer" && currentScene().id==="materials"){overlay="material-offer";render();return;}
   if(act==="open-material-guide" && currentScene().id==="materials"){overlay="material-guide";render();return;}
+  if(currentScene().id==="cell"){
+    if(act==="open-cell-mission"){overlay="cell-mission";render();return;}
+    if(act==="open-cell-hint"){overlay="cell-hint";render();return;}
+    if(act==="toggle-cell-chat"){cellChatOpen=!cellChatOpen;render();if(cellChatOpen){const input=document.getElementById("playerInput");if(input) input.focus({preventScroll:true});}return;}
+    if(act==="open-cell-analysis" && cellCount(progress(currentScene()))===3){overlay="cell-analysis";render();return;}
+    if(act==="cell-inspect"){
+      button.classList.add("inspecting");
+      const stationId=button.dataset.station;
+      setTimeout(function(){openCellInteraction(currentScene(),progress(currentScene()),stationId);},160);
+      return;
+    }
+    if(act==="cell-timeline-complete"){completeCellTimeline(currentScene(),progress(currentScene()));return;}
+    if(act==="cell-market-choice"){answerCellMarket(currentScene(),progress(currentScene()),button.dataset.choice);return;}
+    if(act==="collect-cell-card"){collectCellCard(currentScene(),progress(currentScene()),button.dataset.card);return;}
+    if(act==="submit-cell-analysis"){submitCellAnalysis(currentScene(),progress(currentScene()));return;}
+    if(act==="complete-cell-area"){completeCellArea(currentScene(),progress(currentScene()));return;}
+  }
   if(act==="inspect-material" && currentScene().id==="materials"){
     const clue=MATERIAL_CLUES[button.dataset.clue];
     if(clue) speak(clue.prompt,"inspect",button.dataset.clue);
@@ -740,6 +1039,7 @@ app.addEventListener("click",function(event){
     return;
   }
   if(act==="travel"){
+    if(currentScene().id==="cell"){overlay="map";render();return;}
     if(S.current===SCENES.length-1){finishJourney();return;}
     if(S.unlocked>S.current) transitionTo(S.current+1);
     return;
@@ -752,6 +1052,41 @@ app.addEventListener("click",function(event){
     }
   }
 });
+app.addEventListener("input",function(event){
+  if(event.target.matches('[data-act="cell-timeline"]')) updateCellTimeline(event.target.value);
+});
+app.addEventListener("pointerdown",function(event){
+  const card=event.target.closest("[data-drag-card]");
+  if(!card || card.disabled || transitioning) return;
+  activePointerDrag={id:card.dataset.dragCard,element:card,x:event.clientX,y:event.clientY};
+  card.classList.add("dragging");
+  event.preventDefault();
+});
+app.addEventListener("pointermove",function(event){
+  if(!activePointerDrag) return;
+  const dx=event.clientX-activePointerDrag.x,dy=event.clientY-activePointerDrag.y;
+  activePointerDrag.element.style.translate=dx+"px "+dy+"px";
+  const over=document.elementFromPoint(event.clientX,event.clientY);
+  const zone=over&&over.closest("[data-drop-zone]");
+  app.querySelectorAll("[data-drop-zone].ready").forEach(function(item){item.classList.remove("ready");});
+  if(zone) zone.classList.add("ready");
+  event.preventDefault();
+});
+function finishCellDrag(event){
+  if(!activePointerDrag) return;
+  const drag=activePointerDrag;
+  const over=document.elementFromPoint(event.clientX,event.clientY);
+  const zone=over&&over.closest("[data-drop-zone]");
+  drag.element.classList.remove("dragging");drag.element.style.translate="";
+  app.querySelectorAll("[data-drop-zone].ready").forEach(function(item){item.classList.remove("ready");});
+  activePointerDrag=null;
+  if(!zone) return;
+  const scene=currentScene(),p=progress(scene),type=zone.dataset.dropZone;
+  if(type==="factory" && drag.id==="factory") completeFactoryUpgrade(scene,p);
+  if(type==="analysis" && drag.id.indexOf("analysis:")===0) connectCellCard(p,drag.id.slice(9));
+}
+app.addEventListener("pointerup",finishCellDrag);
+app.addEventListener("pointercancel",finishCellDrag);
 app.addEventListener("submit",function(event){
   if(event.target.id!=="speakForm") return;
   event.preventDefault();

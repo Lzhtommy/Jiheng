@@ -42,17 +42,20 @@
   right: 0;
 }
 
-/* ---------- 天空：夜幕刚刚降临的产业城市 ---------- */
+/* ---------- 天空：夜幕刚刚降临的产业城市 ----------
+   暖色带必须落在水线（y=50%）之上，否则会被 .we-water / .we-ground 整个盖住，
+   画面就只剩纯夜空 —— 夕阳是这个场景的"黄昏感"来源。 */
 #worldlayer .we-sky {
   inset: 0;
   background: linear-gradient(180deg,
-    #050b12 0%, #081726 26%, #0d2740 46%,
-    #1d3b52 54%, #4a3f4d 60%, #8a4f34 66%, #c4713f 72%, #e9a05c 78%, #123043 88%, #0a1620 100%);
+    #050b12 0%, #081726 20%, #0d2740 34%,
+    #1d3b52 41%, #4a3f4d 44%, #8a4f34 46%, #c4713f 48%, #e9a05c 50%,
+    #2b3a44 54%, #123043 58%, #0a1620 78%, #08131c 100%);
 }
 #worldlayer .we-sun {
   position: absolute;
   left: 70%;
-  bottom: 34%;
+  bottom: 50%;
   width: 16vmin;
   height: 16vmin;
   background: radial-gradient(circle at 50% 50%,
@@ -74,12 +77,12 @@
   background: rgba(150, 190, 210, 0.26);
   box-shadow: 0 8px 0 rgba(150, 190, 210, 0.24), 13px -7px 0 rgba(150, 190, 210, 0.18), 27px 5px 0 rgba(150, 190, 210, 0.2);
 }
-/* 地平线雾带：坐在水线之上、天际线之前，把远景压远 */
+/* 地平线雾带：坐在水线之上、天际线之前，把远景压远（不要压掉落日） */
 #worldlayer .we-haze {
   z-index: 6;
   bottom: 44%;
   height: 14%;
-  background: linear-gradient(180deg, transparent 0%, rgba(150, 120, 105, 0.36) 42%, rgba(120, 140, 150, 0.34) 76%, rgba(12, 27, 39, 0.6) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(168, 132, 108, 0.28) 42%, rgba(140, 148, 152, 0.24) 76%, rgba(12, 27, 39, 0.42) 100%);
   pointer-events: none;
 }
 
@@ -748,6 +751,119 @@
   letter-spacing: 0.08em;
 }
 @keyframes we-card-in { 0% { transform: translateY(-6px); opacity: 0 } 100% { transform: translateY(0); opacity: 1 } }
+
+/* 卡片里的输入表单（「添加公司」用） */
+#worldlayer .we-card-form { margin-top: 12px; }
+#worldlayer .we-card-input {
+  display: block;
+  width: 100%;
+  padding: 9px 10px;
+  font: inherit;
+  font-size: clamp(12px, 1.05vw, 14px);
+  color: #fff6e6;
+  background: rgba(157, 216, 208, 0.08);
+  border: 2px solid rgba(157, 216, 208, 0.45);
+  border-radius: 0;
+  cursor: text;
+  user-select: text;   /* #worldlayer 整体是 user-select:none，输入框要单独放开 */
+}
+#worldlayer .we-card-input::placeholder { color: rgba(168, 191, 196, 0.7); }
+#worldlayer .we-card-input:focus {
+  outline: none;
+  border-color: var(--we-gold);
+  background: rgba(243, 200, 132, 0.1);
+}
+#worldlayer .we-card-form .we-card-act { margin-top: 9px; }
+#worldlayer .we-card-back {
+  color: #d7ece9;
+  background: rgba(157, 216, 208, 0.14);
+  border-bottom: 3px solid rgba(157, 216, 208, 0.35);
+}
+#worldlayer .we-card-back:hover { background: rgba(157, 216, 208, 0.22); }
+
+/* ---------- 加号基座：自己输入一家公司 ---------- */
+#worldlayer .we-pedestal {
+  position: absolute;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translateX(-50%);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: filter 0.18s ease;
+}
+#worldlayer .we-pedestal:focus-visible { outline: 2px solid var(--we-teal); outline-offset: 4px; }
+#worldlayer .we-pedestal.is-active { filter: brightness(1.16) drop-shadow(0 0 12px rgba(243, 200, 132, 0.6)); }
+#worldlayer .we-pd-base {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 15%;
+  background: #0d2130;
+  box-shadow: 0 0 0 2px var(--we-outline);
+}
+#worldlayer .we-pd-shaft {
+  position: absolute;
+  left: 20%;
+  right: 20%;
+  bottom: 11%;
+  height: 44%;
+  background: #16303f;
+  box-shadow: 0 0 0 2px var(--we-outline);
+}
+#worldlayer .we-pd-cap {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  bottom: 52%;
+  height: 13%;
+  background: #1e4457;
+  box-shadow: 0 0 0 2px var(--we-outline);
+}
+#worldlayer .we-pd-glow {
+  position: absolute;
+  left: 50%;
+  bottom: 46%;
+  width: 150%;
+  height: 30%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(243, 200, 132, 0.34) 0%, rgba(243, 200, 132, 0.08) 48%, transparent 72%);
+}
+#worldlayer .we-pd-plus {
+  position: absolute;
+  left: 50%;
+  bottom: 62%;
+  transform: translateX(-50%);
+  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  font-size: clamp(19px, 2.5vh, 32px);
+  font-weight: 700;
+  line-height: 1;
+  color: var(--we-gold);
+  text-shadow: 0 0 10px rgba(243, 200, 132, 0.8), 2px 2px 0 rgba(0, 0, 0, 0.55);
+  animation: we-plus-pulse 1.7s steps(2, end) infinite;
+}
+#worldlayer .we-pd-sign {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 18px);
+  transform: translateX(-50%);
+  padding: 2px 7px;
+  white-space: nowrap;
+  font-size: clamp(9px, 0.82vw, 11px);
+  letter-spacing: 0.1em;
+  color: var(--we-teal);
+  background: rgba(9, 19, 27, 0.9);
+  border: 2px solid rgba(157, 216, 208, 0.4);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45);
+}
+@keyframes we-plus-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 1 }
+  50% { transform: translateX(-50%) scale(1.16); opacity: 0.85 }
+}
 
 /* ---------- 探索页面里的「返回 World」按钮 ----------
    本文件里唯一一条不在 #worldlayer 下的规则：跨层入口必须长在探索页面的顶栏上。
