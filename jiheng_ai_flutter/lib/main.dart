@@ -682,6 +682,27 @@ class JihengShellState extends State<JihengShell> {
     }
   }
 
+  Future<void> deleteConversation(String conversationId) async {
+    try {
+      await api.delete('/api/v1/conversations/$conversationId');
+      if (!mounted) return;
+      setState(() {
+        apiConversations.removeWhere(
+            (row) => asText(row['conversationId']) == conversationId);
+        if (_chatSessionId == conversationId) {
+          messages.clear();
+          _chatSessionId = null;
+          sending = false;
+          page = PageKey.home;
+        }
+      });
+      snack('已删除对话');
+    } catch (e) {
+      _rememberApiError(e);
+      snack('删除失败');
+    }
+  }
+
   Future<void> _loadTasks() async {
     try {
       final data = await api.get('/api/v1/tasks');
@@ -3865,15 +3886,22 @@ class DrawerOverlay extends StatelessWidget {
       ['定时与提醒', PageKey.reminders, Icons.schedule],
       // ['我的收藏', PageKey.favorites, Icons.star_border],
     ];
-    final prototypeHistory = <({String day, String text, VoidCallback onTap})>[
-      (day: '今天', text: '金融AI助手自我介绍', onTap: () => state.go(PageKey.home)),
+    final prototypeHistory =
+        <({String day, String text, VoidCallback onTap, VoidCallback? onDelete})>[
+      (
+        day: '今天',
+        text: '金融AI助手自我介绍',
+        onTap: () => state.go(PageKey.home),
+        onDelete: null
+      ),
       (
         day: '昨天',
         text: '做一份宁德时代（300750.SZ）三季报前瞻…',
         onTap: () {
           state.setPrompt('做一份宁德时代（300750.SZ）三季报前瞻', 'generic');
           state.go(PageKey.home);
-        }
+        },
+        onDelete: null
       ),
     ];
     final apiHistory = [
@@ -3882,10 +3910,13 @@ class DrawerOverlay extends StatelessWidget {
           day: '最近',
           text: asText(conversation['title'], '未命名对话'),
           onTap: () =>
-              state.openConversation(asText(conversation['conversationId']))
+              state.openConversation(asText(conversation['conversationId'])),
+          onDelete: () =>
+              state.deleteConversation(asText(conversation['conversationId'])),
         ),
     ];
-    final history = apiHistory.isEmpty ? prototypeHistory : apiHistory;
+    final history =
+        state.api.accessToken == null ? prototypeHistory : apiHistory;
     final filteredHistory = query.isEmpty
         ? history
         : history
@@ -3981,7 +4012,10 @@ class DrawerOverlay extends StatelessWidget {
                       _DrawerDayLabel(day),
                       for (final item
                           in filteredHistory.where((item) => item.day == day))
-                        _DrawerHistoryItem(text: item.text, onTap: item.onTap),
+                        _DrawerHistoryItem(
+                            text: item.text,
+                            onTap: item.onTap,
+                            onDelete: item.onDelete),
                     ],
                     if (filteredHistory.isEmpty)
                       const Padding(
@@ -4098,23 +4132,57 @@ class _DrawerDayLabel extends StatelessWidget {
 }
 
 class _DrawerHistoryItem extends StatelessWidget {
-  const _DrawerHistoryItem({required this.text, required this.onTap});
+  const _DrawerHistoryItem(
+      {required this.text, required this.onTap, this.onDelete});
   final String text;
   final VoidCallback onTap;
+  final VoidCallback? onDelete;
 
   @override
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onTap,
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 7),
-        child: Text(text,
-            maxLines: 2,
-            overflow: TextOverflow.ellipsis,
-            style: const TextStyle(
-                color: Color(0xFF3D454C), fontSize: 13.5, height: 1.35)),
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Row(children: [
+          Expanded(
+            child: Text(text,
+                maxLines: 2,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                    color: Color(0xFF3D454C), fontSize: 13.5, height: 1.35)),
+          ),
+          if (onDelete != null)
+            IconButton(
+              onPressed: () => _confirmDelete(context),
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+              icon: const Icon(Icons.delete_outline,
+                  size: 16, color: Color(0xFFA3AAB0)),
+            ),
+        ]),
       ),
     );
+  }
+
+  Future<void> _confirmDelete(BuildContext context) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('删除对话'),
+        content: Text('删除「$text」后，侧边栏将不再显示这条记录。'),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, false),
+              child: const Text('取消')),
+          TextButton(
+              onPressed: () => Navigator.pop(dialogContext, true),
+              child: const Text('删除')),
+        ],
+      ),
+    );
+    if (ok == true) onDelete!();
   }
 }
 
