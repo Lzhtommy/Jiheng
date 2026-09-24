@@ -207,7 +207,7 @@
 <script src="static/world-state.js"></script>
 <script src="static/world-data.js"></script>
 <script>
-const SCENES = [
+const SEED_SCENES = [
   {
     id:"salt", place:"盐湖矿区", region:"01 / 上游资源", npc:"岚", role:"盐湖现货负责人",
     bg:"assets/salt-lake-mine-v1.png", crop:true, atmosphere:"风从盐田吹过，报价牌在你身旁亮着。",
@@ -318,6 +318,8 @@ const SCENES = [
     cross:{"port-quarter":"澈看着你在港口记下的季度条款：客户只愿按季度调价，你若现在把储能采购量锁死一年，现金会先替你受罪。"}
   }
 ];
+/* Phase 2：默认展示宁德时代的手写「采购之旅」；玑衡 Agent 生成的公司关卡运行时切换到这里。 */
+let SCENES = SEED_SCENES;
 const MATERIAL_CLUES = {
   stock:{label:"批次台账",topic:"claim",prompt:"我走到工作台，翻看旧料与现货料的批次台账。",reply:"岑伸手按住台账：旧批次确实还在，不能把今天的现货价算到每一袋料上。但完整进货成本我还没给你看。",repeat:"台账那一页你已经看过。要谈成本传导，还缺完整的批次进价。"},
   contract:{label:"长协复印件",topic:"proof",prompt:"我把压在账本下的长协复印件翻到调价条款。",reply:"岑看你停在那行字上：对，上游按季度调价，不是每天一涨。你要我按季度复核，可以谈；但我会追问你的采购量。",repeat:"复印件上仍写着按季度调价。你可以拿它谈价格节奏。"},
@@ -343,22 +345,57 @@ const CELL_MARKET_CHOICES = {
   noDemand:{label:"电池已经没人买了",correct:false},
   carSales:{label:"新能源汽车销量正在下降",correct:false}
 };
-const ALL_SCROLLS = new Map(SCENES.flatMap(scene => scene.topics.filter(topic => topic.scroll).map(topic => [topic.scroll.id,Object.assign({from:scene.place},topic.scroll)])));
-Object.values(CELL_CARDS).forEach(card=>ALL_SCROLLS.set(card.id,card));
+function buildScrollIndex(scenes){
+  const map = new Map(scenes.flatMap(scene => scene.topics.filter(topic => topic.scroll).map(topic => [topic.scroll.id,Object.assign({from:scene.place},topic.scroll)])));
+  if(scenes===SEED_SCENES) Object.values(CELL_CARDS).forEach(card=>map.set(card.id,card));
+  return map;
+}
+let ALL_SCROLLS = buildScrollIndex(SCENES);
 const STORAGE_KEY = "jiheng-procurement-journey-v1";
 /* Phase 1：World 与 Scenario 分层。存档 key 与字段语义都不变；
    scenario 的六个字段由 world-state.js 用非枚举访问器映射回顶层，现有玩法代码一行不改。 */
 const WORLD_ENABLED = true;   // 像素风探索首页已接通
 const WS = window.JHWorldState;
+/* 玑衡 Agent 生成的公司数据运行时挂在这里；world-entry.js 也读写同一个对象。
+   测试沙箱不加载 static/world-data.js，这里兜底一份最小 schema，语义与其保持一致。 */
+if(!window.JHWorldData){
+  window.JHWorldData = {meta:{schema_version:1},map:{},regions:[],companies:[],buildings:[],scenarios:{}};
+}
+/* Phase 2：每家公司一条独立存档，用公司 id 派生 key；宁德时代（默认公司）沿用原 key，老存档不受影响。 */
+let activeCompanyId = "catl";
+function storageKeyFor(companyId){ return companyId && companyId!=="catl" ? STORAGE_KEY+":"+companyId : STORAGE_KEY; }
 function freshState(){ return WS.freshState(); }
 function validState(candidate){ return WS.validStateV2(candidate,SCENES.length); }
 function migrateState(candidate){ return WS.bindStateAliases(WS.migrateState(candidate)); }
 function loadState(){
   try{
-    const candidate=migrateState(JSON.parse(localStorage.getItem(STORAGE_KEY)||"null"));
+    const candidate=migrateState(JSON.parse(localStorage.getItem(storageKeyFor(activeCompanyId))||"null"));
     if(validState(candidate)) return candidate;
   }catch(_error){}
   return freshState();
+}
+/* 校验玑衡 Agent 生成的关卡数据是否符合引擎期望的最小结构，避免脏数据把游戏渲染搞崩。 */
+function isValidGeneratedScenes(scenes){
+  if(!Array.isArray(scenes) || !scenes.length) return false;
+  return scenes.every(scene => scene && typeof scene.id==="string" && typeof scene.place==="string" &&
+    Array.isArray(scene.topics) && scene.topics.length===3 &&
+    ["claim","proof","risk"].every(id=>scene.topics.some(topic=>topic.id===id)));
+}
+function getScenarioFor(companyId){
+  const store = window.JHWorldData && window.JHWorldData.scenarios;
+  const list = store && store[companyId];
+  return isValidGeneratedScenes(list) ? list : null;
+}
+/* 切换地图上正在探索的公司：默认公司用手写的 SEED_SCENES，
+   玑衡 Agent 生成的公司用运行时注入的关卡数据，两者互不干扰，各自独立存档。 */
+function activateCompany(companyId){
+  const generated = companyId && companyId!=="catl" ? getScenarioFor(companyId) : null;
+  activeCompanyId = generated ? companyId : "catl";
+  SCENES = generated || SEED_SCENES;
+  ALL_SCROLLS = buildScrollIndex(SCENES);
+  overlay=null;busy=false;transitioning=false;toastText="";
+  S = loadState();
+  progress(currentScene());
 }
 let S=loadState();
 let overlay=null, busy=false, transitioning=false, toastText="", toastTimer=null;
@@ -375,8 +412,10 @@ function syncLayer(){
 }
 /* World 首页与探索页面之间只用 window 事件通信，两边互不引用内部实现。
    切层只动 body[data-layer]，#app 永远不重建 —— 所以进出 World 都不会丢进度或弹层状态。 */
-window.addEventListener("jh-world:enter",function(){
-  layerRT="scenario";syncLayer();
+window.addEventListener("jh-world:enter",function(event){
+  const companyId=(event && event.detail && event.detail.companyId) || "catl";
+  if(companyId!==activeCompanyId) activateCompany(companyId);
+  layerRT="scenario";syncLayer();render();
 });
 function backToWorld(){
   if(!WORLD_ENABLED) return;
@@ -385,8 +424,8 @@ function backToWorld(){
 }
 syncLayer();
 function saveState(){
-  try{ localStorage.setItem(STORAGE_KEY,JSON.stringify(S)); }catch(_error){}
-  if(window.JihengWorldBridge) window.JihengWorldBridge.postMessage(JSON.stringify({type:"save",state:S}));
+  try{ localStorage.setItem(storageKeyFor(activeCompanyId),JSON.stringify(S)); }catch(_error){}
+  if(window.JihengWorldBridge) window.JihengWorldBridge.postMessage(JSON.stringify({type:"save",company:activeCompanyId,state:S}));
 }
 window.restoreWorldState=function(serialized){
   try{

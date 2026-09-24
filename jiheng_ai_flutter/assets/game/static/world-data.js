@@ -1,13 +1,16 @@
 /* 玑衡 World · 世界数据
  *
- * Phase 1 只建立最小 Schema，不填任何真实内容 —— 地图、区域、公司、建筑
- * 都在 Phase 2 才写入。现在挂上去只是为了让 Phase 2 有一个稳定的落点。
+ * Phase 2：玑衡 Agent 生成公司关卡后的运行时落点。
+ * - companies：追加公司的元信息（id/name/code/tag/kind + 地图落位），world-entry.js 读写。
+ * - scenarios：以 companyId 为 key 的关卡数组（procurement-journey.html 的 SCENES 结构），
+ *   由 Flutter 在生成成功 / App 启动时通过 window.JHWorldEntry.addCompany / .hydrate 写入。
+ * 手写的宁德时代旅程不经过这里 —— 它是 procurement-journey.html 里的 SEED_SCENES 常量。
  */
 window.JHWorldData = {
   meta: {
-    schema_version: 1,
-    phase: "phase-1",
-    note: "仅结构定义，内容留待 Phase 2 填充"
+    schema_version: 2,
+    phase: "phase-2",
+    note: "companies/scenarios 由玑衡 Agent 生成的公司在运行时写入"
   },
   map: {
     width: 1,
@@ -18,5 +21,5 @@ window.JHWorldData = {
   regions: [],
   companies: [],
   buildings: [],
-  scenarios: []
+  scenarios: {}
 };

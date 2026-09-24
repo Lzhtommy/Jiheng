@@ -17,6 +17,7 @@ from app.models.sse_events import (
     TableEvent,
     ToolCallEvent,
     ToolResultEvent,
+    WorldCompanyEvent,
 )
 
 
@@ -86,3 +87,7 @@ class SseEmitter:
     @staticmethod
     def error(event: ErrorEvent) -> str:
         return SseEmitter.format("error", event.model_dump())
+
+    @staticmethod
+    def world_company(event: WorldCompanyEvent) -> str:
+        return SseEmitter.format("world_company", event.model_dump())

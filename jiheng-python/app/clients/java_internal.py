@@ -41,3 +41,13 @@ class JavaInternalClient:
     async def create_notification(self, notification_data: dict):
         async with httpx.AsyncClient(timeout=settings.data_request_timeout_seconds) as client:
             await client.post(f"{self.base_url}/internal/notifications", json=notification_data, headers=self.headers)
+
+    async def save_world_company(self, user_id: str, scenario: dict) -> dict:
+        async with httpx.AsyncClient(timeout=settings.data_request_timeout_seconds) as client:
+            resp = await client.post(
+                f"{self.base_url}/internal/world/companies",
+                json={"user_id": user_id, "scenario": scenario},
+                headers=self.headers,
+            )
+            resp.raise_for_status()
+            return resp.json().get("data", {})

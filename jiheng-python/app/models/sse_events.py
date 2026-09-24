@@ -98,3 +98,8 @@ class ErrorEvent(BaseModel):
     correlation_id: str
     code: str
     message: str
+
+
+class WorldCompanyEvent(BaseModel):
+    correlation_id: str
+    company: dict[str, Any]

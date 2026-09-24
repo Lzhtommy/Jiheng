@@ -5,7 +5,7 @@ import structlog
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import chat, trace
+from app.api import chat, trace, world
 from app.config import settings
 from app.deep_research.runner import run_worker
 from app.deep_research.task_queue import TaskQueue
@@ -46,6 +46,7 @@ app.add_middleware(
 )
 
 app.include_router(chat.router, prefix="/chat", tags=["chat"])
+app.include_router(world.router, prefix="/chat/world", tags=["world"])
 app.include_router(trace.router, prefix="/trace", tags=["trace"])
 
 

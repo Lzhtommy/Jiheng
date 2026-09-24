@@ -865,6 +865,83 @@
   50% { transform: translateX(-50%) scale(1.16); opacity: 0.85 }
 }
 
+/* ---------- 传送点：地图道路两侧，走过去翻到上一页/下一页「新区」地图 ---------- */
+#worldlayer .we-portal {
+  position: absolute;
+  display: block;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: none;
+  transform: translateX(-50%);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: filter 0.18s ease;
+}
+#worldlayer .we-portal:focus-visible { outline: 2px solid var(--we-teal); outline-offset: 4px; }
+#worldlayer .we-portal.is-active { filter: brightness(1.16) drop-shadow(0 0 14px rgba(157, 216, 208, 0.7)); }
+#worldlayer .we-pt-pillar {
+  position: absolute;
+  bottom: 0;
+  width: 16%;
+  height: 92%;
+  background: #16303f;
+  box-shadow: 0 0 0 2px var(--we-outline);
+}
+#worldlayer .we-pt-pillar-a { left: 4%; }
+#worldlayer .we-pt-pillar-b { right: 4%; }
+#worldlayer .we-pt-arch {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  top: 0;
+  height: 22%;
+  background: #1e4457;
+  box-shadow: 0 0 0 2px var(--we-outline);
+}
+#worldlayer .we-pt-glow {
+  position: absolute;
+  left: 50%;
+  top: 20%;
+  bottom: 8%;
+  width: 66%;
+  transform: translateX(-50%);
+  background: radial-gradient(ellipse at center, rgba(157, 216, 208, 0.55) 0%, rgba(157, 216, 208, 0.18) 55%, transparent 78%);
+  animation: we-portal-pulse 2.1s ease-in-out infinite;
+}
+@keyframes we-portal-pulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+#worldlayer .we-pt-sign {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 18px);
+  transform: translateX(-50%);
+  padding: 2px 7px;
+  white-space: nowrap;
+  font-size: clamp(9px, 0.82vw, 11px);
+  letter-spacing: 0.1em;
+  color: var(--we-gold);
+  background: rgba(9, 19, 27, 0.9);
+  border: 2px solid rgba(243, 200, 132, 0.4);
+  box-shadow: 3px 3px 0 rgba(0, 0, 0, 0.45);
+}
+
+/* ---------- 顶栏的「地图 N / M」翻页提示 ---------- */
+#worldlayer .we-map-hud {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 9px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
+  color: var(--we-gold);
+  background: rgba(9, 19, 27, 0.6);
+  border: 1px solid rgba(243, 200, 132, 0.4);
+}
+#worldlayer .we-map-hud:empty { display: none; }
+
 /* ---------- 探索页面里的「返回 World」按钮 ----------
    本文件里唯一一条不在 #worldlayer 下的规则：跨层入口必须长在探索页面的顶栏上。
    类名 .world-back / .wb-arrow 都是新造的，不会和既有选择器撞车。 */

@@ -178,14 +178,14 @@ class ApiClient {
 
   static const _javaOverride = String.fromEnvironment('JIHENG_JAVA_BASE_URL');
   static const _agentOverride = String.fromEnvironment('JIHENG_AGENT_BASE_URL');
-  static const _lanBase = 'http://192.168.184.207';
+  static const _prodBase = 'http://113.45.32.33';
 
-  /// 本机页面连本机服务；部署到服务器后走当前站点，由 nginx 转发。
+  /// 默认连线上环境（nginx 统一转发 /api 与 /chat）；Web 端部署后走当前站点。
   static String get javaBase =>
-      _javaOverride.isNotEmpty ? _javaOverride : _localOrOrigin(_lanBase);
+      _javaOverride.isNotEmpty ? _javaOverride : _localOrOrigin(_prodBase);
 
   static String get agentBase =>
-      _agentOverride.isNotEmpty ? _agentOverride : _localOrOrigin(_lanBase);
+      _agentOverride.isNotEmpty ? _agentOverride : _localOrOrigin(_prodBase);
 
   static String _localOrOrigin(String local) {
     if (!kIsWeb) return local;
@@ -1742,7 +1742,7 @@ class HomeView extends StatelessWidget {
       return Column(
         children: [
           HomeHeader(state: state),
-          const Expanded(child: JihengWorldView()),
+          Expanded(child: JihengWorldView(api: state.api)),
         ],
       );
     }
@@ -1996,7 +1996,8 @@ class _WorldTransitionOverlayState extends State<WorldTransitionOverlay>
 }
 
 class JihengWorldView extends StatefulWidget {
-  const JihengWorldView({super.key});
+  const JihengWorldView({required this.api, super.key});
+  final ApiClient api;
 
   @override
   State<JihengWorldView> createState() => _JihengWorldViewState();
@@ -2012,12 +2013,70 @@ class _JihengWorldViewState extends State<JihengWorldView> {
     controller = WebViewController()
       ..setJavaScriptMode(JavaScriptMode.unrestricted)
       ..setBackgroundColor(const Color(0xFF0E1D31))
+      ..addJavaScriptChannel('JihengWorldBridge',
+          onMessageReceived: _onBridgeMessage)
       ..setNavigationDelegate(NavigationDelegate(
         onPageFinished: (_) {
           if (mounted) setState(() => loading = false);
+          _hydrateCompanies();
         },
       ))
       ..loadFlutterAsset('assets/game/procurement-journey.html');
+  }
+
+  void _onBridgeMessage(JavaScriptMessage message) {
+    Map<String, dynamic> payload;
+    try {
+      payload = jsonDecode(message.message) as Map<String, dynamic>;
+    } catch (_) {
+      return;
+    }
+    if (payload['type'] == 'request-company') {
+      final name = (payload['company'] ?? '').toString().trim();
+      if (name.isNotEmpty) _generateCompany(name);
+    }
+  }
+
+  Future<void> _runWorldJs(String expression) async {
+    try {
+      await controller.runJavaScript(
+          'window.JHWorldEntry && window.JHWorldEntry.$expression;');
+    } catch (_) {
+      // World 页面可能还没加载完成；生成流程本身仍然成功，忽略这次注入失败即可。
+    }
+  }
+
+  Future<void> _hydrateCompanies() async {
+    try {
+      final data = await widget.api.get('/api/v1/world/companies');
+      if (data is List && data.isNotEmpty) {
+        await _runWorldJs('hydrate(${jsonEncode(data)})');
+      }
+    } catch (_) {
+      // 离线或未登录时安静失败，World 仍可离线游玩已内置的旅程。
+    }
+  }
+
+  Future<void> _generateCompany(String name) async {
+    try {
+      await for (final event in widget.api.streamChat(
+        {'company_name': name},
+        path: '/chat/world/generate-company',
+      )) {
+        final type = event['event'];
+        if (type == 'error') {
+          final message = (event['message'] ?? '生成失败，请稍后再试').toString();
+          await _runWorldJs('setError(${jsonEncode(message)})');
+          return;
+        }
+        if (type == 'world_company') {
+          await _runWorldJs('addCompany(${jsonEncode(event['company'])})');
+          return;
+        }
+      }
+    } catch (_) {
+      await _runWorldJs('setError(${jsonEncode('网络异常，请稍后再试')})');
+    }
   }
 
   @override

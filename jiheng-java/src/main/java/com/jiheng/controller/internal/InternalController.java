@@ -8,6 +8,7 @@ import com.jiheng.service.expert.ExpertService;
 import com.jiheng.service.skill.SkillService;
 import com.jiheng.service.notify.NotifyService;
 import com.jiheng.service.report.ReportService;
+import com.jiheng.service.world.WorldCompanyService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -33,14 +34,17 @@ public class InternalController {
     private final ReportService reportService;
     private final NotifyService notifyService;
     private final ConversationService conversationService;
+    private final WorldCompanyService worldCompanyService;
 
     public InternalController(ExpertService expertService, SkillService skillService, ReportService reportService,
-                              NotifyService notifyService, ConversationService conversationService) {
+                              NotifyService notifyService, ConversationService conversationService,
+                              WorldCompanyService worldCompanyService) {
         this.expertService = expertService;
         this.skillService = skillService;
         this.reportService = reportService;
         this.notifyService = notifyService;
         this.conversationService = conversationService;
+        this.worldCompanyService = worldCompanyService;
     }
 
     @GetMapping("/config/experts")
@@ -74,5 +78,10 @@ public class InternalController {
     public ApiResponse<Void> createNotification(@RequestBody Map<String, Object> body) {
         notifyService.create(body);
         return ApiResponse.ok(null);
+    }
+
+    @PostMapping("/world/companies")
+    public ApiResponse<Map<String, Object>> saveWorldCompany(@RequestBody Map<String, Object> body) {
+        return ApiResponse.ok(worldCompanyService.save(body));
     }
 }

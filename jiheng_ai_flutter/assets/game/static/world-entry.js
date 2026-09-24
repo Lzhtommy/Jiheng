@@ -51,6 +51,48 @@
     }
   ];
 
+  function esc(value) {
+    return String(value == null ? "" : value).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  /* 玑衡 Agent 生成的公司越来越多，一张地图放不下：每张「新增地图」最多放 MAP_CAPACITY 家，
+     放满一页就自动开一页新的，玩家通过地图两侧的传送点前后翻页。
+     extraCompanies 是所有生成公司的扁平列表（不含手写的 5 家)，按生成顺序分页；
+     currentMapIndex = 0 是手写的主城地图，1/2/3... 是纯生成公司的「新区」地图。 */
+  var MAP_CAPACITY = 6;
+  var extraCompanies = [];
+  var currentMapIndex = 0;
+
+  /* 追加公司的单排落位算法：一页最多 MAP_CAPACITY 家，横向摆成一排，不会互相遮挡，
+     也不会撞到任何一张地图上的道路 / 装饰物坐标。 */
+  function growthSlot(indexInPage, narrowMode) {
+    var x = 8 + indexInPage * (84 / (MAP_CAPACITY - 1 || 1));
+    return narrowMode ? { x: x, y: 40, w: 13, h: 11 } : { x: x, y: 36, w: 11, h: 14 };
+  }
+
+  function totalExtraPages() { return Math.ceil(extraCompanies.length / MAP_CAPACITY); }
+  /* 目前地图总数（除主城外）= 已经放满/正在使用的「新区」页数；0 表示还没有任何生成公司。 */
+  function maxMapIndex() { return totalExtraPages(); }
+
+  function buildingsForMap(mapIndex) {
+    if (mapIndex <= 0) return COMPANIES;
+    var start = (mapIndex - 1) * MAP_CAPACITY;
+    return extraCompanies.slice(start, start + MAP_CAPACITY);
+  }
+
+  /* 地图道路两侧的传送点：走过去就翻到上一页 / 下一页「新区」地图。
+     只有 currentMapIndex>0 时才有「上一张」，只有还有下一页内容时才有「下一张」。 */
+  var PORTAL_LEFT = {
+    id: "portal-left", label: "上一张地图",
+    wide: { x: 4, y: 84, w: 7, h: 16 }, narrow: { x: 6, y: 82, w: 15, h: 13 }
+  };
+  var PORTAL_RIGHT = {
+    id: "portal-right", label: "下一张地图",
+    wide: { x: 96, y: 84, w: 7, h: 16 }, narrow: { x: 94, y: 82, w: 15, h: 13 }
+  };
+
   var SKIN = {
     battery: { body: "#1b3b4a", roof: "#2a5b68", win: "rgba(243,200,132,.95)", alpha: ".85" },
     auto: { body: "#20363f", roof: "#2e6b73", win: "rgba(157,216,208,.9)", alpha: ".8" },
@@ -73,11 +115,8 @@
     wide: { x: 44, y: 88, w: 5.5, h: 9 },
     narrow: { x: 54, y: 88, w: 11, h: 7 }
   };
-  /* 玩家提交公司名后派发这个事件，由宿主（页面 / App）决定接下来怎么把关卡生成出来。
-     本模块自己不生成、不请求任何东西，只把「用户想要哪家公司」这件事交出去。 */
-  var REQUEST_EVENT = "jh-world:request-company";
-
   var stage = null, player = null, buildings = null, card = null, pedestal = null, mounted = false;
+  var portalLeftNode = null, portalRightNode = null, mapHud = null;
   var narrow = false;
   var nodes = {};
 
@@ -97,6 +136,7 @@
   function el(tag, cls) { var n = document.createElement(tag); if (cls) n.className = cls; return n; }
   function findCompany(id) {
     for (var i = 0; i < COMPANIES.length; i++) if (COMPANIES[i].id === id) return COMPANIES[i];
+    for (var j = 0; j < extraCompanies.length; j++) if (extraCompanies[j].id === id) return extraCompanies[j];
     return null;
   }
   function layoutOf(c) { return narrow ? c.narrow : c.wide; }
@@ -255,7 +295,7 @@
       '<span class="we-bld-roof"></span>' +
       '<span class="we-bld-top"></span>' +
       detailHtml(c.kind) +
-      '<span class="we-bld-sign"><b>' + c.label + '</b><i>' + c.name + '</i></span>' +
+      '<span class="we-bld-sign"><b>' + esc(c.label) + '</b><i>' + esc(c.name) + '</i></span>' +
       '<span class="we-bld-marker">▼</span>';
     return b;
   }
@@ -273,6 +313,21 @@
       '<span class="we-pd-shaft"></span>' +
       '<span class="we-pd-base"></span>' +
       '<span class="we-pd-sign">' + PEDESTAL.label + '</span>';
+    return p;
+  }
+
+  /* 传送点：地图道路两侧的门；走过去会翻到上一页/下一页「新区」地图。 */
+  function buildPortal(spec, dir) {
+    var p = el("button", "we-portal we-portal-" + (dir < 0 ? "left" : "right"));
+    p.type = "button";
+    p.dataset.dir = String(dir);
+    p.setAttribute("aria-label", spec.label);
+    p.innerHTML =
+      '<span class="we-pt-pillar we-pt-pillar-a"></span>' +
+      '<span class="we-pt-pillar we-pt-pillar-b"></span>' +
+      '<span class="we-pt-arch"></span>' +
+      '<span class="we-pt-glow"></span>' +
+      '<span class="we-pt-sign">' + esc(spec.label) + '</span>';
     return p;
   }
 
@@ -319,8 +374,11 @@
   }
 
   function applyLayout() {
-    for (var i = 0; i < COMPANIES.length; i++) layoutEntity(nodes[COMPANIES[i].id], COMPANIES[i]);
-    layoutEntity(pedestal, PEDESTAL);
+    var list = buildingsForMap(currentMapIndex);
+    for (var i = 0; i < list.length; i++) layoutEntity(nodes[list[i].id], list[i]);
+    if (pedestal) layoutEntity(pedestal, PEDESTAL);
+    if (portalLeftNode) layoutEntity(portalLeftNode, PORTAL_LEFT);
+    if (portalRightNode) layoutEntity(portalRightNode, PORTAL_RIGHT);
   }
 
   function layoutEntity(node, spec) {
@@ -380,19 +438,22 @@
   /* ---------- 公司交互 ---------- */
 
   function paint() {
-    for (var i = 0; i < COMPANIES.length; i++) {
-      var node = nodes[COMPANIES[i].id];
+    var list = buildingsForMap(currentMapIndex);
+    for (var i = 0; i < list.length; i++) {
+      var node = nodes[list[i].id];
       if (!node) continue;
-      node.classList.toggle("is-active", state.selected === COMPANIES[i].id);
+      node.classList.toggle("is-active", state.selected === list[i].id);
     }
     if (pedestal) pedestal.classList.toggle("is-active", state.selected === PEDESTAL.id);
+    if (portalLeftNode) portalLeftNode.classList.toggle("is-active", state.selected === PORTAL_LEFT.id);
+    if (portalRightNode) portalRightNode.classList.toggle("is-active", state.selected === PORTAL_RIGHT.id);
   }
 
   function showCard(c) {
     card.innerHTML =
-      '<div class="we-card-code">' + (c.enter ? c.code : "COMING SOON") + '</div>' +
-      '<div class="we-card-name">' + c.name + '</div>' +
-      '<div class="we-card-tag">' + c.tag + '</div>' +
+      '<div class="we-card-code">' + (c.enter ? esc(c.code) : "COMING SOON") + '</div>' +
+      '<div class="we-card-name">' + esc(c.name) + '</div>' +
+      '<div class="we-card-tag">' + esc(c.tag) + '</div>' +
       (c.enter
         ? '<button type="button" class="we-card-act" data-enter="1">进入探索</button>'
         : '<button type="button" class="we-card-act is-soon" disabled>新的产业调查正在准备中……</button>');
@@ -432,13 +493,25 @@
     if (input && input.focus) input.focus();
   }
 
-  function showQueuedCard(name) {
+  function showGeneratingCard(name) {
     card.innerHTML =
-      '<div class="we-card-code">QUEUED</div>' +
-      '<div class="we-card-name">' + name + '</div>' +
-      '<div class="we-card-tag">已收到。产业链关卡的生成能力即将接入玑衡 Agent ——' +
-      '接上之后，这里会直接打开《' + name + '》的新关卡。</div>' +
-      '<button type="button" class="we-card-act we-card-back" data-close-card="1">回到城市</button>';
+      '<div class="we-card-code">生成中</div>' +
+      '<div class="we-card-name">' + esc(name) + '</div>' +
+      '<div class="we-card-tag">玑衡 Agent 正在为「' + esc(name) + '」搭建产业链关卡，请稍候……</div>' +
+      '<button type="button" class="we-card-act is-soon" disabled>生成中…</button>';
+    card.hidden = false;
+  }
+
+  function showErrorCard(message) {
+    card.innerHTML =
+      '<div class="we-card-code">NEW</div>' +
+      '<div class="we-card-name">生成失败</div>' +
+      '<div class="we-card-tag">' + esc(message || "请稍后重试") + '</div>' +
+      '<form class="we-card-form" data-request-form="1">' +
+      '<input class="we-card-input" type="text" maxlength="24" autocomplete="off" ' +
+      'value="' + esc(state.requested || "") + '" aria-label="公司名称">' +
+      '<button class="we-card-act" type="submit">重新尝试</button>' +
+      '</form>';
     card.hidden = false;
   }
 
@@ -451,13 +524,49 @@
     });
   }
 
+  /* 走到传送点后翻页：往左减一页、往右加一页，越界会被 changeMap 自己钳制住。 */
+  function selectPortal(dir) {
+    var target = dir < 0 ? PORTAL_LEFT : PORTAL_RIGHT;
+    var stand = standPoint(target);
+    moveTo(stand.x, stand.y, function () {
+      state.selected = target.id;
+      paint();
+      changeMap(dir);
+    });
+  }
+
+  /* 切换当前地图页：重建建筑/传送点，并把玩家放在「从另一侧走出来」的位置，
+     制造穿过传送门、走进下一张地图的感觉。 */
+  function changeMap(dir) {
+    var nextIndex = clamp(currentMapIndex + dir, 0, maxMapIndex());
+    if (nextIndex === currentMapIndex) return;
+    currentMapIndex = nextIndex;
+    state.selected = null;
+    card.hidden = true;
+    rebuildBuildings();
+    var entrySpot = standPoint(dir > 0 ? PORTAL_LEFT : PORTAL_RIGHT);
+    state.x = entrySpot.x;
+    state.y = entrySpot.y;
+    place(false);
+    paint();
+    updateMapHud();
+  }
+
+  function updateMapHud() {
+    if (!mapHud) return;
+    var total = maxMapIndex() + 1;
+    mapHud.textContent = total > 1 ? "地图 " + (currentMapIndex + 1) + " / " + total : "";
+  }
+
   function submitCompany(rawName) {
     var name = String(rawName || "").replace(/\s+/g, " ").trim().slice(0, 24);
     if (!name) return false;
     state.requested = name;
-    showQueuedCard(name);
-    if (typeof global.CustomEvent === "function") {
-      global.dispatchEvent(new CustomEvent(REQUEST_EVENT, { detail: { company: name } }));
+    if (global.JihengWorldBridge && typeof global.JihengWorldBridge.postMessage === "function") {
+      showGeneratingCard(name);
+      global.JihengWorldBridge.postMessage(JSON.stringify({ type: "request-company", company: name }));
+    } else {
+      showErrorCard("生成产业链关卡需要在玑衡 App 内联网使用。");
     }
     return true;
   }
@@ -472,7 +581,7 @@
 
   function enterScenario() {
     if (typeof global.CustomEvent === "function") {
-      global.dispatchEvent(new CustomEvent(ENTER_EVENT));
+      global.dispatchEvent(new CustomEvent(ENTER_EVENT, { detail: { companyId: state.selected } }));
     }
   }
 
@@ -486,6 +595,8 @@
       }
       var pod = target.closest(".we-pedestal");
       if (pod) { selectPedestal(); return; }
+      var portal = target.closest(".we-portal");
+      if (portal) { selectPortal(Number(portal.dataset.dir)); return; }
       var bld = target.closest(".we-bld");
       if (bld) { select(bld.dataset.company); return; }
     }
@@ -528,6 +639,77 @@
 
   /* ---------- 挂载 ---------- */
 
+  /* 重建当前地图页上的所有建筑/传送点：初次挂载、「新增公司」、翻页都走这条路，
+     保证 nodes/pedestal/传送点与 currentMapIndex 对应的数据同步。 */
+  function rebuildBuildings() {
+    if (!buildings) return;
+    while (buildings.firstChild) buildings.removeChild(buildings.firstChild);
+    nodes = {};
+    var list = buildingsForMap(currentMapIndex);
+    for (var i = 0; i < list.length; i++) {
+      var node = buildBuilding(list[i]);
+      nodes[list[i].id] = node;
+      buildings.appendChild(node);
+    }
+    pedestal = null;
+    if (currentMapIndex === 0) {
+      pedestal = buildPedestal();
+      buildings.appendChild(pedestal);
+    }
+    portalLeftNode = portalRightNode = null;
+    if (currentMapIndex > 0) {
+      portalLeftNode = buildPortal(PORTAL_LEFT, -1);
+      buildings.appendChild(portalLeftNode);
+    }
+    if (currentMapIndex < maxMapIndex()) {
+      portalRightNode = buildPortal(PORTAL_RIGHT, 1);
+      buildings.appendChild(portalRightNode);
+    }
+    applyLayout();
+  }
+
+  /* 玑衡 Agent 生成关卡成功后，Flutter 通过这个入口把公司写进地图（追加到「新区」分页列表）。
+     payload 形如 {company:{id,name,code,tag,kind}, scenes:[...]}；scenes 交给 JHWorldData，供探索页读取。 */
+  function addCompany(payload) {
+    if (!payload || !payload.company || !Array.isArray(payload.scenes) || !payload.scenes.length) return false;
+    var meta = payload.company;
+    if (!meta.id || findCompany(meta.id)) return false;
+    var posInPage = extraCompanies.length % MAP_CAPACITY;
+    var entry = {
+      id: meta.id,
+      code: meta.code || "",
+      name: meta.name || meta.id,
+      tag: meta.tag || "",
+      kind: SKIN[meta.kind] ? meta.kind : "tech",
+      enter: true,
+      label: String(meta.name || meta.id).slice(0, 10),
+      wide: growthSlot(posInPage, false),
+      narrow: growthSlot(posInPage, true)
+    };
+    extraCompanies.push(entry);
+    if (global.JHWorldData) {
+      global.JHWorldData.companies.push(entry);
+      global.JHWorldData.scenarios[meta.id] = payload.scenes;
+    }
+    if (mounted) { rebuildBuildings(); updateMapHud(); }
+    if (state.selected === PEDESTAL.id) {
+      state.selected = entry.id;
+      paint();
+      showCard(entry);
+    }
+    return true;
+  }
+
+  /* App 打开 World 时把服务端已生成的公司整批灌回来，恢复到重启前的地图状态。 */
+  function hydrate(list) {
+    (list || []).forEach(function (item) { addCompany(item); });
+  }
+
+  /* 生成失败：只有还停在「添加公司」卡片上时才提示，避免打断玩家已经切走的操作。 */
+  function setError(message) {
+    if (state.selected === PEDESTAL.id) showErrorCard(message);
+  }
+
   function mount(root) {
     if (mounted || !root || !document.querySelector) return;
     mounted = true;
@@ -567,20 +749,16 @@
 
     buildings = el("div", "we-buildings");
     buildings.style.cssText = "position:absolute;inset:0;";
-    for (var i = 0; i < COMPANIES.length; i++) {
-      var node = buildBuilding(COMPANIES[i]);
-      nodes[COMPANIES[i].id] = node;
-      buildings.appendChild(node);
-    }
-    pedestal = buildPedestal();
-    buildings.appendChild(pedestal);
     root.appendChild(buildings);
+    rebuildBuildings();
 
     player = buildPlayer();
     root.appendChild(player);
 
     var hudTop = el("header", "we-hud we-hud-top");
     hudTop.innerHTML = '<div class="we-logo">玑衡 <b>WORLD</b></div><div class="we-sub">探索真实产业</div>';
+    mapHud = el("span", "we-map-hud");
+    hudTop.appendChild(mapHud);
     root.appendChild(hudTop);
 
     var hudBottom = el("footer", "we-hud we-hud-bottom");
@@ -594,6 +772,7 @@
     stage = root;
     applyLayout();
     place(false);
+    updateMapHud();
 
     root.addEventListener("click", onStageClick);
     root.addEventListener("submit", onStageSubmit);
@@ -609,7 +788,15 @@
     select: select,
     selectPedestal: selectPedestal,
     requestCompany: submitCompany,
-    enter: enterScenario
+    enter: enterScenario,
+    /* 多地图翻页：供调试/测试使用，也可用于将来的地图选择 UI */
+    mapIndex: function () { return currentMapIndex; },
+    maxMapIndex: maxMapIndex,
+    changeMap: changeMap,
+    /* 供 Flutter 通过 runJavaScript 调用 */
+    addCompany: addCompany,
+    hydrate: hydrate,
+    setError: setError
   };
 
   /* 自启动：本文件是页面里的最后一个脚本，DOM 已就绪 */
