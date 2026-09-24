@@ -82,7 +82,7 @@
   var nodes = {};
 
   var state = { x: SPAWN.wide.x, y: SPAWN.wide.y, selected: null, requested: null };
-  var arrivalTimer = null, arrivalHandler = null;
+  var arrivalTimer = null, arrivalHandler = null, entering = false;
 
   /* ---------- 小工具 ---------- */
 
@@ -471,12 +471,18 @@
   }
 
   function enterScenario() {
-    if (typeof global.CustomEvent === "function") {
-      global.dispatchEvent(new CustomEvent(ENTER_EVENT));
-    }
+    if (entering) return;
+    entering = true;
+    var enter = function () {
+      entering = false;
+      if (typeof global.CustomEvent === "function") global.dispatchEvent(new CustomEvent(ENTER_EVENT));
+    };
+    if (global.JHWorldFX) global.JHWorldFX.playWorldEnter(stage, player, nodes.catl, enter);
+    else enter();
   }
 
   function onStageClick(event) {
+    if (entering) return;
     var target = event.target;
     if (target && target.closest) {
       if (target.closest(".we-card")) {
