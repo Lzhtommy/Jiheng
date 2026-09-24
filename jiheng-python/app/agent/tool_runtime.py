@@ -26,35 +26,49 @@ class DeepSeekToolRuntime:
         wrote_text = False
         async with httpx.AsyncClient(timeout=httpx.Timeout(10, read=60)) as client:
             for round_index in range(profile.max_tool_rounds + 1):
-                payload = {"model": profile.model, "messages": conversation, "tools": tools}
-                # 轮次用尽后强制基于已有数据作答，避免只回一句“已达上限”
-                payload["tool_choice"] = "none" if round_index == profile.max_tool_rounds else "auto"
+                if round_index == profile.max_tool_rounds:
+                    # 网关在 tool_choice=none 时仍可能把工具调用当正文吐出，最后一轮不再提供工具
+                    conversation.append({"role": "user", "content": FINAL_ROUND_INSTRUCTION})
+                    payload = {"model": profile.model, "messages": conversation}
+                else:
+                    payload = {"model": profile.model, "messages": conversation, "tools": tools, "tool_choice": "auto"}
                 if profile.reasoning_effort:
                     payload["reasoning_effort"] = profile.reasoning_effort
                     payload["thinking"] = {"type": "enabled"}
                 message: dict = {}
                 separated = False
                 try:
-                    async for delta in _stream_completion(client, headers, payload, message):
+                    async for delta in _stream_completion(
+                        client,
+                        headers,
+                        payload,
+                        message,
+                        suppress_tool_markup=round_index == profile.max_tool_rounds,
+                    ):
                         if wrote_text and not separated:
                             delta = "\n\n" + delta
                         separated = True
                         wrote_text = True
                         yield AgentEvent("text", {"content": delta})
                 except httpx.TimeoutException as exc:
-                    if not separated:
+                    if round_index == 0 and not separated:
                         raise RuntimeError("模型接口响应超时，请稍后重试") from exc
-                    yield AgentEvent("text", {"content": "\n\n（模型响应中断，以上为已生成的内容）"})
+                    note = "（模型响应中断，以上为已生成的内容）" if separated else NO_ANSWER_TEXT
+                    yield AgentEvent("text", {"content": ("\n\n" if wrote_text else "") + note})
                     yield AgentEvent("refs", {"refs": refs})
                     return
                 tool_calls = message.get("tool_calls") or []
-                if not tool_calls:
+                if not tool_calls or round_index == profile.max_tool_rounds:
+                    if not separated:
+                        yield AgentEvent("text", {"content": ("\n\n" if wrote_text else "") + NO_ANSWER_TEXT})
                     yield AgentEvent("refs", {"refs": refs})
                     return
                 conversation.append(message)
                 parsed = [(call, _arguments(call)) for call in tool_calls]
                 for call, arguments in parsed:
-                    yield AgentEvent("tool_call", {"id": call["id"], "name": call["function"]["name"], "arguments": arguments})
+                    yield AgentEvent(
+                        "tool_call", {"id": call["id"], "name": call["function"]["name"], "arguments": arguments}
+                    )
                 results = await asyncio.gather(*(_run_tool(call["function"]["name"], args) for call, args in parsed))
                 for (call, _), result in zip(parsed, results):
                     refs.extend(result.get("sources", []))
@@ -73,12 +87,19 @@ class DeepSeekToolRuntime:
 
 
 async def _stream_completion(
-    client: httpx.AsyncClient, headers: dict, payload: dict, message: dict
+    client: httpx.AsyncClient,
+    headers: dict,
+    payload: dict,
+    message: dict,
+    *,
+    suppress_tool_markup: bool = False,
 ) -> AsyncGenerator[str, None]:
     """Yields content deltas; fills ``message`` with the assembled assistant message."""
     content: list[str] = []
     reasoning: list[str] = []
     calls: dict[int, dict] = {}
+    emitted = 0
+    markup_at = -1
     async with client.stream(
         "POST", f"{settings.deepseek_base_url}/chat/completions", headers=headers, json={**payload, "stream": True}
     ) as response:
@@ -102,17 +123,31 @@ async def _stream_completion(
                 reasoning.append(delta["reasoning_content"])
             if delta.get("content"):
                 content.append(delta["content"])
-                yield delta["content"]
+                if suppress_tool_markup and markup_at < 0:
+                    text = "".join(content)
+                    markup_at = text.find(TOOL_MARKUP)
+                    safe = markup_at if markup_at >= 0 else len(text) - _partial_markup_len(text)
+                    if safe > emitted:
+                        yield text[emitted:safe]
+                        emitted = safe
+                elif not suppress_tool_markup:
+                    yield delta["content"]
             for part in delta.get("tool_calls") or []:
                 slot = calls.setdefault(
-                    part.get("index", len(calls)), {"id": "", "type": "function", "function": {"name": "", "arguments": ""}}
+                    part.get("index", len(calls)),
+                    {"id": "", "type": "function", "function": {"name": "", "arguments": ""}},
                 )
                 if part.get("id"):
                     slot["id"] = part["id"]
                 function = part.get("function") or {}
                 slot["function"]["name"] += function.get("name") or ""
                 slot["function"]["arguments"] += function.get("arguments") or ""
-    message.update({"role": "assistant", "content": "".join(content)})
+    text = "".join(content)
+    if suppress_tool_markup and markup_at >= 0:
+        text = text[:markup_at]
+    elif suppress_tool_markup and len(text) > emitted:
+        yield text[emitted:]
+    message.update({"role": "assistant", "content": text})
     if reasoning:
         message["reasoning_content"] = "".join(reasoning)
     if calls:
@@ -120,6 +155,20 @@ async def _stream_completion(
 
 
 MAX_TOOL_CONTENT_CHARS = 6000
+TOOL_MARKUP = "<｜DSML｜"
+FINAL_ROUND_INSTRUCTION = (
+    "工具调用次数已用完。请只根据上面已经取得的工具数据写出最终回答，缺失的数据写明暂无，不要再调用任何工具。"
+)
+NO_ANSWER_TEXT = (
+    "（本次取数已结束，但模型没有给出完整结论。上方工具卡片里是已取得的数据，可以换成深度研究或分析师模式再问一次。）"
+)
+
+
+def _partial_markup_len(text: str) -> int:
+    for size in range(min(len(TOOL_MARKUP) - 1, len(text)), 0, -1):
+        if TOOL_MARKUP.startswith(text[-size:]):
+            return size
+    return 0
 
 
 def _tool_content(result: dict) -> str:

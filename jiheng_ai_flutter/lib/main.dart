@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
+import 'package:url_launcher/url_launcher.dart';
 import 'package:webview_flutter/webview_flutter.dart';
 
 import 'collab.dart';
@@ -79,6 +80,7 @@ class ChatMsg {
   String intro = '';
   String risk = '';
   String ref = '';
+  List<Map<String, String>> refList = [];
   String stageNote = '';
   int refCount = 0;
   bool skill = false;
@@ -830,11 +832,6 @@ class JihengShellState extends State<JihengShell> {
     }
   }
 
-  Future<void> shareAnswer(String text) async {
-    await Clipboard.setData(ClipboardData(text: text.trim()));
-    snack('已复制，可粘贴分享');
-  }
-
   void setPrompt(String text, String nextFlow) {
     setState(() {
       input.text = text;
@@ -1174,10 +1171,14 @@ class JihengShellState extends State<JihengShell> {
         ai.refCount = int.tryParse(event['ref_count'].toString()) ?? 0;
       }
       if (event['refs'] is List && (event['refs'] as List).isNotEmpty) {
-        ai.ref = (event['refs'] as List).map((item) {
+        ai.refList = (event['refs'] as List).map((item) {
           final source = item is Map ? item : {'title': item};
-          return '· ${source['title'] ?? ''}  ${source['url'] ?? ''}'.trim();
-        }).join('\n');
+          return {
+            'title': (source['title'] ?? '').toString(),
+            'url': (source['url'] ?? '').toString(),
+          };
+        }).toList();
+        ai.ref = ai.refList.map((s) => '· ${s['title']}').join('\n');
       }
       if (name.contains('done')) {
         if (ai.collab != null && ai.collab!.phase != 'failed') {
@@ -2357,7 +2358,6 @@ class MessageBubble extends StatelessWidget {
     final sections = message.sections;
     final rows = message.rows;
     final risk = message.risk;
-    final ref = message.ref;
     final refCount = message.refCount;
     final collab = message.collab;
     return Padding(
@@ -2427,8 +2427,10 @@ class MessageBubble extends StatelessWidget {
                         color: Colors.white,
                         borderRadius: BorderRadius.circular(8),
                         border: Border.all(color: C.line)),
-                    child: Text(ref.isEmpty ? '本次回答未调用带来源的数据工具' : ref,
-                        style: const TextStyle(fontSize: 12, height: 1.55)),
+                    child: message.refList.isEmpty
+                        ? const Text('本次回答未调用带来源的数据工具',
+                            style: TextStyle(fontSize: 12, height: 1.55))
+                        : _RefList(refs: message.refList),
                   ),
                 const SizedBox(height: 8),
                 Row(children: [
@@ -2443,9 +2445,6 @@ class MessageBubble extends StatelessWidget {
                           .toggleFavorite(intro.isEmpty ? message.flow : intro),
                       child: Text(
                           state.favorites.contains(intro) ? '取消收藏' : '收藏')),
-                  TextButton(
-                      onPressed: () => state.shareAnswer('$intro\n$risk'),
-                      child: const Text('分享')),
                 ]),
               ],
             ]),
@@ -3595,7 +3594,6 @@ class ProfileView extends StatelessWidget {
             Row(children: [
               for (final stat in [
                 (asText(stats['reportCount'], '0'), '生成报告'),
-                (asText(stats['skillCount'], '0'), '启用技能'),
                 (asText(stats['usageDays'], '0'), '使用天数'),
               ])
                 Expanded(
@@ -3703,7 +3701,6 @@ class DrawerOverlay extends StatelessWidget {
     final items = [
       ['新建对话', PageKey.home, Icons.chat_bubble_outline],
       ['我的报告', PageKey.reports, Icons.description_outlined],
-      ['技能广场', PageKey.skills, Icons.auto_awesome],
       ['定时与提醒', PageKey.reminders, Icons.schedule],
       ['我的收藏', PageKey.favorites, Icons.star_border],
     ];
@@ -4095,14 +4092,66 @@ class ReportDetailPage extends StatelessWidget {
                 color: C.faint,
                 borderRadius: BorderRadius.circular(8),
                 border: Border.all(color: C.line)),
-            child: Text('引用来源\n$refs',
-                style: const TextStyle(fontSize: 12.5, height: 1.6)),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('引用来源',
+                    style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600, height: 1.6)),
+                const SizedBox(height: 4),
+                if (report['refs'] is List && (report['refs'] as List).isNotEmpty)
+                  _RefList(refs: (report['refs'] as List).map((item) {
+                    final source = item is Map ? item : {'title': item};
+                    return {
+                      'title': (source['title'] ?? '').toString(),
+                      'url': (source['url'] ?? '').toString(),
+                    };
+                  }).toList())
+                else
+                  Text(refs, style: const TextStyle(fontSize: 12.5, height: 1.6)),
+              ],
+            ),
           ),
           const SizedBox(height: 18),
           const Text('内容由 AI 生成，请核查重要信息。',
               style: TextStyle(color: C.muted, fontSize: 12)),
         ],
       ),
+    );
+  }
+}
+
+class _RefList extends StatelessWidget {
+  const _RefList({required this.refs});
+  final List<Map<String, String>> refs;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: refs.map((source) {
+        final title = source['title'] ?? '';
+        final url = source['url'] ?? '';
+        if (url.isEmpty) {
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 4),
+            child: Text('· $title',
+                style: const TextStyle(fontSize: 12, height: 1.55)),
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 4),
+          child: GestureDetector(
+            onTap: () => launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication),
+            child: Text('· $title',
+                style: const TextStyle(
+                    fontSize: 12,
+                    height: 1.55,
+                    color: C.gold,
+                    decoration: TextDecoration.underline,
+                    decorationColor: C.gold)),
+          ),
+        );
+      }).toList(),
     );
   }
 }
