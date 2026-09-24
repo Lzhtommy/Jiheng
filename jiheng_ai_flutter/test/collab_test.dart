@@ -112,4 +112,57 @@ void main() {
     expect(run.width, greaterThan(300));
     expect(tester.takeException(), isNull);
   });
+
+  testWidgets('completed collaboration shows graph and final report',
+      (tester) async {
+    final state = JihengShellState();
+    final collab = CollabData(question: 'q', history: [])
+      ..loadPlan(planResponse())
+      ..phase = 'done';
+    final message = ChatMsg.ai('generic')
+      ..collab = collab
+      ..intro = '# 最终报告\n核心结论'
+      ..stage = Stage.done;
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: MessageBubble(message: message, state: state),
+        ),
+      ),
+    ));
+
+    expect(find.text('多智能体协作'), findsOneWidget);
+    expect(find.text('最终报告'), findsOneWidget);
+    expect(find.text('核心结论'), findsOneWidget);
+    expect(find.textContaining('内容由 AI 生成'), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
+
+  testWidgets('collaboration writing streams report without duplicate wait line',
+      (tester) async {
+    final state = JihengShellState();
+    final collab = CollabData(question: 'q', history: [])
+      ..loadPlan(planResponse())
+      ..phase = 'writing';
+    final message = ChatMsg.ai('generic')
+      ..collab = collab
+      ..intro = '正在形成最终结论'
+      ..stage = Stage.tool;
+
+    await tester.pumpWidget(MaterialApp(
+      home: Scaffold(
+        body: SingleChildScrollView(
+          child: MessageBubble(message: message, state: state),
+        ),
+      ),
+    ));
+
+    expect(find.text('多智能体协作'), findsOneWidget);
+    expect(find.text('正在形成最终结论'), findsOneWidget);
+    expect(find.text('正在生成'), findsNothing);
+    expect(find.text('正在等待回答'), findsNothing);
+    expect(find.byType(BlinkCursor), findsOneWidget);
+    expect(tester.takeException(), isNull);
+  });
 }

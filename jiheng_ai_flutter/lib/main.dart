@@ -2451,26 +2451,25 @@ class MessageBubble extends StatelessWidget {
             child:
                 Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               if (collab != null)
-                CollabPanel(message: message, state: state)
-              else ...[
-                if (message.toolCalls.isNotEmpty) ...[
-                  for (final call in message.toolCalls)
-                    ToolCallTile(key: ValueKey(call.id), call: call),
-                  const SizedBox(height: 4),
-                ],
-                if (intro.isNotEmpty)
-                  MarkdownBody(
-                    data: intro,
-                    selectable: true,
-                    styleSheet: answerMarkdownStyle,
-                  ),
-                if (message.stage != Stage.done) ...[
-                  if (intro.isNotEmpty) const BlinkCursor(),
+                CollabPanel(message: message, state: state),
+              if (collab == null && message.toolCalls.isNotEmpty) ...[
+                for (final call in message.toolCalls)
+                  ToolCallTile(key: ValueKey(call.id), call: call),
+                const SizedBox(height: 4),
+              ],
+              if (intro.isNotEmpty)
+                MarkdownBody(
+                  data: intro,
+                  selectable: true,
+                  styleSheet: answerMarkdownStyle,
+                ),
+              if (message.stage != Stage.done) ...[
+                if (intro.isNotEmpty) const BlinkCursor(),
+                if (collab == null)
                   WaitLine(
                     startedAt: message.startedAt,
                     label: intro.isEmpty ? '正在等待回答' : '正在生成',
                   ),
-                ],
               ],
               if (message.stage == Stage.done) ...[
                 const SizedBox(height: 12),
