@@ -395,6 +395,8 @@ class JihengShellState extends State<JihengShell> {
   bool drawerOpen = false;
   bool expertSheet = false;
   bool worldOpen = false;
+  bool worldTransitioning = false;
+  bool _transitionToWorld = false;
   bool authReady = false;
   bool isLoggedIn = false;
   bool loadingData = false;
@@ -778,6 +780,24 @@ class JihengShellState extends State<JihengShell> {
 
   void mutate(VoidCallback change) {
     setState(change);
+  }
+
+  void switchWorld(bool toWorld) {
+    if (worldOpen == toWorld || worldTransitioning) return;
+    setState(() {
+      worldTransitioning = true;
+      _transitionToWorld = toWorld;
+    });
+  }
+
+  void _applyWorldSwitch() {
+    if (!mounted) return;
+    setState(() => worldOpen = _transitionToWorld);
+  }
+
+  void _endWorldTransition() {
+    if (!mounted) return;
+    setState(() => worldTransitioning = false);
   }
 
   static const _favoritesKey = 'favorites';
@@ -1210,6 +1230,14 @@ class JihengShellState extends State<JihengShell> {
             Positioned.fill(child: _pageBody()),
             if (drawerOpen) DrawerOverlay(state: this),
             if (expertSheet) ExpertSheet(state: this),
+            if (worldTransitioning)
+              Positioned.fill(
+                child: WorldTransitionOverlay(
+                  toWorld: _transitionToWorld,
+                  onMidpoint: _applyWorldSwitch,
+                  onDone: _endWorldTransition,
+                ),
+              ),
           ],
         ),
       ),
@@ -1762,13 +1790,13 @@ class HomeHeader extends StatelessWidget {
                 label: '玑衡AI',
                 selected: !world,
                 dark: world,
-                onTap: () => state.mutate(() => state.worldOpen = false),
+                onTap: () => state.switchWorld(false),
               ),
               HomeTabButton(
                 label: '玑衡World',
                 selected: world,
                 dark: world,
-                onTap: () => state.mutate(() => state.worldOpen = true),
+                onTap: () => state.switchWorld(true),
               ),
             ]),
           ),
@@ -1824,6 +1852,122 @@ class HomeTabButton extends StatelessWidget {
         child: Text(label,
             style: TextStyle(
                 color: textColor, fontWeight: FontWeight.w700, fontSize: 15)),
+      ),
+    );
+  }
+}
+
+class WorldTransitionOverlay extends StatefulWidget {
+  const WorldTransitionOverlay({
+    required this.toWorld,
+    required this.onMidpoint,
+    required this.onDone,
+    super.key,
+  });
+
+  final bool toWorld;
+  final VoidCallback onMidpoint;
+  final VoidCallback onDone;
+
+  @override
+  State<WorldTransitionOverlay> createState() =>
+      _WorldTransitionOverlayState();
+}
+
+class _WorldTransitionOverlayState extends State<WorldTransitionOverlay>
+    with SingleTickerProviderStateMixin {
+  late final AnimationController _controller;
+  late final Animation<double> _opacity;
+  late final Animation<double> _scale;
+  bool _switched = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    )..addListener(_onTick)
+      ..addStatusListener((status) {
+        if (status == AnimationStatus.completed) widget.onDone();
+      })
+      ..forward();
+    _opacity = TweenSequence<double>([
+      TweenSequenceItem(
+          tween: Tween(begin: 0.0, end: 1.0).chain(CurveTween(curve: Curves.easeOut)),
+          weight: 30),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 40),
+      TweenSequenceItem(
+          tween: Tween(begin: 1.0, end: 0.0).chain(CurveTween(curve: Curves.easeIn)),
+          weight: 30),
+    ]).animate(_controller);
+    _scale = TweenSequence<double>([
+      TweenSequenceItem(
+          tween: Tween(begin: 0.88, end: 1.0)
+              .chain(CurveTween(curve: Curves.easeOutBack)),
+          weight: 30),
+      TweenSequenceItem(tween: ConstantTween(1.0), weight: 70),
+    ]).animate(_controller);
+  }
+
+  void _onTick() {
+    if (!_switched && _controller.value >= 0.32) {
+      _switched = true;
+      widget.onMidpoint();
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final world = widget.toWorld;
+    return AbsorbPointer(
+      child: AnimatedBuilder(
+        animation: _controller,
+        builder: (context, child) {
+          return Opacity(
+            opacity: _opacity.value,
+            child: Container(
+              color: world ? const Color(0xFF0E1D31) : C.paper,
+              alignment: Alignment.center,
+              child: Transform.scale(scale: _scale.value, child: child),
+            ),
+          );
+        },
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(
+              world ? Icons.public_rounded : Icons.auto_awesome_rounded,
+              size: 46,
+              color: world ? Colors.white : C.gold,
+            ),
+            const SizedBox(height: 16),
+            Text(
+              world ? '欢迎来到玑衡World' : '欢迎来到玑衡AI',
+              style: TextStyle(
+                fontFamily: 'serif',
+                fontWeight: FontWeight.w800,
+                fontSize: 22,
+                color: world ? Colors.white : C.text,
+              ),
+            ),
+            const SizedBox(height: 6),
+            Text(
+              world ? '探索资本世界的协作图谱' : '你的智能金融操作系统',
+              style: TextStyle(
+                fontSize: 13,
+                letterSpacing: 1,
+                color: world ? const Color(0xFF9BA9BE) : C.muted,
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
