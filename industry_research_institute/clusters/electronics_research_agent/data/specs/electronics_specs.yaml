@@ -1,0 +1,482 @@
+version: SW2021
+scope: electronics_only
+note: Static policy cards copied from valuation_router l2_specs; this package does
+  not call route().
+l2_specs:
+- id: sw2_270100
+  type: L2
+  extends: null
+  name: 半导体
+  sw_l2_name: 半导体
+  sw_l2_code: '270100'
+  match_condition: null
+  valuation_chain:
+    anchor_label: EarningsAnchor
+    default:
+      primary_chain:
+      - PE_TTM
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PEG
+    variants:
+    - id: high_growth
+      when:
+        all:
+        - feature: high_growth
+          eq: true
+      primary_chain:
+      - PE_TTM
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PEG
+      reason_codes:
+      - IND_HW_PEG_OK
+  forbid:
+    metrics_hard: []
+    metrics_soft: []
+  absolute:
+    models:
+    - DCF_FCFF
+    deny_models: []
+    params:
+      normalization_required: null
+  feature_overrides:
+    capex_heavy: true
+    is_financial: false
+    is_nav: false
+    is_utility: false
+    is_conglomerate: false
+    pe_soft_forbid_on_vol: true
+    ddm_dcf_mutex: false
+    industry_class: tech_hardware
+  meta:
+    l1_name: 电子
+    index_code: '801081'
+    aliases: []
+    rationale: 半导体 L2 维持 PE 首位（设计股横比）；异质靠 L3：设计 PE、晶圆 PB_TBV、设备/封测 EV_EBITDA
+- id: sw2_270200
+  type: L2
+  extends: null
+  name: 元件
+  sw_l2_name: 元件
+  sw_l2_code: '270200'
+  match_condition: null
+  valuation_chain:
+    anchor_label: EarningsAnchor
+    default:
+      primary_chain:
+      - PE_TTM
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PEG
+    variants:
+    - id: high_growth
+      when:
+        all:
+        - feature: high_growth
+          eq: true
+      primary_chain:
+      - PE_TTM
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PEG
+      reason_codes:
+      - IND_HW_PEG_OK
+  forbid:
+    metrics_hard: []
+    metrics_soft: []
+  absolute:
+    models:
+    - DCF_FCFF
+    deny_models: []
+    params:
+      normalization_required: null
+  feature_overrides:
+    capex_heavy: true
+    is_financial: false
+    is_nav: false
+    is_utility: false
+    is_conglomerate: false
+    pe_soft_forbid_on_vol: true
+    ddm_dcf_mutex: false
+    industry_class: tech_hardware
+  meta:
+    l1_name: 电子
+    index_code: '801083'
+    aliases: []
+    rationale: 电子元件横比多看 PE，PE 主、PEG 备选
+- id: sw2_270300
+  type: L2
+  extends: null
+  name: 光学光电子
+  sw_l2_name: 光学光电子
+  sw_l2_code: '270300'
+  match_condition: null
+  valuation_chain:
+    anchor_label: EarningsAnchor
+    default:
+      primary_chain:
+      - EV_EBITDA
+      - PE_TTM
+      - PB
+      alternatives: []
+    variants:
+    - id: high_growth
+      when:
+        all:
+        - feature: high_growth
+          eq: true
+      primary_chain:
+      - PE_TTM
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PEG
+      reason_codes:
+      - IND_HW_PEG_OK
+  forbid:
+    metrics_hard: []
+    metrics_soft: []
+  absolute:
+    models:
+    - DCF_FCFF
+    deny_models: []
+    params:
+      normalization_required: null
+  feature_overrides:
+    capex_heavy: true
+    is_financial: false
+    is_nav: false
+    is_utility: false
+    is_conglomerate: false
+    pe_soft_forbid_on_vol: true
+    ddm_dcf_mutex: false
+    industry_class: tech_hardware
+  meta:
+    l1_name: 电子
+    index_code: '801084'
+    aliases: []
+    rationale: 光学光电子重资本+周期（面板），EV_EBITDA 归一化优先
+- id: sw2_270400
+  type: L2
+  extends: null
+  name: 其他电子Ⅱ
+  sw_l2_name: 其他电子Ⅱ
+  sw_l2_code: '270400'
+  match_condition: null
+  valuation_chain:
+    anchor_label: EarningsAnchor
+    default:
+      primary_chain:
+      - EV_EBITDA
+      - PE_TTM
+      - PB
+      alternatives: []
+    variants:
+    - id: high_growth
+      when:
+        all:
+        - feature: high_growth
+          eq: true
+      primary_chain:
+      - PE_TTM
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PEG
+      reason_codes:
+      - IND_HW_PEG_OK
+  forbid:
+    metrics_hard: []
+    metrics_soft: []
+  absolute:
+    models:
+    - DCF_FCFF
+    deny_models: []
+    params:
+      normalization_required: null
+  feature_overrides:
+    capex_heavy: true
+    is_financial: false
+    is_nav: false
+    is_utility: false
+    is_conglomerate: false
+    pe_soft_forbid_on_vol: true
+    ddm_dcf_mutex: false
+    industry_class: tech_hardware
+  meta:
+    l1_name: 电子
+    index_code: '801082'
+    aliases:
+    - 其他电子
+    rationale: 其他电子杂项制造、景气波动，EV_EBITDA 主
+- id: sw2_270500
+  type: L2
+  extends: null
+  name: 消费电子
+  sw_l2_name: 消费电子
+  sw_l2_code: '270500'
+  match_condition: null
+  valuation_chain:
+    anchor_label: EarningsAnchor
+    default:
+      primary_chain:
+      - PE_TTM
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PEG
+    variants:
+    - id: high_growth
+      when:
+        all:
+        - feature: high_growth
+          eq: true
+      primary_chain:
+      - PE_TTM
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PEG
+      reason_codes:
+      - IND_HW_PEG_OK
+  forbid:
+    metrics_hard: []
+    metrics_soft: []
+  absolute:
+    models:
+    - DCF_FCFF
+    deny_models: []
+    params:
+      normalization_required: null
+  feature_overrides:
+    capex_heavy: true
+    is_financial: false
+    is_nav: false
+    is_utility: false
+    is_conglomerate: false
+    pe_soft_forbid_on_vol: true
+    ddm_dcf_mutex: false
+    industry_class: tech_hardware
+  meta:
+    l1_name: 电子
+    index_code: '801085'
+    aliases: []
+    rationale: 消费电子品牌与出货看 PE，PE 主、PEG 备选
+- id: sw2_270600
+  type: L2
+  extends: null
+  name: 电子化学品Ⅱ
+  sw_l2_name: 电子化学品Ⅱ
+  sw_l2_code: '270600'
+  match_condition: null
+  valuation_chain:
+    anchor_label: EarningsAnchor
+    default:
+      primary_chain:
+      - EV_EBITDA
+      - PE_TTM
+      - PB
+      alternatives: []
+    variants:
+    - id: high_growth
+      when:
+        all:
+        - feature: high_growth
+          eq: true
+      primary_chain:
+      - PE_TTM
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PEG
+      reason_codes:
+      - IND_HW_PEG_OK
+  forbid:
+    metrics_hard: []
+    metrics_soft: []
+  absolute:
+    models:
+    - DCF_FCFF
+    deny_models: []
+    params:
+      normalization_required: null
+  feature_overrides:
+    capex_heavy: true
+    is_financial: false
+    is_nav: false
+    is_utility: false
+    is_conglomerate: false
+    pe_soft_forbid_on_vol: true
+    ddm_dcf_mutex: false
+    industry_class: tech_hardware
+  meta:
+    l1_name: 电子
+    index_code: '801086'
+    aliases:
+    - 电子化学品
+    rationale: 电子化学品化工+电子属性、重资本，EV_EBITDA 主
+l3_specs:
+- id: sw2_270100__fabless
+  type: L3
+  extends: null
+  name: 半导体设计
+  sw_l2_name: 半导体
+  sw_l2_code: '270100'
+  match_condition:
+    tag: semiconductor_subsector
+    value: fabless
+  valuation_chain:
+    anchor_label: EarningsAnchor
+    default:
+      primary_chain:
+      - PE_TTM
+      - EV_FCF
+      - PS_TTM
+      alternatives:
+      - PEG
+    variants: []
+  forbid:
+    metrics_hard:
+    - PB
+    - PB_TBV
+    metrics_soft: []
+  absolute:
+    models:
+    - DCF_FCFF
+    deny_models: []
+    params: {}
+  feature_overrides:
+    asset_light: true
+    capex_heavy: false
+    is_financial: false
+    is_nav: false
+    is_utility: false
+    is_conglomerate: false
+    pe_soft_forbid_on_vol: false
+    ddm_dcf_mutex: false
+    industry_class: software
+  meta:
+    notes: 半导体设计轻资产，PE/EV_FCF 主、PB 禁
+- id: sw2_270100__foundry
+  type: L3
+  extends: null
+  name: 晶圆制造
+  sw_l2_name: 半导体
+  sw_l2_code: '270100'
+  match_condition:
+    tag: semiconductor_subsector
+    value: foundry
+  valuation_chain:
+    anchor_label: BookAnchor
+    default:
+      primary_chain:
+      - PB_TBV
+      - EV_EBITDA
+      - EV_FCF
+      alternatives:
+      - PB
+    variants: []
+  forbid:
+    metrics_hard:
+    - PE_FWD
+    - PEG
+    metrics_soft: []
+  absolute:
+    models:
+    - DCF_FCFF
+    - RIM
+    deny_models: []
+    params:
+      normalization_required: true
+  feature_overrides:
+    capex_heavy: true
+    is_financial: false
+    is_nav: false
+    is_utility: false
+    is_conglomerate: false
+    pe_soft_forbid_on_vol: false
+    ddm_dcf_mutex: false
+    industry_class: tech_hardware
+  meta:
+    notes: 晶圆制造重资本，PB_TBV 主、PE_FWD/PEG 禁
+- id: sw2_270100__equipment
+  type: L3
+  extends: null
+  name: 半导体设备
+  sw_l2_name: 半导体
+  sw_l2_code: '270100'
+  match_condition:
+    tag: semiconductor_subsector
+    value: equipment
+  valuation_chain:
+    anchor_label: EarningsAnchor
+    default:
+      primary_chain:
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PE_TTM
+    variants: []
+  forbid:
+    metrics_hard: []
+    metrics_soft: []
+  absolute:
+    models:
+    - DCF_FCFF
+    - RIM
+    deny_models: []
+    params: {}
+  feature_overrides:
+    capex_heavy: true
+    is_financial: false
+    is_nav: false
+    is_utility: false
+    is_conglomerate: false
+    pe_soft_forbid_on_vol: false
+    ddm_dcf_mutex: false
+    industry_class: tech_hardware
+  meta:
+    notes: 半导体设备重资本，EV_EBITDA 主
+- id: sw2_270100__packaging
+  type: L3
+  extends: null
+  name: 半导体封测
+  sw_l2_name: 半导体
+  sw_l2_code: '270100'
+  match_condition:
+    tag: semiconductor_subsector
+    value: packaging
+  valuation_chain:
+    anchor_label: EarningsAnchor
+    default:
+      primary_chain:
+      - EV_EBITDA
+      - PB
+      alternatives:
+      - PE_TTM
+    variants: []
+  forbid:
+    metrics_hard: []
+    metrics_soft: []
+  absolute:
+    models:
+    - DCF_FCFF
+    - RIM
+    deny_models: []
+    params: {}
+  feature_overrides:
+    capex_heavy: true
+    is_financial: false
+    is_nav: false
+    is_utility: false
+    is_conglomerate: false
+    pe_soft_forbid_on_vol: false
+    ddm_dcf_mutex: false
+    industry_class: tech_hardware
+  meta:
+    notes: 封测重资本，EV_EBITDA 主

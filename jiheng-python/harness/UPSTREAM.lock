@@ -1,0 +1,5 @@
+repository=https://github.com/deepseek-ai/deepseek-harness.git
+commit=00102833dfaee1da9f48a3a8eae9d34005a75218
+sdk_package=deepseek-harness-sdk
+runtime_package=deepseek-harness-runtime-bin
+profile=jiheng

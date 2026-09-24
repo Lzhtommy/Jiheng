@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+html,body{margin:0;padding:0;height:100%;background:#e6e3dd;font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Helvetica Neue",Arial,sans-serif;}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+::-webkit-scrollbar{display:none;}
+a{color:#9c6b3c;text-decoration:none;}
+a:hover{color:#7d5330;}
+textarea{font-family:inherit;}
+@keyframes jh-spin{to{transform:rotate(360deg);}}
+</style>
+</helmet>
+
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 16px;background:radial-gradient(120% 90% at 50% 0%,#f2efe9,#e2ded7);">
+  <div style="position:relative;width:375px;height:812px;background:#fff;border-radius:44px;box-shadow:0 30px 70px rgba(28,24,18,.32),0 0 0 10px #17191c,0 0 0 11px #3a3d42;display:flex;flex-direction:column;overflow:hidden;">
+    <div style="position:absolute;top:0;left:50%;transform:translateX(-50%);width:118px;height:26px;background:#17191c;border-radius:0 0 16px 16px;z-index:9;"></div>
+
+    <div style="height:44px;flex:0 0 44px;display:flex;align-items:center;justify-content:space-between;padding:0 22px;font-size:14px;font-weight:600;color:#1b1f24;background:#fff;position:relative;z-index:8;">
+      <span>{{ clock }}</span>
+      <div style="display:flex;align-items:center;gap:5px;">
+        <svg width="17" height="11" viewBox="0 0 18 12"><rect x="0" y="7" width="3" height="5" rx="0.5" fill="#1b1f24"/><rect x="5" y="5" width="3" height="7" rx="0.5" fill="#1b1f24"/><rect x="10" y="3" width="3" height="9" rx="0.5" fill="#1b1f24"/><rect x="15" y="0" width="3" height="12" rx="0.5" fill="#1b1f24"/></svg>
+        <svg width="15" height="11" viewBox="0 0 16 13"><path d="M8 10.5a1.3 1.3 0 100 2.6 1.3 1.3 0 000-2.6z" fill="#1b1f24"/><path d="M8 7c-1.8 0-3.4.7-4.6 1.9l1.1 1.1A5 5 0 018 8.6a5 5 0 013.5 1.4l1.1-1.1A6.9 6.9 0 008 7z" fill="#1b1f24"/><path d="M8 3.2c-2.8 0-5.3 1.1-7.2 3l1.1 1.1A8.5 8.5 0 018 4.9a8.5 8.5 0 016.1 2.4l1.1-1.1c-1.9-1.9-4.4-3-7.2-3z" fill="#1b1f24"/></svg>
+        <svg width="24" height="11" viewBox="0 0 25 12"><rect x="0.5" y="0.5" width="21" height="11" rx="2.5" stroke="#1b1f24" opacity=".35" fill="none"/><rect x="2" y="2" width="17" height="8" rx="1.5" fill="#1b1f24"/><rect x="22.5" y="4" width="1.5" height="4" rx="0.7" fill="#1b1f24" opacity=".35"/></svg>
+      </div>
+    </div>
+
+    <div style="flex:1;position:relative;overflow:hidden;background:#fff;">
+
+      <sc-if value="{{ isHome }}" hint-placeholder-val="{{ true }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;">
+        <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px;position:relative;">
+          <div onClick="{{ openDrawer }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1b1f24;">
+            <svg width="19" height="14" viewBox="0 0 20 16"><rect width="20" height="1.6" rx="0.8" fill="currentColor"/><rect y="7.2" width="15" height="1.6" rx="0.8" fill="currentColor"/><rect y="14.4" width="20" height="1.6" rx="0.8" fill="currentColor"/></svg>
+          </div>
+          <div style="position:absolute;left:0;right:0;top:6px;display:flex;justify-content:center;pointer-events:none;">
+            <div style="display:flex;gap:2px;padding:3px;background:#f1efeb;border-radius:10px;pointer-events:auto;">
+              <div style="padding:6px 16px;border-radius:8px;background:#fff;box-shadow:0 1px 3px rgba(27,31,36,.08);font-size:14px;font-weight:600;color:#1b1f24;cursor:default;">玑衡AI</div>
+              <div onClick="{{ goWorld }}" style="padding:6px 16px;border-radius:8px;font-size:14px;font-weight:500;color:#9aa1a8;cursor:pointer;">玑衡World</div>
+            </div>
+          </div>
+          <div onClick="{{ goNotifications }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1b1f24;">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M18 8.5a6 6 0 10-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5z"/><path d="M13.7 19a2 2 0 01-3.4 0"/></svg>
+          </div>
+        </div>
+
+        <div ref="{{ chatScrollRef }}" style="flex:1;overflow-y:auto;padding-bottom:8px;">
+          <div style="display:flex;gap:10px;padding:14px 16px 4px;">
+            <div style="width:36px;height:36px;flex:0 0 36px;border-radius:50%;overflow:hidden;background:url('assets/logo.png') 50% 43% / 152% no-repeat #0f2a5c;"></div>
+            <div style="background:#f6f4f0;border:1px solid #edeae3;border-radius:4px 14px 14px 14px;padding:13px 15px;font-size:14px;line-height:1.7;color:#1b1f24;max-width:268px;">已为你接入实时行情、研究数据与自动化金融 Agent，今天想做什么？</div>
+          </div>
+
+          <div style="padding:20px 16px 4px;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+              <div style="display:flex;align-items:baseline;gap:8px;">
+                <h3 style="font-family:'Noto Serif SC',serif;font-size:15px;margin:0;font-weight:600;color:#1b1f24;">金融专家</h3>
+                <span style="width:14px;height:1px;background:#c8a173;display:inline-block;"></span>
+              </div>
+              <span onClick="{{ openExpertSheet }}" style="color:#9c6b3c;font-size:12.5px;cursor:pointer;">全部专家</span>
+            </div>
+            <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px;">
+              <sc-for list="{{ expertOptions }}" as="e" hint-placeholder-count="0">
+                <div onClick="{{ e.onClick }}" style="display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:14px 8px 12px;background:{{ e.cardBg }};border:1px solid {{ e.cardBd }};border-radius:12px;cursor:pointer;">
+                  <div style="width:52px;height:52px;border-radius:50%;overflow:hidden;background:#fff;border:1px solid #edeae3;"><div style="width:100%;height:100%;background-image:{{ e.imgUrl }};background-size:116%;background-position:center;background-repeat:no-repeat;"></div></div>
+                  <div style="font-family:'Noto Serif SC',serif;font-size:13px;font-weight:600;color:#1b1f24;line-height:1.35;">{{ e.name }}</div>
+                  <sc-if value="{{ e.picked }}" hint-placeholder-val="{{ false }}">
+                    <span style="font-size:10.5px;color:#9c6b3c;">已选择</span>
+                  </sc-if>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+
+          <sc-for list="{{ msgs }}" as="m" hint-placeholder-count="0">
+            <sc-if value="{{ m.isUser }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;justify-content:flex-end;padding:10px 16px 4px;">
+                <div style="background:#1f2429;color:#fff;border-radius:14px 14px 4px 14px;padding:11px 15px;font-size:13.5px;line-height:1.65;max-width:258px;">{{ m.text }}</div>
+              </div>
+            </sc-if>
+            <sc-if value="{{ m.isAI }}" hint-placeholder-val="{{ false }}">
+              <div style="display:flex;gap:10px;padding:10px 16px;align-items:flex-start;">
+                <div style="width:36px;height:36px;flex:0 0 36px;border-radius:50%;overflow:hidden;background:url('assets/logo.png') 50% 43% / 152% no-repeat #0f2a5c;"></div>
+                <div style="flex:1;min-width:0;font-size:14px;line-height:1.75;color:#1b1f24;">
+                  <sc-if value="{{ m.thinking }}" hint-placeholder-val="{{ false }}">
+                    <div style="color:#767e86;font-size:13.5px;">正在检索……</div>
+                  </sc-if>
+                  <sc-if value="{{ m.showSkill }}" hint-placeholder-val="{{ false }}">
+                    <div style="display:inline-flex;align-items:center;gap:6px;background:#1f2429;color:#e8d7bf;font-size:11.5px;padding:5px 11px;border-radius:3px;margin:2px 0 10px;">已调用技能 · {{ m.tool }}</div>
+                  </sc-if>
+                  <sc-if value="{{ m.showTool }}" hint-placeholder-val="{{ false }}">
+                    <div style="border:1px solid #e7e5e0;border-radius:8px;padding:9px 11px;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#767e86;margin:2px 0 10px;">
+                      <span style="color:#9c6b3c;font-weight:600;">{{ m.tool }}</span>
+                      <span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">{{ m.toolQuery }}</span>
+                      <sc-if value="{{ m.toolBusy }}" hint-placeholder-val="{{ false }}">
+                        <span style="width:13px;height:13px;border-radius:50%;border:2px solid #e7e5e0;border-top-color:#9c6b3c;animation:jh-spin 1s linear infinite;display:inline-block;"></span>
+                      </sc-if>
+                      <sc-if value="{{ m.toolDone }}" hint-placeholder-val="{{ false }}">
+                        <span style="color:#12805c;">✓</span>
+                      </sc-if>
+                    </div>
+                  </sc-if>
+                  <sc-if value="{{ m.showIntro }}" hint-placeholder-val="{{ false }}">
+                    <div>{{ m.intro }}</div>
+                  </sc-if>
+                  <sc-if value="{{ m.showBody }}" hint-placeholder-val="{{ false }}">
+                    <div>
+                      <sc-for list="{{ m.sections }}" as="s" hint-placeholder-count="2">
+                        <div style="font-family:'Noto Serif SC',serif;font-size:14.5px;font-weight:600;color:#1b1f24;margin:15px 0 7px;padding-left:9px;border-left:2px solid #c8a173;">{{ s.h }}</div>
+                        <sc-if value="{{ s.para }}" hint-placeholder-val="{{ false }}">
+                          <div style="font-size:13.5px;line-height:1.8;color:#4a5259;">{{ s.para }}</div>
+                        </sc-if>
+                        <sc-for list="{{ s.items }}" as="it" hint-placeholder-count="0">
+                          <div style="display:flex;gap:8px;margin:5px 0;font-size:13.5px;line-height:1.75;color:#3d454c;">
+                            <span style="color:#c8a173;flex:0 0 auto;">·</span>
+                            <span>{{ it.t }}</span>
+                          </div>
+                        </sc-for>
+                      </sc-for>
+                      <sc-if value="{{ m.tableTitle }}" hint-placeholder-val="{{ false }}">
+                        <div style="border:1px solid #e7e5e0;border-radius:8px;overflow:hidden;margin:12px 0;">
+                          <div style="background:#f6f4f0;padding:9px 12px;font-size:12.5px;font-weight:600;color:#1b1f24;font-family:'Noto Serif SC',serif;">{{ m.tableTitle }}</div>
+                          <sc-for list="{{ m.tableRows }}" as="r" hint-placeholder-count="2">
+                            <div style="display:flex;gap:10px;padding:9px 12px;border-top:1px solid #efece7;font-size:12.5px;line-height:1.6;">
+                              <div style="flex:0 0 38%;color:#767e86;">{{ r.k }}</div>
+                              <div style="flex:1;color:#1b1f24;">{{ r.v }}</div>
+                            </div>
+                          </sc-for>
+                        </div>
+                      </sc-if>
+                      <div style="font-size:12.5px;color:#6b5a44;line-height:1.75;background:#faf6ee;border-left:2px solid #d8b483;border-radius:0 6px 6px 0;padding:10px 12px;margin:12px 0;">{{ m.risk }}</div>
+                      <div onClick="{{ m.toggleRef }}" style="font-size:12px;color:#8b9299;display:flex;align-items:center;gap:6px;margin-top:10px;cursor:pointer;">
+                        <span>本次回答参考了 {{ m.refCount }} 个资料</span>
+                        <span style="margin-left:auto;">⌄</span>
+                      </div>
+                      <sc-if value="{{ m.refOpen }}" hint-placeholder-val="{{ false }}">
+                        <div style="border:1px solid #e7e5e0;border-radius:8px;padding:10px 12px;margin-top:8px;">
+                          <div style="font-size:12.5px;color:#1b1f24;margin-bottom:8px;line-height:1.6;">{{ m.refTitle }}</div>
+                          <span style="display:inline-block;border:1px solid #e0d3bf;color:#9c6b3c;font-size:10.5px;padding:2px 8px;border-radius:3px;margin-right:8px;">{{ m.refTag }}</span>
+                          <span style="font-size:11.5px;color:#adb4ba;">{{ m.refDate }}</span>
+                        </div>
+                      </sc-if>
+                      <div style="font-size:11.5px;color:#adb4ba;margin:10px 0 2px;">内容由 AI 生成，请核查重要信息</div>
+                      <div style="display:flex;gap:16px;color:#adb4ba;font-size:13px;padding:4px 0 12px;"><span>⧉</span><span>♡</span><span>↗</span></div>
+                    </div>
+                  </sc-if>
+                </div>
+              </div>
+            </sc-if>
+          </sc-for>
+          <div style="height:8px;"></div>
+        </div>
+
+        <div style="flex:0 0 auto;padding:10px 16px 18px;border-top:1px solid #edeae3;background:#fff;">
+          <sc-if value="{{ showModeRow }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:10px;">
+              <sc-for list="{{ modes }}" as="md" hint-placeholder-count="4">
+                <div onClick="{{ md.onClick }}" style="flex:0 0 auto;padding:8px 14px;border-radius:4px;background:{{ md.bg }};color:{{ md.fg }};border:1px solid {{ md.bd }};font-size:12.5px;font-weight:600;cursor:pointer;white-space:nowrap;">{{ md.label }}</div>
+              </sc-for>
+            </div>
+          </sc-if>
+          <sc-if value="{{ modeSelected }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;align-items:center;justify-content:space-between;background:#f3ede4;color:#9c6b3c;border-radius:4px;padding:9px 13px;margin-bottom:10px;font-size:12.5px;font-weight:600;">
+              <span>{{ modeLabel }}</span>
+              <span onClick="{{ deselectMode }}" style="cursor:pointer;color:#a89b89;">✕</span>
+            </div>
+          </sc-if>
+          <div style="display:flex;align-items:flex-end;gap:8px;background:#f6f4f0;border:1px solid #edeae3;border-radius:14px;padding:9px 9px 9px 13px;">
+            <div style="width:26px;height:26px;border-radius:50%;background:#fff;border:1px solid #e7e5e0;display:flex;align-items:center;justify-content:center;flex:0 0 26px;color:#767e86;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="9" y="2.5" width="6" height="12" rx="3"/><path d="M5 11a7 7 0 0014 0M12 18.5V22"/></svg>
+            </div>
+            <textarea rows="1" value="{{ input }}" onChange="{{ onInput }}" placeholder="{{ placeholder }}" style="flex:1;border:none;background:transparent;resize:none;font-size:13px;line-height:1.55;color:#1b1f24;outline:none;max-height:60px;"></textarea>
+            <div onClick="{{ onSend }}" style="width:28px;height:28px;border-radius:50%;background:{{ sendBg }};color:{{ sendFg }};border:1px solid {{ sendBd }};display:flex;align-items:center;justify-content:center;flex:0 0 28px;cursor:pointer;font-size:14px;">{{ sendGlyph }}</div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isReports }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;">
+        <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px;position:relative;">
+          <div onClick="{{ goHome }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1b1f24;font-size:22px;line-height:1;">‹</div>
+          <div style="position:absolute;left:0;right:0;top:8px;text-align:center;pointer-events:none;font-family:'Noto Serif SC',serif;font-size:16px;font-weight:600;color:#1b1f24;">我的报告</div>
+          <div style="width:32px;"></div>
+        </div>
+        <div style="display:flex;gap:8px;padding:4px 16px 12px;overflow-x:auto;">
+          <sc-for list="{{ reportTabs }}" as="t" hint-placeholder-count="4">
+            <div onClick="{{ t.onClick }}" style="flex:0 0 auto;padding:7px 14px;border-radius:4px;background:{{ t.bg }};color:{{ t.fg }};border:1px solid {{ t.bd }};font-size:13px;font-weight:600;cursor:pointer;">{{ t.label }}</div>
+          </sc-for>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding-bottom:20px;">
+          <sc-for list="{{ reportGroups }}" as="g" hint-placeholder-count="2">
+            <div>
+              <div style="font-size:11.5px;color:#a3aab0;letter-spacing:.06em;padding:10px 16px 2px;">{{ g.label }}</div>
+              <sc-for list="{{ g.items }}" as="r" hint-placeholder-count="3">
+                <div style="margin:8px 16px 0;border:1px solid #e7e5e0;border-radius:10px;padding:14px;">
+                  <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+                    <span style="background:#f3ede4;color:#9c6b3c;font-size:10.5px;padding:3px 8px;border-radius:3px;">{{ r.kind }}</span>
+                    <span style="font-size:11.5px;color:#adb4ba;">{{ r.date }}</span>
+                    <span style="margin-left:auto;font-size:11.5px;color:{{ r.stateColor }};">{{ r.state }}</span>
+                  </div>
+                  <div style="font-family:'Noto Serif SC',serif;font-size:14.5px;font-weight:600;color:#1b1f24;line-height:1.5;">{{ r.title }}</div>
+                  <div style="font-size:12.5px;color:#767e86;line-height:1.7;margin-top:6px;">{{ r.summary }}</div>
+                  <div style="display:flex;align-items:center;gap:14px;margin-top:11px;padding-top:11px;border-top:1px solid #efece7;font-size:12px;color:#8b9299;">
+                    <span>{{ r.pages }}</span>
+                    <span style="margin-left:auto;color:#9c6b3c;font-weight:600;">查看</span>
+                    <span style="color:#9c6b3c;font-weight:600;">导出</span>
+                  </div>
+                </div>
+              </sc-for>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isProfile }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;">
+        <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px;position:relative;">
+          <div onClick="{{ goHome }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1b1f24;font-size:22px;line-height:1;">‹</div>
+          <div style="position:absolute;left:0;right:0;top:8px;text-align:center;pointer-events:none;font-family:'Noto Serif SC',serif;font-size:16px;font-weight:600;color:#1b1f24;">个人中心</div>
+          <div style="width:32px;"></div>
+        </div>
+        <div style="flex:1;overflow-y:auto;padding-bottom:24px;">
+          <div style="margin:6px 16px 0;background:#1f2429;border-radius:12px;padding:18px;color:#fff;">
+            <div style="display:flex;align-items:center;gap:13px;">
+              <div style="width:48px;height:48px;border-radius:50%;flex:0 0 48px;background:#33393f;border:1px solid #4a5157;color:#d8b483;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:17px;">用</div>
+              <div style="flex:1;min-width:0;">
+                <div style="font-family:'Noto Serif SC',serif;font-size:16px;font-weight:600;letter-spacing:.04em;">USER_6450</div>
+                <div style="font-size:12px;color:#9aa4ac;margin-top:3px;">机构版 · 研究部</div>
+              </div>
+              <div style="border:1px solid #6d6153;color:#d8b483;font-size:11.5px;padding:4px 10px;border-radius:3px;">编辑资料</div>
+            </div>
+            <div style="display:flex;margin-top:16px;padding-top:15px;border-top:1px solid #333940;">
+              <sc-for list="{{ profileStats }}" as="s" hint-placeholder-count="3">
+                <div style="flex:1;text-align:center;">
+                  <div style="font-family:'Noto Serif SC',serif;font-size:19px;font-weight:600;color:#d8b483;">{{ s.v }}</div>
+                  <div style="font-size:11.5px;color:#9aa4ac;margin-top:4px;">{{ s.k }}</div>
+                </div>
+              </sc-for>
+            </div>
+          </div>
+          <div style="font-size:11.5px;color:#a3aab0;letter-spacing:.06em;padding:18px 16px 4px;">账号</div>
+          <sc-for list="{{ profileRows }}" as="p" hint-placeholder-count="6">
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #efece7;">
+              <div style="flex:1;min-width:0;font-size:14px;color:#1b1f24;">{{ p.t }}</div>
+              <div style="font-size:12.5px;color:#8b9299;">{{ p.v }}</div>
+              <div style="color:#c9cfd4;font-size:15px;">›</div>
+            </div>
+          </sc-for>
+          <div style="margin:22px 16px 0;border:1px solid #e7e5e0;border-radius:8px;padding:13px;text-align:center;font-size:13.5px;color:#767e86;">退出登录</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isWorld }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#0f1d33;color:#fff;">
+        <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px;position:relative;">
+          <div style="width:32px;height:32px;"></div>
+          <div style="position:absolute;left:0;right:0;top:6px;display:flex;justify-content:center;pointer-events:none;">
+            <div style="display:flex;gap:2px;padding:3px;background:rgba(255,255,255,.08);border-radius:10px;pointer-events:auto;">
+              <div onClick="{{ goHome }}" style="padding:6px 16px;border-radius:8px;font-size:14px;font-weight:500;color:#8a97a9;cursor:pointer;">玑衡AI</div>
+              <div style="padding:6px 16px;border-radius:8px;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);font-size:14px;font-weight:600;color:#0f1d33;cursor:default;">玑衡World</div>
+            </div>
+          </div>
+          <div style="width:32px;height:32px;"></div>
+        </div>
+        <div style="flex:1;margin:10px 16px 24px;border:1.5px dashed rgba(216,180,131,.45);border-radius:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;text-align:center;padding:24px;">
+          <div style="width:96px;height:96px;border-radius:50%;overflow:hidden;background:url('assets/logo.png') 50% 43% / 152% no-repeat #0f2a5c;box-shadow:0 0 0 1px rgba(216,180,131,.35);"></div>
+          <div style="font-family:'Noto Serif SC',serif;font-size:20px;font-weight:600;letter-spacing:.08em;color:#fff;margin-top:10px;">玑衡World</div>
+          <div style="font-size:12.5px;color:#9aa8bb;line-height:1.7;">游戏内容区域 · 预留位</div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isSkills }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;">
+        <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px;position:relative;">
+          <div onClick="{{ goHome }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1b1f24;font-size:22px;line-height:1;">‹</div>
+          <div style="position:absolute;left:0;right:0;top:8px;text-align:center;pointer-events:none;font-family:'Noto Serif SC',serif;font-size:16px;font-weight:600;color:#1b1f24;">技能广场</div>
+          <div style="width:32px;"></div>
+        </div>
+        <div style="display:flex;gap:8px;padding:4px 16px 12px;overflow-x:auto;">
+          <sc-for list="{{ skillTabs }}" as="t" hint-placeholder-count="3">
+            <div onClick="{{ t.onClick }}" style="flex:0 0 auto;padding:7px 14px;border-radius:4px;background:{{ t.bg }};color:{{ t.fg }};border:1px solid {{ t.bd }};font-size:13px;font-weight:600;cursor:pointer;">{{ t.label }}</div>
+          </sc-for>
+        </div>
+        <div style="margin:0 16px 8px;background:#f6f4f0;border:1px solid #edeae3;border-radius:8px;padding:9px 13px;display:flex;align-items:center;gap:8px;color:#8b9299;font-size:13px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <span>搜索技能名称或描述</span>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+          <div style="display:flex;align-items:center;padding:8px 16px;font-size:12.5px;color:#8b9299;letter-spacing:.04em;">
+            <span>{{ skillCountLabel }}</span>
+            <sc-if value="{{ showCreateSkill }}" hint-placeholder-val="{{ false }}">
+              <span style="margin-left:auto;color:#9c6b3c;font-weight:600;">＋ 新建技能</span>
+            </sc-if>
+          </div>
+          <sc-for list="{{ skills }}" as="s" hint-placeholder-count="9">
+            <div style="display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid #efece7;">
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;gap:7px;margin-bottom:4px;">
+                  <span style="font-size:14.5px;font-weight:600;color:#1b1f24;font-family:'Noto Serif SC',serif;">{{ s.t }}</span>
+                  <sc-if value="{{ s.badge }}" hint-placeholder-val="{{ false }}">
+                    <span style="background:#f3ede4;color:#9c6b3c;font-size:10.5px;padding:2px 7px;border-radius:3px;">{{ s.badge }}</span>
+                  </sc-if>
+                </div>
+                <div style="font-size:12px;color:#767e86;line-height:1.6;">{{ s.d }}</div>
+                <sc-if value="{{ s.meta }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:11.5px;color:#adb4ba;margin-top:6px;">{{ s.meta }}</div>
+                </sc-if>
+              </div>
+              <div onClick="{{ s.toggle }}" style="width:42px;height:24px;border-radius:12px;background:{{ s.trackBg }};position:relative;flex:0 0 42px;cursor:pointer;transition:.2s;">
+                <div style="position:absolute;top:2px;left:{{ s.knobLeft }};width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.2);transition:.2s;"></div>
+              </div>
+            </div>
+          </sc-for>
+          <sc-if value="{{ skillsEmpty }}" hint-placeholder-val="{{ false }}">
+            <div style="text-align:center;padding:60px 24px;color:#adb4ba;font-size:13.5px;line-height:1.8;">还没有创建技能<br>把常用的分析流程沉淀成一个技能，随时调用</div>
+          </sc-if>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isReminders }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;">
+        <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px;position:relative;">
+          <div onClick="{{ goHome }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1b1f24;font-size:22px;line-height:1;">‹</div>
+          <div style="position:absolute;left:0;right:0;top:8px;text-align:center;pointer-events:none;font-family:'Noto Serif SC',serif;font-size:16px;font-weight:600;color:#1b1f24;">定时与提醒</div>
+          <div style="width:32px;"></div>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+          <div style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px 4px;">
+            <div>
+              <div style="font-family:'Noto Serif SC',serif;font-size:17px;font-weight:600;">定时任务</div>
+              <div style="font-size:12.5px;color:#767e86;margin-top:3px;">管理你的自动化任务</div>
+            </div>
+            <div style="background:#1f2429;color:#fff;font-size:12.5px;font-weight:600;padding:9px 14px;border-radius:4px;white-space:nowrap;">＋ 创建定时任务</div>
+          </div>
+          <div style="text-align:center;padding:46px 20px 10px;">
+            <div style="color:#767e86;font-size:14px;">暂无定时任务</div>
+            <div style="color:#adb4ba;font-size:12.5px;margin-top:5px;">创建后可在这里查看和管理自动执行的任务</div>
+          </div>
+          <div style="border-top:8px solid #f6f4f0;margin-top:20px;">
+            <div style="padding:16px 16px 4px;">
+              <div style="font-family:'Noto Serif SC',serif;font-size:17px;font-weight:600;">提醒任务</div>
+              <div style="font-size:12.5px;color:#767e86;margin-top:3px;">展示满足条件后自动触发的提醒任务</div>
+            </div>
+            <div style="text-align:center;padding:46px 20px 30px;">
+              <div style="color:#767e86;font-size:14px;">暂无提醒任务</div>
+              <div style="color:#adb4ba;font-size:12.5px;margin-top:5px;">通过对话自动创建提醒订阅任务，满足条件后会在这里展示</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      </sc-if>
+
+      <sc-if value="{{ isNotifications }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;inset:0;display:flex;flex-direction:column;background:#fff;">
+        <div style="flex:0 0 auto;display:flex;align-items:center;justify-content:space-between;padding:6px 16px 10px;position:relative;">
+          <div onClick="{{ goHome }}" style="width:32px;height:32px;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#1b1f24;font-size:22px;line-height:1;">‹</div>
+          <div style="position:absolute;left:0;right:0;top:8px;text-align:center;pointer-events:none;font-family:'Noto Serif SC',serif;font-size:16px;font-weight:600;color:#1b1f24;">通知中心</div>
+          <div style="width:32px;"></div>
+        </div>
+        <div style="padding:12px 16px;">
+          <span style="display:inline-block;background:#1f2429;color:#fff;padding:8px 17px;border-radius:4px;font-size:13px;font-weight:600;">任务记录</span>
+        </div>
+        <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#c9cfd4;gap:12px;padding-bottom:60px;">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"><path d="M18 8.5a6 6 0 10-12 0c0 5-2 6.5-2 6.5h16s-2-1.5-2-6.5z"/><path d="M13.7 19a2 2 0 01-3.4 0"/></svg>
+          <div style="font-size:13.5px;">暂无通知</div>
+        </div>
+      </div>
+      </sc-if>
+
+    </div>
+
+    <sc-if value="{{ expertSheet }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeExpertSheet }}" style="position:absolute;inset:0;background:rgba(23,25,28,.34);z-index:22;display:flex;align-items:flex-end;">
+        <div onClick="{{ stop }}" style="width:100%;max-height:66%;background:#fff;border-radius:18px 18px 0 0;display:flex;flex-direction:column;box-shadow:0 -8px 30px rgba(0,0,0,.14);">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 18px 14px;">
+            <div style="font-family:'Noto Serif SC',serif;font-size:16px;font-weight:600;color:#1b1f24;">选择金融专家</div>
+            <div onClick="{{ closeExpertSheet }}" style="color:#8b9299;font-size:16px;cursor:pointer;padding:0 2px;">✕</div>
+          </div>
+          <div style="margin:0 18px 6px;background:#f6f4f0;border:1px solid #edeae3;border-radius:8px;padding:10px 13px;display:flex;align-items:center;gap:8px;color:#8b9299;font-size:13px;">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+            <span>搜索金融专家</span>
+          </div>
+          <div style="flex:1;overflow-y:auto;padding:6px 0 16px;">
+            <sc-for list="{{ expertOptions }}" as="e" hint-placeholder-count="0">
+              <div onClick="{{ e.onClick }}" style="display:flex;align-items:flex-start;gap:12px;padding:13px 18px;cursor:pointer;border-bottom:1px solid #f3f1ec;">
+                <div style="width:40px;height:40px;border-radius:50%;flex:0 0 40px;overflow:hidden;background:#fff;border:1px solid #edeae3;"><div style="width:100%;height:100%;background-image:{{ e.imgUrl }};background-size:116%;background-position:center;background-repeat:no-repeat;"></div></div>
+                <div style="flex:1;min-width:0;">
+                  <div style="font-family:'Noto Serif SC',serif;font-size:14.5px;font-weight:600;color:#1b1f24;">{{ e.name }}</div>
+                  <div style="font-size:12.5px;color:#767e86;line-height:1.6;margin-top:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;">{{ e.desc }}</div>
+                </div>
+                <sc-if value="{{ e.picked }}" hint-placeholder-val="{{ false }}">
+                  <span style="color:#9c6b3c;font-size:14px;">✓</span>
+                </sc-if>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+      <div onClick="{{ closeDrawer }}" style="position:absolute;inset:0;background:rgba(23,25,28,.32);z-index:20;">
+        <div onClick="{{ stop }}" style="position:absolute;top:0;left:0;bottom:0;width:82%;background:#fff;display:flex;flex-direction:column;padding-top:52px;box-shadow:2px 0 24px rgba(0,0,0,.12);">
+          <div style="padding:0 20px 14px;display:flex;align-items:center;gap:9px;">
+            <div style="width:28px;height:28px;flex:0 0 28px;border-radius:50%;overflow:hidden;background:url('assets/logo.png') 50% 43% / 152% no-repeat #0f2a5c;"></div>
+            <div style="font-family:'Noto Serif SC',serif;font-size:15px;font-weight:600;letter-spacing:.08em;color:#1b1f24;">玑衡AI</div>
+          </div>
+          <div style="flex:1;overflow-y:auto;">
+            <sc-for list="{{ drawerItems }}" as="d" hint-placeholder-count="5">
+              <div onClick="{{ d.onClick }}" style="display:flex;align-items:center;gap:13px;padding:11px 20px;cursor:pointer;font-size:14.5px;color:#1b1f24;font-weight:500;">
+                <span style="width:20px;display:flex;align-items:center;justify-content:center;color:#7d8790;">
+                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="{{ d.icon }}"></path></svg>
+                </span>
+                <span>{{ d.label }}</span>
+                <sc-if value="{{ d.badge }}" hint-placeholder-val="{{ false }}">
+                  <span style="background:#f3ede4;color:#9c6b3c;font-size:10.5px;padding:2px 7px;border-radius:3px;font-weight:600;">送积分</span>
+                </sc-if>
+              </div>
+            </sc-for>
+            <div style="margin:14px 20px 6px;background:#f6f4f0;border:1px solid #edeae3;border-radius:8px;padding:9px 12px;display:flex;align-items:center;gap:8px;font-size:12.5px;color:#8b9299;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+              <span>搜索历史对话</span>
+            </div>
+            <div style="font-size:11.5px;color:#a3aab0;padding:10px 20px 4px;letter-spacing:.06em;">今天</div>
+            <div onClick="{{ newChat }}" style="padding:7px 20px;font-size:13.5px;color:#3d454c;cursor:pointer;">金融AI助手自我介绍</div>
+            <div style="font-size:11.5px;color:#a3aab0;padding:10px 20px 4px;letter-spacing:.06em;">昨天</div>
+            <div onClick="{{ newChat }}" style="padding:7px 20px;font-size:13.5px;color:#3d454c;cursor:pointer;">做一份宁德时代（300750.SZ）三季报前瞻…</div>
+          </div>
+          <div onClick="{{ goProfile }}" style="display:flex;align-items:center;gap:10px;padding:15px 20px;border-top:1px solid #efece7;cursor:pointer;">
+            <div style="width:32px;height:32px;border-radius:50%;background:#f3ede4;border:1px solid #e4d7c4;color:#9c6b3c;display:flex;align-items:center;justify-content:center;font-family:'Noto Serif SC',serif;font-size:13px;">用</div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:13.5px;color:#1b1f24;">USER_6450</div>
+              <div style="font-size:11.5px;color:#a3aab0;margin-top:2px;">机构版 · 研究部</div>
+            </div>
+            <div style="color:#c9cfd4;font-size:15px;">›</div>
+          </div>
+        </div>
+      </div>
+    </sc-if>
+
+  </div>
+</div>
+
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{}">
+const SCRIPTS = {
+  innovdrug: {
+    tool:'聚合搜索', toolQuery:'创新药板块今日涨跌幅、领涨个股及板块表现',
+    intro:'我来帮您分析创新药板块今日集体大幅上涨的核心驱动因素。让我从多个维度进行查询。',
+    sections:[
+      {h:'一、政策端持续释放利好', items:['推进药品试验数据保护制度落地','建立儿童药、罕见病药市场独占期','培育3-5个国际竞争力生物医药产业集群','年内已批59个创新药、51个创新医疗器械']},
+      {h:'二、产业基本面持续超预期兑现', items:['2026年中报：生物医药行业归母净利润同比增长 64.87%','百济神州归母净利润同比增长 627.15%，荣昌生物营收同比增长 432.8%','31家港股创新药样本企业归母净利润同比增幅高达 125.19%','2026上半年国内License-out交易总额约 1100亿美元，已达2025全年的80%','国内创新药对外授权总金额突破 1200亿美元']},
+      {h:'三、估值与资金面共振', items:['6月低点时，万得创新药指数PE处于基日以来 2.9% 分位，公募医药持仓创16年新低','机构资金从AI板块高低切换，持续增配创新药赛道']}
+    ],
+    tableTitle:'板块今日表现',
+    tableRows:[['万得创新药主题指数（866493.WI）','+0.04%，报3789.87'],['领涨个股','康希诺（+10.05%）、百奥泰（+8.99%）、奥赛康（+7.55%）等'],['港股创新药指数','盘中涨幅超6%']],
+    after:{h:'机构核心观点', para:'国泰海通判断当前属于反转行情而非反弹，核心来自内需强劲兑现+外需出海加速双轮驱动。华创医药认为头部公司已进入高性价比配置区间。浙商证券指出，若海外商业化持续超预期，板块有望成为市场核心主线之一。'},
+    risk:'风险提示：美国对外投资新规尚未定稿，政策仍存变数；板块短期经历快速上涨后需关注追高风险；创新药研发本身具有高不确定性。以上分析仅供参考，不构成投资建议。',
+    refCount:22, ref:{title:'创新药板块今日涨跌幅、领涨个股及板块表现', tag:'数据', date:'2026-09-22'}
+  },
+  midea: {
+    tool:'聚合搜索', toolQuery:'美的集团股价走势、8个月新高原因、基本面变化',
+    intro:'我来帮您分析美的集团近期股价走势与创8个月新高背后的原因。',
+    sections:[
+      {h:'核心驱动因素', items:['2026年中报显示海外OBM自主品牌收入占比持续提升，盈利能力优于代工业务','楼宇科技、机器人与自动化（KUKA）业务减亏明显，第二增长曲线逐步兑现','分红比例维持高位，股息率对长线资金具备吸引力']},
+      {h:'短期股价下跌的原因', items:['前期涨幅较大后获利盘兑现，叠加家电以旧换新补贴退坡预期','原材料（铜、钢）价格阶段性上行压制毛利率预期']}
+    ],
+    tableTitle:'美的集团核心数据',
+    tableRows:[['最新价','较前高回落约3.2%'],['近8个月区间','创8个月收盘新高后回调'],['机构评级','多数维持"增持/买入"']],
+    after:{h:'机构核心观点', para:'浙商证券认为回调是获利了结而非趋势反转，中长期看好家电龙头出海与机器人业务的估值重估空间。'},
+    risk:'风险提示：海外需求波动、原材料价格上行、行业竞争加剧等因素可能影响短期业绩表现。以上分析仅供参考，不构成投资建议。',
+    refCount:15, ref:{title:'美的集团（000333.SZ）股价走势及机构评级跟踪', tag:'数据', date:'2026-09-22'}
+  },
+  nvidia: {
+    tool:'聚合搜索', toolQuery:'英伟达AI芯片需求、产业链跟踪数据',
+    intro:'我来帮您梳理英伟达AI芯片需求最新变化及产业链影响。',
+    sections:[{h:'需求端持续超预期', items:['下一代Blackwell/Rubin平台订单能见度已排至2027年','云厂商资本开支指引持续上修，AI推理需求成为新增量']}],
+    tableTitle:'产业链跟踪',
+    tableRows:[['CoWoS先进封装','产能持续满载，2027年新增产能规划落地'],['国产算力链','受益于自主可控与算力平权预期']],
+    after:{h:'机构核心观点', para:'多家机构认为AI资本开支上行周期尚未结束，建议关注算力产业链中报业绩兑现节奏。'},
+    risk:'风险提示：AI资本开支不及预期、地缘政策限制等因素可能影响产业链景气度。以上分析仅供参考，不构成投资建议。',
+    refCount:18, ref:{title:'英伟达及AI算力产业链最新跟踪数据', tag:'数据', date:'2026-09-22'}
+  },
+  skill1: {
+    tool:'宏观数据解读', skill:true,
+    intro:'已为您调用「宏观洞察」技能，对9月落地的8000亿元新型政策性金融工具进行规模测算与影响分析。',
+    sections:[
+      {h:'工具定位与资金投向', items:['重点投向重大项目资本金补充、设备更新与消费基础设施等领域','采用"母子基金"结构，撬动银行配套融资与社会资本参与']},
+      {h:'规模测算', items:['预计带动配套融资1.5-2万亿元，形成3-4倍杠杆撬动效应','对基建实物工作量形成年内增量支撑']}
+    ],
+    tableTitle:'规模测算摘要',
+    tableRows:[['工具规模','8000亿元'],['预计撬动配套资金','1.5万亿-2万亿元'],['落地节奏','9月起分批投放']],
+    after:{h:'机构核心观点', para:'多家机构认为该工具有望对四季度基建投资形成明显拉动，建议关注中字头基建与设备更新受益链条。'},
+    risk:'风险提示：政策落地节奏及具体投向细则仍需跟踪，实际拉动效果存在不确定性。以上分析仅供参考，不构成投资建议。',
+    refCount:12, ref:{title:'新型政策性金融工具设立方案及规模测算', tag:'数据', date:'2026-09-22'}
+  },
+  skill2: {
+    tool:'贵金属板块深度透视', skill:true,
+    intro:'已为您调用「贵金属板块深度透视」技能，结合历史分位与均值对伦敦金银比进行分析。',
+    sections:[{h:'金银比历史分位', items:['当前伦敦金银比处于近10年 78% 分位，显著高于长期均值','历史上金银比高位回落阶段，白银相对黄金往往有超额表现']}],
+    tableTitle:'金银比核心数据',
+    tableRows:[['当前金银比','约82.3'],['近10年均值','约75.6'],['近10年分位','78%']],
+    after:{h:'机构核心观点', para:'多数机构认为若实际利率见顶回落，白银在工业需求+金融属性双重驱动下，补涨弹性可能优于黄金。'},
+    risk:'风险提示：贵金属价格受美联储政策路径、地缘政治等多重因素影响，历史规律不代表未来走势。以上分析仅供参考，不构成投资建议。',
+    refCount:9, ref:{title:'伦敦金银比历史分位与均值回归分析', tag:'数据', date:'2026-09-22'}
+  },
+  generic: {
+    tool:'聚合搜索', toolQuery:'正在检索相关数据…',
+    intro:'收到，我正在为你查询相关信息，请稍候。',
+    sections:[{h:'分析结果', para:'这是一个原型演示回复，真实应用中此处会返回结合实时行情数据与多源检索得到的结构化分析内容。'}],
+    tableTitle:'', tableRows:[], after:null,
+    risk:'内容由 AI 生成，请核查重要信息。', refCount:1,
+    ref:{title:'示例数据来源', tag:'数据', date:'2026-09-22'}
+  }
+};
+
+const MODE_LABELS = {quick:'快速问答', deep:'深度研究', expert:'金融专家团'};
+const MODE_PH = {
+  quick:'针对各类信息查询和简单问题，提供快速回答与响应',
+  deep:'对复杂问题进行多轮检索与推理，产出深度研究报告',
+  expert:'召唤专属金融专家，处理会议、研报、财报等专属场景任务'
+};
+
+const EXPERT_OPTIONS = [
+  {name:'个股研究专家', img:'assets/expert-stock.png', desc:'面向二级市场的个股研究搭档，围绕公司基本面、财报与事件、估…'},
+  {name:'行业研究专家', img:'assets/expert-industry.png', desc:'面向股票投研团队的行业研究搭档，围绕行业、子行业、产业链环…'},
+  {name:'研报专家', img:'assets/expert-report.png', desc:'7×24小时追踪全市场研报，提炼核心观点、评级变化与目标价调整…'}
+];
+
+const MY_SKILLS = [
+  ['组合周度复盘','按持仓权重拆解本周组合收益来源，输出归因表与调仓建议。','最近编辑 09-19 · 已运行 24 次'],
+  ['客户晨会纪要','把晨会语音转写整理成结构化纪要，自动提取观点与待办。','最近编辑 09-11 · 已运行 63 次'],
+  ['行业景气打分卡','按自定义指标体系给跟踪行业打分，生成景气趋势对比表。','最近编辑 08-28 · 已运行 17 次']
+];
+
+const REPORTS = [
+  {group:'本周', kind:'深度研究', date:'09-22 14:20', state:'已完成', title:'创新药板块上涨驱动因素与配置窗口研究', summary:'政策、业绩、BD 出海三条主线梳理，附板块估值分位与重点公司盈利预测。', pages:'18 页 · 引用 22 条'},
+  {group:'本周', kind:'公司研究', date:'09-21 09:05', state:'已完成', title:'美的集团（000333.SZ）创新高后的回调复盘', summary:'海外 OBM 占比提升与 KUKA 减亏节奏跟踪，短期获利了结压力测算。', pages:'12 页 · 引用 15 条'},
+  {group:'本周', kind:'晨报', date:'09-20 07:30', state:'已发送', title:'9月20日 玑衡晨报：算力链订单兑现节奏', summary:'CoWoS 满载、液冷订单放量，关注中报业绩兑现与国产替代节奏。', pages:'6 页 · 引用 9 条'},
+  {group:'更早', kind:'宏观研究', date:'09-12 16:40', state:'已完成', title:'8000亿元新型政策性金融工具规模测算', summary:'母子基金结构下的杠杆撬动测算，四季度基建投资拉动弹性推演。', pages:'15 页 · 引用 12 条'},
+  {group:'更早', kind:'大宗商品', date:'09-05 11:12', state:'草稿', title:'伦敦金银比历史分位与均值回归分析', summary:'金银比 82.3 处近十年 78% 分位，白银补涨弹性情景分析。', pages:'9 页 · 引用 9 条'}
+];
+
+const SKILLS = [
+  ['有色板块深度透视','有色金属板块深度分析，采用通用框架+品种插件模…'],
+  ['贵金属板块深度透视','用于黄金、白银、铂、钯的行情快评、日报、走势复…'],
+  ['期货主力行为分析','期货主力行为分析基于交易所公开的期货公司席位数…'],
+  ['基金涨跌解读','帮助客户看懂某只基金或ETF在一段时间内为什么上涨…'],
+  ['期货资金流向监测','基于国内商品期货品种持仓额变化，监测全市场、板…'],
+  ['期权波动率洞察','期权波动率数据诊断与市场扫描技能。分析 IV 估值、…'],
+  ['期权定价计算器','期权与结构化期权产品理论定价技能。对香草、二元…'],
+  ['机构持仓透视','查看巴菲特、桥水、易方达等顶级机构最新买了什么…'],
+  ['期货盘中异动归因','用于商品期货盘中异动归因与市场扫描。用户可询问…']
+];
+
+const DRAWER = [
+  {label:'新建对话', page:'home', badge:false, icon:'M21 11.5a8.4 8.4 0 01-9 8.4 9 9 0 01-4-.9L3 21l1.9-4.6A8.4 8.4 0 0121 11.5z'},
+  {label:'我的报告', page:'reports', badge:false, icon:'M14 3H7a2 2 0 00-2 2v14a2 2 0 002 2h10a2 2 0 002-2V8l-5-5zM14 3v5h5M9 13h6M9 17h4'},
+  {label:'技能广场', page:'skills', badge:false, icon:'M4 19.5V5a2 2 0 012-2h13v18H6.5A2.5 2.5 0 014 19.5zM4 19.5A2.5 2.5 0 016.5 17H19'},
+  {label:'定时与提醒', page:'reminders', badge:false, icon:'M12 21a9 9 0 100-18 9 9 0 000 18zM12 7.5V12l3 2'}
+];
+
+class Component extends DCLogic {
+  state = {
+    page:'home', drawerOpen:false, mode:'quick', modeSelected:false,
+    input:'', flow:'generic', myTab:'hot', msgs:[], seq:0, skillOff:{}, clock:'9:41',
+    expertSheet:false, expert:'', reportTab:'全部', skillTab:'已开启的'
+  };
+
+  componentDidMount(){
+    this.tick();
+    this.timer = setInterval(()=>this.tick(), 20000);
+  }
+  componentWillUnmount(){ clearInterval(this.timer); }
+  tick(){
+    const d = new Date();
+    this.setState({clock: String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')});
+  }
+
+  go(page){ this.setState({page, drawerOpen:false}); }
+
+  scrollDown(){
+    setTimeout(()=>{ if(this.scrollEl) this.scrollEl.scrollTop = this.scrollEl.scrollHeight; }, 40);
+  }
+
+  send(text, flowKey){
+    if(!text) return;
+    const key = SCRIPTS[flowKey] ? flowKey : 'generic';
+    const id = this.state.seq + 1;
+    const msgs = this.state.msgs.concat([
+      {kind:'user', id:'u'+id, text},
+      {kind:'ai', id:'a'+id, flow:key, stage:0, refOpen:false}
+    ]);
+    this.setState({msgs, seq:id, input:'', flow:'generic'});
+    this.scrollDown();
+    [[1,900],[2,2100],[3,3500]].forEach(([stage, delay])=>{
+      setTimeout(()=>{
+        this.setState(s=>({msgs: s.msgs.map(m => m.id==='a'+id ? Object.assign({}, m, {stage}) : m)}));
+        this.scrollDown();
+      }, delay);
+    });
+  }
+
+  renderVals(){
+    const st = this.state;
+    const flowSpec = SCRIPTS[st.mode] ;
+    const hasInput = st.input.trim().length > 0;
+
+    const msgs = st.msgs.map(m => {
+      if(m.kind === 'user') return {key:m.id, isUser:true, isAI:false, text:m.text};
+      const f = SCRIPTS[m.flow];
+      const sections = (f.sections||[]).map((s,i)=>({
+        key:'s'+i, h:s.h, para:s.para||'',
+        items:(s.items||[]).map((t,j)=>({key:'i'+j, t}))
+      }));
+      if(f.after) sections.push({key:'after', h:f.after.h, para:f.after.para, items:[]});
+      return {
+        key:m.id, isUser:false, isAI:true,
+        thinking: m.stage === 0,
+        showSkill: !!f.skill && m.stage >= 1,
+        showTool: !f.skill && m.stage >= 1,
+        toolBusy: m.stage === 1,
+        toolDone: m.stage >= 2,
+        tool: f.tool, toolQuery: m.stage>=2 ? f.toolQuery : '正在生成搜索问句…',
+        showIntro: m.stage >= 1, intro: f.intro,
+        showBody: m.stage >= 3,
+        sections,
+        tableTitle: f.tableTitle || '', tableRows: (f.tableRows||[]).map((r,i)=>({key:'r'+i, k:r[0], v:r[1]})),
+        risk: f.risk, refCount: f.refCount,
+        refOpen: m.refOpen, refTitle: f.ref.title, refTag: f.ref.tag, refDate: f.ref.date,
+        toggleRef: ()=> this.setState(s=>({msgs:s.msgs.map(x=> x.id===m.id ? Object.assign({},x,{refOpen:!x.refOpen}) : x)}))
+      };
+    });
+
+    const modes = Object.keys(MODE_LABELS).map(k=>({
+      key:k, label:MODE_LABELS[k],
+      bg: st.mode===k ? '#f3ede4' : '#f6f4f0',
+      fg: st.mode===k ? '#9c6b3c' : '#4a5259',
+      bd: st.mode===k ? '#e4d7c4' : '#edeae3',
+      onClick: k==='expert'
+        ? ()=> this.setState({expertSheet:true})
+        : k==='quick'
+          ? ()=>{}
+          : ()=> this.setState({mode:k, modeSelected:true})
+    }));
+
+    const official = SKILLS.map(([t,d])=>({t, d, badge:'官方', meta:''}));
+    const mine = MY_SKILLS.map(m=>({t:m[0], d:m[1], badge:'自建', meta:m[2]}));
+    const all = official.concat(mine);
+    const skillRows = st.skillTab==='我创建的' ? mine
+      : st.skillTab==='官方技能' ? official
+      : all.filter(r=> !st.skillOff[r.t]);
+
+    return {
+      clock: st.clock,
+      isHome: st.page==='home', isSkills: st.page==='skills',
+      isReports: st.page==='reports', isProfile: st.page==='profile',
+      isReminders: st.page==='reminders', isNotifications: st.page==='notifications',
+      goProfile: ()=> this.go('profile'),
+      isWorld: st.page==='world',
+      goWorld: ()=> this.go('world'),
+      expertSheet: st.expertSheet,
+      openExpertSheet: ()=> this.setState({expertSheet:true}),
+      closeExpertSheet: ()=> this.setState({expertSheet:false}),
+      expertOptions: EXPERT_OPTIONS.map(e=>({
+        key:e.name, name:e.name, imgUrl:'url("'+e.img+'")', desc:e.desc,
+        picked: st.expert===e.name,
+        cardBg: st.expert===e.name ? '#faf6ee' : '#faf9f6',
+        cardBd: st.expert===e.name ? '#e4d7c4' : '#edeae3',
+        onClick: ()=> this.setState({expertSheet:false, expert:e.name, mode:'expert', modeSelected:true})
+      })),
+      reportTabs: ['全部','深度研究','公司研究','晨报'].map(t=>({
+        key:t, label:t,
+        bg: st.reportTab===t ? '#1f2429' : '#f6f4f0',
+        fg: st.reportTab===t ? '#fff' : '#4a5259',
+        bd: st.reportTab===t ? '#1f2429' : '#edeae3',
+        onClick: ()=> this.setState({reportTab:t})
+      })),
+      reportGroups: ['本周','更早'].map(g=>({
+        key:g, label:g,
+        items: REPORTS.filter(r=> r.group===g && (st.reportTab==='全部' || r.kind===st.reportTab))
+          .map(r=>Object.assign({key:r.title, stateColor: r.state==='草稿' ? '#adb4ba' : '#12805c'}, r))
+      })).filter(g=> g.items.length > 0),
+      profileStats: [{key:'a',v:'24',k:'生成报告'},{key:'b',v:'9',k:'启用技能'},{key:'c',v:'146',k:'使用天数'}],
+      profileRows: [
+        {key:'1',t:'账号与安全',v:'已绑定手机'},
+        {key:'2',t:'订阅与积分',v:'机构版 · 8,420 分'},
+        {key:'3',t:'数据权限',v:'行情 / 研报 / 财报'},
+        {key:'4',t:'消息通知',v:'已开启'},
+        {key:'5',t:'偏好设置',v:'简体中文'},
+        {key:'6',t:'关于玑衡AI',v:'v2.4.1'}
+      ],
+      drawerOpen: st.drawerOpen,
+      openDrawer: ()=> this.setState({drawerOpen:true}),
+      closeDrawer: ()=> this.setState({drawerOpen:false}),
+      stop: (e)=> e.stopPropagation(),
+      goHome: ()=> this.go('home'),
+      goNotifications: ()=> this.go('notifications'),
+      newChat: ()=> this.go('home'),
+      chatScrollRef: (el)=>{ this.scrollEl = el; },
+
+      msgs,
+      modes, modeSelected: st.modeSelected, showModeRow: !st.modeSelected,
+      modeLabel: st.mode==='expert' && st.expert ? MODE_LABELS.expert + ' · ' + st.expert : MODE_LABELS[st.mode],
+      deselectMode: ()=> this.setState({modeSelected:false, mode:'quick', expert:''}),
+      placeholder: MODE_PH[st.mode],
+      input: st.input,
+      onInput: (e)=> this.setState({input: e.target.value}),
+      onSend: ()=> this.send(st.input.trim(), st.flow),
+      sendGlyph: hasInput ? '↑' : '＋',
+      sendBg: hasInput ? '#1f2429' : '#fff',
+      sendFg: hasInput ? '#fff' : '#767e86',
+      sendBd: hasInput ? '#1f2429' : '#e7e5e0',
+
+      skillTabs: ['已开启的','我创建的','官方技能'].map(t=>({
+        key:t, label:t,
+        bg: st.skillTab===t ? '#1f2429' : '#f6f4f0',
+        fg: st.skillTab===t ? '#fff' : '#4a5259',
+        bd: st.skillTab===t ? '#1f2429' : '#edeae3',
+        onClick: ()=> this.setState({skillTab:t})
+      })),
+      skillCountLabel: skillRows.length + (st.skillTab==='我创建的' ? ' 个自建技能' : (st.skillTab==='已开启的' ? ' 个技能已开启' : ' / 36 个官方技能')),
+      showCreateSkill: st.skillTab==='我创建的',
+      skillsEmpty: skillRows.length === 0,
+      skills: skillRows.map(r=>{
+        const off = !!st.skillOff[r.t];
+        return {key:r.t, t:r.t, d:r.d, badge:r.badge||'', meta:r.meta||'',
+          trackBg: off ? '#e2e0db' : '#1f2429',
+          knobLeft: off ? '2px' : '20px',
+          toggle: ()=> this.setState(s=>({skillOff: Object.assign({}, s.skillOff, {[r.t]: !s.skillOff[r.t]})}))};
+      }),
+
+      drawerItems: DRAWER.map(d=>({
+        key:d.label, label:d.label, icon:d.icon, badge:d.badge,
+        onClick: ()=> this.go(d.page)
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

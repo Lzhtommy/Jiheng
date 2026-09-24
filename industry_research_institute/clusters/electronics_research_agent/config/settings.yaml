@@ -1,0 +1,55 @@
+package: electronics_research_agent
+version: "0.1.0"
+l1_code: "270000"
+l1_name: 电子
+llm:
+  enabled: false
+active:
+  l2:
+    - "270100"
+    - "270200"
+    - "270600"
+  l3:
+    - "270102"
+    - "270103"
+    - "270107"
+    - "270108"
+    - "270202"
+    - "270203"
+    - "270601"
+slice_map:
+  "270104":
+    tag: semiconductor_subsector
+    value: fabless
+    spec_id: sw2_270100__fabless
+  "270105":
+    tag: semiconductor_subsector
+    value: fabless
+    spec_id: sw2_270100__fabless
+  "270106":
+    tag: semiconductor_subsector
+    value: foundry
+    spec_id: sw2_270100__foundry
+  "270107":
+    tag: semiconductor_subsector
+    value: packaging
+    spec_id: sw2_270100__packaging
+  "270108":
+    tag: semiconductor_subsector
+    value: equipment
+    spec_id: sw2_270100__equipment
+playbooks:
+  chief: chief_electronics.md
+  supervisors:
+    "270100": supervisor_semiconductor.md
+    "270200": supervisor_components.md
+    "270600": supervisor_e_chem.md
+  researchers:
+    "270102": researcher_discrete.md
+    "270103": researcher_semi_materials.md
+    "270107": researcher_packaging.md
+    "270108": researcher_equipment.md
+    "270202": researcher_pcb.md
+    "270203": researcher_passive.md
+    "270601": researcher_e_chem.md
+  inactive: inactive.md

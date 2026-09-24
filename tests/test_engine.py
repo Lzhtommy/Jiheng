@@ -23,4 +23,3 @@ def test_debate_is_balanced_and_has_falsification_checks():
     assert report["bull"]
     assert report["bear"]
     assert report["falsify"]
-

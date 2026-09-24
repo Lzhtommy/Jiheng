@@ -64,4 +64,3 @@ DEMO_UNIVERSE: tuple[StockRecord, ...] = (
 
 def get_stock(code: str) -> StockRecord | None:
     return next((item for item in DEMO_UNIVERSE if item.code == code), None)
-

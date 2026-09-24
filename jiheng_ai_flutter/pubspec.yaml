@@ -1,0 +1,30 @@
+name: jiheng_ai_flutter
+description: Flutter conversion of the first four Jiheng AI prototype screens.
+publish_to: "none"
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.4.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  flutter_secure_storage: ^9.2.2
+  http: ^1.2.2
+  webview_flutter: ^4.8.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/world/index.html
+    - assets/world/assets/
+    - assets/world/static/
+  fonts:
+    - family: Noto Serif SC
+      fonts:
+        - asset: assets/fonts/NotoSerifSC-subset.ttf
