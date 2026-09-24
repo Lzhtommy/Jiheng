@@ -7,10 +7,10 @@
 <style>
   :root{color-scheme:dark;--ink:#f7f1e5;--muted:#b8c7c6;--soft:#809393;--gold:#f3c884;--teal:#9dd8d0;--line:rgba(255,240,211,.23);--dark:#09131b;--card:rgba(10,23,30,.88)}
   *{box-sizing:border-box}
-  html,body{margin:0;min-height:100%;font-family:Inter,"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:var(--dark);color:var(--ink)}
+  html,body{margin:0;width:100%;height:100%;overflow:hidden;font-family:Inter,"Microsoft YaHei","PingFang SC",system-ui,sans-serif;background:var(--dark);color:var(--ink)}
   button,input{font:inherit} button{cursor:pointer} button:focus-visible,input:focus-visible{outline:2px solid var(--gold);outline-offset:3px}
   .hidden{display:none!important}
-  .world{position:relative;height:100dvh;min-height:600px;overflow:hidden;isolation:isolate;background:#101b20}
+  .world{position:relative;width:100%;height:100dvh;min-height:0;overflow:hidden;isolation:isolate;background:#101b20}
   .scene-bg{position:absolute;inset:-2%;background-position:center;background-size:cover;transition:transform .75s ease,filter .75s ease;transform:scale(1.04);z-index:-3}
   .scene-bg.crop{background-position:right center;background-size:135% auto}
   .scene-bg.storage{background-position:78% 38%;background-size:160% auto;filter:hue-rotate(22deg) saturate(.75) brightness(.8)}
@@ -101,7 +101,7 @@
   .epilogue-row{border-top:1px solid var(--line);padding:12px 0}.epilogue-row b{display:block;color:var(--gold);font-size:12px}.epilogue-row span{font-size:13px;line-height:1.6;color:#e3eee7}
   .epilogue-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.epilogue-action{font-size:13px;padding:11px 14px}
   @media(max-width:760px){
-    .world{min-height:540px}.topbar{padding:12px 15px;gap:7px}.brand{font-size:14px;gap:7px}.brand .brand-mark{width:34px;height:34px}.case,.top-note{display:none}.top-action{font-size:10px;padding:7px 9px}
+    .world{min-height:0}.topbar{padding:12px 15px;gap:7px}.brand{font-size:14px;gap:7px}.brand .brand-mark{width:34px;height:34px}.case,.top-note{display:none}.top-action{font-size:10px;padding:7px 9px}
     .scene-bg.crop{background-size:auto 110%;background-position:right center}.scene-bg.storage{background-size:auto 135%}
     .scene-copy{left:19px;top:77px;max-width:78vw}.scene-copy h1{font-size:39px;margin:6px 0}.scene-copy p{font-size:12px;max-width:290px}.ambient-line{margin-top:11px}
     .npc-portrait{height:48vh;max-height:420px;right:-10vw;bottom:33vh;width:74vw;opacity:.87}.npc-presence{top:27vh;right:12px;width:125px;padding:8px}.npc-presence b{font-size:14px}.npc-presence span{font-size:9px}

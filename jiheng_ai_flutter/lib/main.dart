@@ -157,15 +157,14 @@ class ApiClient {
 
   static const _javaOverride = String.fromEnvironment('JIHENG_JAVA_BASE_URL');
   static const _agentOverride = String.fromEnvironment('JIHENG_AGENT_BASE_URL');
+  static const _lanBase = 'http://192.168.184.207';
 
   /// 本机页面连本机服务；部署到服务器后走当前站点，由 nginx 转发。
-  static String get javaBase => _javaOverride.isNotEmpty
-      ? _javaOverride
-      : _localOrOrigin('http://127.0.0.1:8080');
+  static String get javaBase =>
+      _javaOverride.isNotEmpty ? _javaOverride : _localOrOrigin(_lanBase);
 
-  static String get agentBase => _agentOverride.isNotEmpty
-      ? _agentOverride
-      : _localOrOrigin('http://127.0.0.1:8000');
+  static String get agentBase =>
+      _agentOverride.isNotEmpty ? _agentOverride : _localOrOrigin(_lanBase);
 
   static String _localOrOrigin(String local) {
     if (!kIsWeb) return local;
@@ -1733,6 +1732,7 @@ class HomeHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     final world = state.worldOpen;
     return Container(
+      width: double.infinity,
       color: world ? const Color(0xFF0E1D31) : C.paper,
       padding: const EdgeInsets.fromLTRB(16, 6, 16, 10),
       child: Stack(
@@ -1856,38 +1856,26 @@ class _JihengWorldViewState extends State<JihengWorldView> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return ColoredBox(
       color: const Color(0xFF0E1D31),
-      padding: const EdgeInsets.fromLTRB(24, 12, 24, 24),
-      child: CustomPaint(
-        painter: const DashedFramePainter(),
-        child: Padding(
-          padding: const EdgeInsets.all(2),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(24),
-            child: SizedBox.expand(
-              child: Stack(
-                children: [
-                  Positioned.fill(
-                    child: WebViewWidget(controller: controller),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: WebViewWidget(controller: controller),
+          ),
+          if (loading)
+            const Positioned.fill(
+              child: ColoredBox(
+                color: Color(0xFF0E1D31),
+                child: Center(
+                  child: CircularProgressIndicator(
+                    color: Color(0xFFD8B483),
+                    strokeWidth: 2,
                   ),
-                  if (loading)
-                    const Positioned.fill(
-                      child: ColoredBox(
-                        color: Color(0xFF0E1D31),
-                        child: Center(
-                          child: CircularProgressIndicator(
-                            color: Color(0xFFD8B483),
-                            strokeWidth: 2,
-                          ),
-                        ),
-                      ),
-                    ),
-                ],
+                ),
               ),
             ),
-          ),
-        ),
+        ],
       ),
     );
   }
