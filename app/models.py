@@ -37,3 +37,4 @@ class ScreenResponse(BaseModel):
     interpreted: dict[str, object]
     results: list[ScreenResult]
     data_notice: str
+

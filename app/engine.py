@@ -179,6 +179,8 @@ def diagnosis(code: str) -> dict[str, Any] | None:
         "evidence": [item.model_dump() for item in record.evidence()],
         "data_notice": DATA_NOTICE,
     }
+
+
 def debate(code: str) -> dict[str, Any] | None:
     record = get_stock(code)
     report = diagnosis(code)
@@ -208,3 +210,4 @@ def debate(code: str) -> dict[str, Any] | None:
         "evidence": [item.model_dump() for item in record.evidence()],
         "data_notice": DATA_NOTICE,
     }
+
