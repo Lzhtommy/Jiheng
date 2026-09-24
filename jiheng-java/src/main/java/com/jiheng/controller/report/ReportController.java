@@ -1,10 +1,12 @@
 package com.jiheng.controller.report;
 
 import com.jiheng.dto.ApiResponse;
+import com.jiheng.dto.report.ReportCreateRequest;
 import com.jiheng.entity.ReportEntity;
 import com.jiheng.service.report.ReportService;
 import com.jiheng.service.report.ExportService;
 import com.jiheng.util.TraceContext;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -17,7 +19,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/v1/reports")
@@ -35,6 +36,12 @@ public class ReportController {
     @GetMapping
     public ApiResponse<List<ReportEntity>> list(@RequestParam(defaultValue = "all") String type) {
         return ApiResponse.ok(reportService.list(traceContext.getUserId(), type));
+    }
+
+    @PostMapping
+    @ResponseStatus(HttpStatus.CREATED)
+    public ApiResponse<ReportEntity> create(@Valid @RequestBody ReportCreateRequest request) {
+        return ApiResponse.ok(reportService.createFromAnswer(traceContext.getUserId(), request));
     }
 
     @GetMapping("/{reportId}")

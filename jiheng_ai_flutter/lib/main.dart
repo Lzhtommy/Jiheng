@@ -81,6 +81,9 @@ class ChatMsg {
   String risk = '';
   String ref = '';
   List<Map<String, String>> refList = [];
+  String sourceQuestion = '';
+  bool reportGenerating = false;
+  String? reportId;
   String stageNote = '';
   int refCount = 0;
   bool skill = false;
@@ -376,6 +379,19 @@ class SectionData {
   final List<String> items;
 }
 
+String reportContent(ChatMsg message) {
+  final parts = <String>[];
+  if (message.intro.trim().isNotEmpty) parts.add(message.intro.trim());
+  for (final section in message.sections) {
+    parts.add('## ${section.title}\n${section.items.map((item) => '- $item').join('\n')}');
+  }
+  if (message.rows.isNotEmpty) {
+    parts.add(message.rows.map((row) => row.join(' | ')).join('\n'));
+  }
+  if (message.risk.trim().isNotEmpty) parts.add(message.risk.trim());
+  return parts.join('\n\n');
+}
+
 class JihengShell extends StatefulWidget {
   const JihengShell({super.key});
 
@@ -643,13 +659,19 @@ class JihengShellState extends State<JihengShell> {
           .toList();
       if (!mounted) return;
       setState(() {
-        messages
-          ..clear()
-          ..addAll(rows.map((row) => row['role'] == 'user'
-              ? ChatMsg.user(asText(row['content']))
-              : (ChatMsg.ai('generic')
-                ..intro = asText(row['content'])
-                ..stage = Stage.done)));
+        messages.clear();
+        var latestQuestion = '';
+        for (final row in rows) {
+          if (row['role'] == 'user') {
+            latestQuestion = asText(row['content']);
+            messages.add(ChatMsg.user(latestQuestion));
+          } else {
+            messages.add(ChatMsg.ai('generic')
+              ..sourceQuestion = latestQuestion
+              ..intro = asText(row['content'])
+              ..stage = Stage.done);
+          }
+        }
         _chatSessionId = conversationId;
         page = PageKey.home;
         drawerOpen = false;
@@ -692,6 +714,45 @@ class JihengShellState extends State<JihengShell> {
     Navigator.of(context).push(MaterialPageRoute(
       builder: (_) => ReportDetailPage(report: detail),
     ));
+  }
+
+  Future<void> createReport(ChatMsg message) async {
+    if (message.reportGenerating) return;
+    if (message.reportId != null) {
+      await openReport({'reportId': message.reportId});
+      return;
+    }
+    final content = reportContent(message);
+    if (message.stage != Stage.done || content.isEmpty) {
+      snack('回答完成后才能生成报告');
+      return;
+    }
+    setState(() => message.reportGenerating = true);
+    try {
+      final data = await api.post('/api/v1/reports', {
+        'question': message.sourceQuestion.isEmpty ? '问答报告' : message.sourceQuestion,
+        'content': content,
+        'refs': message.refList,
+        'sourceConversationId': chatSessionId,
+      });
+      final report = Map<String, dynamic>.from(data as Map);
+      if (!mounted) return;
+      final reportId = asText(report['reportId'] ?? report['report_id']);
+      if (reportId.isEmpty) throw StateError('报告创建结果缺少 reportId');
+      setState(() {
+        message.reportId = reportId;
+        apiReports
+          ..removeWhere((item) => asText(item['reportId'] ?? item['report_id']) == reportId)
+          ..insert(0, report);
+      });
+      await Future.wait([_loadReports(), _loadProfile()]);
+      if (mounted) snack('报告已生成，可在我的报告中查看');
+    } catch (error) {
+      _rememberApiError(error);
+      if (mounted) snack('报告生成失败，请稍后重试');
+    } finally {
+      if (mounted) setState(() => message.reportGenerating = false);
+    }
   }
 
   Future<void> exportReport(Map<String, dynamic> report) async {
@@ -862,7 +923,7 @@ class JihengShellState extends State<JihengShell> {
     final text = input.text.trim();
     if (sending) return;
     if (text.isEmpty) return;
-    final ai = ChatMsg.ai(flow);
+    final ai = ChatMsg.ai(flow)..sourceQuestion = text;
     setState(() {
       messages.add(ChatMsg.user(text));
       messages.add(ai);
@@ -2242,6 +2303,7 @@ String planLabel(dynamic value) => planLabels[asText(value)] ?? asText(value);
 
 const reportKindLabels = {
   'deep_research': '深度研究',
+  'chat_answer': '问答报告',
   'company': '公司研究',
   'company_research': '公司研究',
   'morning': '晨报',
@@ -2513,17 +2575,37 @@ class MessageBubble extends StatelessWidget {
                   ),
                 const SizedBox(height: 8),
                 Row(children: [
-                  TextButton(
-                      onPressed: () {
-                        Clipboard.setData(ClipboardData(text: '$intro\n$risk'));
+                  Tooltip(
+                    message: '复制',
+                    child: IconButton(
+                      icon: const Icon(Icons.copy_outlined, size: 20),
+                      onPressed: () async {
+                        await Clipboard.setData(
+                            ClipboardData(text: reportContent(message)));
                         state.snack('已复制回答');
                       },
-                      child: const Text('复制')),
-                  TextButton(
-                      onPressed: () => state
-                          .toggleFavorite(intro.isEmpty ? message.flow : intro),
-                      child: Text(
-                          state.favorites.contains(intro) ? '取消收藏' : '收藏')),
+                    ),
+                  ),
+                  Tooltip(
+                    message: message.reportId == null ? '生成报告' : '查看报告',
+                    child: IconButton(
+                      onPressed: message.reportGenerating
+                          ? null
+                          : () => state.createReport(message),
+                      icon: message.reportGenerating
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(strokeWidth: 2),
+                            )
+                          : Icon(
+                              message.reportId == null
+                                  ? Icons.description_outlined
+                                  : Icons.description,
+                              size: 21,
+                            ),
+                    ),
+                  ),
                 ]),
               ],
             ]),
@@ -3781,7 +3863,7 @@ class DrawerOverlay extends StatelessWidget {
       ['新建对话', PageKey.home, Icons.chat_bubble_outline],
       ['我的报告', PageKey.reports, Icons.description_outlined],
       ['定时与提醒', PageKey.reminders, Icons.schedule],
-      ['我的收藏', PageKey.favorites, Icons.star_border],
+      // ['我的收藏', PageKey.favorites, Icons.star_border],
     ];
     final prototypeHistory = <({String day, String text, VoidCallback onTap})>[
       (day: '今天', text: '金融AI助手自我介绍', onTap: () => state.go(PageKey.home)),
@@ -4150,7 +4232,7 @@ class ReportDetailPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.fromLTRB(18, 12, 18, 28),
         children: [
-          Label(text: asText(report['kind'], '深度研究')),
+          Label(text: reportKindLabel(report['kind'])),
           const SizedBox(height: 12),
           Text(title,
               style: const TextStyle(
@@ -4163,8 +4245,11 @@ class ReportDetailPage extends StatelessWidget {
               '${asText(report['state'], '已完成')} · ${asText(report['pages'], '0')} 页 · 引用 ${asText(report['refCount'] ?? report['ref_count'], '0')} 条',
               style: const TextStyle(color: C.muted, fontSize: 12)),
           const SizedBox(height: 18),
-          Text(content.isEmpty ? summary : content,
-              style: const TextStyle(fontSize: 14, height: 1.8)),
+          MarkdownBody(
+            data: content.isEmpty ? summary : content,
+            selectable: true,
+            styleSheet: answerMarkdownStyle,
+          ),
           const SizedBox(height: 18),
           Container(
             padding: const EdgeInsets.all(12),

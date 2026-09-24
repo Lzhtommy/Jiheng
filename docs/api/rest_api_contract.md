@@ -39,8 +39,22 @@
 | 方法 | 路径 | 说明 | 认证 |
 |------|------|------|------|
 | GET | `/api/v1/reports?type={t}&page={p}&size={s}` | 报告列表 | 是 |
+| POST | `/api/v1/reports` | 将已完成的问答归档为报告 | 是 |
 | GET | `/api/v1/reports/{report_id}` | 报告全文 | 是 |
 | POST | `/api/v1/reports/{report_id}/export` | 导出（异步 202） | 是 |
+
+创建问答报告时提交问题、完整回答、引用来源和来源会话：
+
+```json
+{
+  "question": "近三年财报表现如何？",
+  "content": "完整回答正文",
+  "refs": [{"title": "公司年报", "url": "https://...", "tag": "财报", "date": "2026-03-30"}],
+  "sourceConversationId": "conversation-id"
+}
+```
+
+报告归属从当前 JWT 获取，类型固定为 `chat_answer`；状态、页数和引用数量由服务端计算。
 
 ## 6. 定时与提醒任务（task）
 
