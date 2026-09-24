@@ -200,12 +200,14 @@
 </style>
 <link rel="stylesheet" href="static/world.css">
 <link rel="stylesheet" href="static/world-entry.css">
+<link rel="stylesheet" href="static/world-cinematic.css">
 </head>
 <body>
 <div id="worldlayer" aria-hidden="true"></div>
 <main id="app"></main>
 <script src="static/world-state.js"></script>
 <script src="static/world-data.js"></script>
+<script src="static/world-cinematic.js"></script>
 <script>
 const SEED_SCENES = [
   {
@@ -331,7 +333,7 @@ const MATERIAL_OFFERS = {
   rolling:{title:"滚动采购计划",detail:"用分批订单换排产窗口；价格与数量逐季核对。",need:"需要台账、长协和排产线索",prompt:"我按月给滚动采购计划，旧料与现货分批核价，季度复核；你先留可调整的排产窗口。",terms:"分批滚动采购；旧料与现货分批核价、季度复核；排产窗口为条件预留。",risk:"成本和交期都有约束，但分批数量与实际需求仍需逐月核对。",reply:"岑把白板上的窗口圈了一下：这能谈。你每月给我滚动量，我按批次说明成本，季度再复核价格。窗口是条件预留，不是半年死保。电芯厂会按这份节奏给你拆报价。"}
 };
 const CELL_STATIONS = {
-  warehouse:{label:"仓库",title:"近期材料入库记录",record:"本局模拟记录：磷酸铁锂采购价格指数回落 18%，电解液回落 11%，隔膜回落 6%。",finding:"关键材料采购成本正在下降。",desktop:{x:15,y:79},mobile:{x:13,y:67}},
+  warehouse:{label:"仓库",title:"近期材料入库记录",record:"本局模拟记录：磷酸铁锂采购价格指数回落 18%，电解液回落 11%，隔膜回落 6%。",finding:"关键材料采购成本正在下降。",desktop:{x:15,y:60},mobile:{x:13,y:56}},
   factory:{label:"生产线",title:"生产线控制台",record:"自动化升级后，同一时段的合格电芯产出增加。",finding:"自动化与规模效应降低单位制造成本。",desktop:{x:48,y:49},mobile:{x:45,y:48}},
   market:{label:"市场终端",title:"市场实时数据",record:"本局模拟：新能源汽车销量与储能装机规模上行，电芯平均报价下行。",finding:"需求仍在增长，但报价正在下行。",desktop:{x:88,y:25},mobile:{x:86,y:30}}
 };
@@ -416,9 +418,11 @@ window.addEventListener("jh-world:enter",function(event){
   const companyId=(event && event.detail && event.detail.companyId) || "catl";
   if(companyId!==activeCompanyId) activateCompany(companyId);
   layerRT="scenario";syncLayer();render();
+  if(currentScene().id==="cell" && window.JHWorldFX) window.JHWorldFX.revealScene(document.getElementById("world"));
 });
 function backToWorld(){
   if(!WORLD_ENABLED) return;
+  if(window.JHWorldFX) window.JHWorldFX.cancel();
   layerRT="world";syncLayer();
   window.dispatchEvent(new CustomEvent("jh-world:back"));
 }
@@ -431,6 +435,7 @@ window.restoreWorldState=function(serialized){
   try{
     const candidate=migrateState(JSON.parse(serialized));
     if(!validState(candidate)) return;
+    if(window.JHWorldFX) window.JHWorldFX.cancel();
     S=candidate;overlay=null;busy=false;transitioning=false;
     syncLayer();saveState();render();
   }catch(_error){}
@@ -471,15 +476,26 @@ function openCellInteraction(scene,p,id){
 function collectCellCard(scene,p,id){
   const card=CELL_CARDS[id];
   if(scene.id!=="cell" || !card || p.cellMission.completed) return false;
-  if(!cellCardOwned(p,id)){
+  const firstDiscovery=!cellCardOwned(p,id);
+  if(firstDiscovery){
     p.cellMission.cards.push(card.id);
     p.cellMission.interactions[id]=true;
     addScroll(card);
     appendHistory(p,"you","我把「"+card.title+"」记进了背包。");
     appendHistory(p,"npc",cellCount(p)===3?"墨看着你收下最后一张卡：看来线索已经凑齐。把它们放上调查桌，试着拼出报价变化的原因。":"墨点点头：这条发现先收好，场景里也许还有别的线索。" );
   }
-  overlay="cell-card:"+id;
   saveState();
+  if(firstDiscovery && window.JHWorldFX){
+    overlay=null;
+    render();
+    window.JHWorldFX.playInvestigation(document.getElementById("world"),id,function(){
+      if(currentScene().id!=="cell") return;
+      overlay="cell-card:"+id;
+      render();
+    });
+    return true;
+  }
+  overlay="cell-card:"+id;
   render();
   return true;
 }
@@ -525,15 +541,35 @@ function connectCellCard(p,id){
 }
 function submitCellAnalysis(scene,p){
   const allCards=Object.keys(CELL_CARDS);
-  if(scene.id!=="cell" || !allCards.every(id=>p.cellMission.connected.includes(id))) return false;
-  p.cellMission.analysisCompleted=true;
-  appendHistory(p,"npc","墨看着调查桌：问题不在没人买。材料成本回落、产线效率提高，再加上行业竞争，合起来就能解释报价为什么下行。" );
-  overlay="cell-insight";saveState();render();return true;
+  if(scene.id!=="cell" || p.cellMission.completed || !allCards.every(id=>p.cellMission.connected.includes(id))) return false;
+  if(!p.cellMission.analysisCompleted){
+    p.cellMission.analysisCompleted=true;
+    appendHistory(p,"npc","墨看着调查桌：问题不在没人买。材料成本回落、产线效率提高，再加上行业竞争，合起来就能解释报价为什么下行。" );
+  }
+  saveState();
+  if(window.JHWorldFX){
+    overlay=null;
+    render();
+    window.JHWorldFX.playInsight(document.getElementById("world"),function(){
+      if(currentScene().id==="cell" && !p.cellMission.completed) completeCellArea(scene,p);
+    });
+  }else{overlay="cell-insight";render();}
+  return true;
 }
 function completeCellArea(scene,p){
-  if(scene.id!=="cell" || !p.cellMission.analysisCompleted) return false;
+  if(scene.id!=="cell" || !p.cellMission.analysisCompleted || p.cellMission.completed) return false;
   p.cellMission.completed=true;p.leadHeard=true;
-  unlockAfter(scene);overlay="cell-complete";saveState();render();return true;
+  unlockAfter(scene);saveState();
+  if(window.JHWorldFX){
+    overlay=null;
+    render();
+    const next=SCENES[S.current+1];
+    window.JHWorldFX.playUnlock(document.getElementById("world"),next?next.place:"下一站",function(){
+      overlay=null;
+      render();
+    });
+  }else{overlay="cell-complete";render();}
+  return true;
 }
 function materialDeal(){ return S.scenes.materials && S.scenes.materials.deal; }
 function materialRoute(){ const deal=materialDeal(); return deal && deal.route; }
@@ -926,6 +962,13 @@ function renderScene(){
   }).join("")+'</nav>':"";
   const cellTools=scene.id==="cell"?'<button class="cell-progress" data-act="open-cell-mission" aria-label="查看随身委托">📜 '+(p.cellMission.completed?"委托已完成":cellCount(p)?"线索已收入":"随身委托")+'</button>'+
     '<button class="cell-helper" data-act="open-cell-hint" aria-label="询问小玑提示"><span class="cell-helper-face" aria-hidden="true">◕</span><span>小玑</span></button>':"";
+  const signals=scene.id==="cell"?Object.entries(CELL_STATIONS).filter(function([id]){return cellCardOwned(p,id);}).map(function([id,station]){
+    const mobile=window.matchMedia("(max-width:760px)").matches;
+    const point=mobile?station.mobile:station.desktop;
+    const signalY=id==="warehouse"?point.y-11:point.y+8;
+    return '<span class="cg-signal-badge" style="--x:'+(mobile && id==="warehouse"?18:point.x)+'%;--y:'+Math.min(signalY,75)+'%" data-cg-signal="'+id+'">'+({warehouse:"MATERIAL COST ↓",factory:"EFFICIENCY ↑",market:"DEMAND ↑"}[id])+'</span>';
+  }).join(""):"";
+  const unlockedRoute=scene.id==="cell" && p.cellMission.completed && SCENES[S.current+1]?'<div class="cg-route-ready" aria-label="下一产业区域已解锁"><span>03 · 电芯城 ✓</span><i aria-hidden="true"></i><span class="cg-next">04 · '+esc(SCENES[S.current+1].place)+' 🔓</span></div>':"";
   app.innerHTML='<section class="world '+(scene.id==="cell"?'cell-world '+(cellChatOpen?'chat-open':''):'')+'" id="world">'+
     '<div class="scene-bg '+esc(scene.id)+' '+(scene.crop?"crop ":"")+(scene.storage?"storage":"")+'" style="background-image:url(&quot;'+esc(scene.bg)+'&quot;)"></div>'+
     '<div class="scene-shade"></div>'+
@@ -937,7 +980,7 @@ function renderScene(){
     '<div class="scene-copy"><div class="eyebrow">'+esc(scene.region)+'</div><h1>'+esc(scene.place)+'</h1>'+
     '<p>'+esc(arrivalLine(scene))+'</p><div class="ambient-line">'+esc(scene.atmosphere)+'</div></div>'+
     (scene.portrait?'<img class="npc-portrait" src="'+esc(scene.portrait)+'" alt="'+esc(scene.npc)+'的角色立绘">':"")+
-    hotspots+cellTools+
+    hotspots+cellTools+signals+unlockedRoute+
     '<nav class="toolbelt" aria-label="走访工具"><button class="tool" data-act="open-map" aria-label="展开地图"><span class="ico">▤</span><span>地图</span></button>'+
     '<button class="tool" data-act="open-bag" aria-label="打开卷轴背包"><span class="ico">▣</span><span>背包</span>'+(S.scrolls.length+(scene.id==="cell"?1:0)?'<span class="count">'+(S.scrolls.length+(scene.id==="cell"?1:0))+'</span>':"")+'</button></nav>'+
     (reveal && scene.id!=="cell"?'<button class="travel" data-act="travel">'+esc(nextLabel)+' →</button>':"")+
@@ -981,7 +1024,7 @@ function transitionTo(index){
     if(firstCellVisit){overlay=null;cellChatOpen=false;}
     render();
     const world=document.getElementById("world");
-    if(world){world.classList.add("entering");setTimeout(function(){world.classList.remove("entering");},1000);}
+    if(world){world.classList.add("entering");setTimeout(function(){world.classList.remove("entering");},1000);if(target.id==="cell" && window.JHWorldFX) window.JHWorldFX.revealScene(world);}
   },850);
 }
 function finishJourney(){
@@ -992,7 +1035,7 @@ function finishJourney(){
 }
 app.addEventListener("click",function(event){
   const button=event.target.closest("[data-act]");
-  if(!button || transitioning) return;
+  if(!button || transitioning || (window.JHWorldFX && window.JHWorldFX.isPlaying())) return;
   const act=button.dataset.act;
   if(act==="exit-app"){
     if(window.JihengWorldBridge) window.JihengWorldBridge.postMessage(JSON.stringify({type:"exit"}));
@@ -1013,7 +1056,12 @@ app.addEventListener("click",function(event){
     if(act==="cell-inspect"){
       button.classList.add("inspecting");
       const stationId=button.dataset.station;
-      setTimeout(function(){openCellInteraction(currentScene(),progress(currentScene()),stationId);},160);
+      const p=progress(currentScene());
+      if(window.JHWorldFX && !cellCardOwned(p,stationId)){
+        window.JHWorldFX.playScan(document.getElementById("world"),stationId,function(){
+          if(currentScene().id==="cell") openCellInteraction(currentScene(),progress(currentScene()),stationId);
+        });
+      }else setTimeout(function(){openCellInteraction(currentScene(),progress(currentScene()),stationId);},160);
       return;
     }
     if(act==="cell-timeline-complete"){completeCellTimeline(currentScene(),progress(currentScene()));return;}
@@ -1055,6 +1103,7 @@ app.addEventListener("click",function(event){
   if(act==="back-scene"){S.report=false;overlay=null;saveState();render();return;}
   if(act==="reset"){
     if(confirm("重新开始会清空这一趟走访的对话和卷轴。确定重新开始吗？")){
+      if(window.JHWorldFX) window.JHWorldFX.cancel();
       try{localStorage.removeItem(STORAGE_KEY);}catch(_error){}
       S=freshState();overlay=null;toastText="";busy=false;transitioning=false;render();
     }

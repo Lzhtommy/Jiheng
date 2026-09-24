@@ -131,6 +131,17 @@ test('dialogue or a premature purchase offer cannot bypass the unfinished invest
   assert.equal(game.run('S.scenes.cell.cellMission.completed'), false);
 });
 
+test('an interrupted insight can be resumed after restoring the saved investigation', () => {
+  const game = journey();
+  enterCell(game);
+  game.run('const p=progress(currentScene());p.cellMission.cards=["cell-cost","cell-efficiency","cell-demand"];p.cellMission.connected=["warehouse","factory","market"];p.cellMission.analysisCompleted=true;saveState();');
+  const restored = journey(game.saved.get('jiheng-procurement-journey-v1'));
+  assert.equal(restored.run('submitCellAnalysis(currentScene(),progress(currentScene()))'), true);
+  assert.match(restored.html, /价格下降，不等于需求消失/);
+  assert.equal(restored.run('completeCellArea(currentScene(),progress(currentScene()))'), true);
+  assert.equal(restored.run('S.unlocked'), 3);
+});
+
 test('older cell saves keep their previously unlocked route', () => {
   const game = journey();
   game.run('S.current=2;S.unlocked=3;S.scenes.cell={seen:[],presented:[],inspected:[],history:[{speaker:"npc",text:"旧对话"}],deal:null,leadHeard:true};saveState();');
