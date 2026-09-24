@@ -27,6 +27,7 @@ flutter:
     - assets/prototype/
     - assets/game/
     - assets/game/assets/
+    - assets/game/static/
   fonts:
     - family: Noto Serif SC
       fonts:
